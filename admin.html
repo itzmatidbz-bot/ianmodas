@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Ian Modas</title>
+    <link rel="stylesheet" href="admin.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <button id="menu-toggle" class="menu-toggle"><i class="fas fa-bars"></i></button>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo"><h2>Ian Modas Admin</h2></div>
+            <nav class="admin-nav">
+                <button class="nav-item active" data-section="dashboard"><i class="fas fa-home"></i> Dashboard</button>
+                <button class="nav-item" data-section="products"><i class="fas fa-box"></i> Productos</button>
+                <button class="nav-item" data-section="new-product"><i class="fas fa-plus"></i> Añadir Producto</button>
+                <button id="logout-button" class="nav-item"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="admin-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-products" placeholder="Buscar productos...">
+                </div>
+                <div class="admin-user"><span>Admin</span><i class="fas fa-user-circle"></i></div>
+            </header>
+
+            <section id="dashboard" class="admin-section active">
+                <h2>Dashboard</h2>
+                <div class="dashboard-stats">
+                     <div class="stat-card">
+                        <i class="fas fa-box"></i><div><h3>Total Productos</h3><p id="total-products">0</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-boxes"></i><div><h3>Stock Bajo (&lt;5)</h3><p id="low-stock">0</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-tag"></i><div><h3>Categorías</h3><p id="total-categories">0</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="products" class="admin-section">
+                <h2>Gestión de Productos</h2>
+                <div class="products-table-container">
+                    <table class="products-table">
+                        <thead>
+                            <tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="products-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="new-product" class="admin-section">
+                <h2>Añadir Nuevo Producto</h2>
+                <form id="product-form" class="product-form" novalidate>
+                    <div class="form-grid">
+                        <div class="form-group span-2">
+                            <label for="imagen">Imagen del Producto</label>
+                            <div id="image-upload-area" class="image-upload-area">
+                                <p><i class="fas fa-cloud-upload-alt"></i></p>
+                                <p>Arrastra y suelta o haz clic para seleccionar</p>
+                                <input type="file" id="imagen" name="imagen" accept="image/*" style="display: none;">
+                                <img id="image-preview" src="" alt="Vista previa">
+                            </div>
+                        </div>
+                        <div class="form-group"><label for="nombre">Nombre</label><input type="text" id="nombre" name="nombre" required></div>
+                        <div class="form-group">
+                            <label for="categoria">Categoría</label>
+                            <select id="categoria" name="categoria" required>
+                                <option value="" disabled selected>Selecciona una colección</option>
+                                <option value="Outlet">Outlet</option>
+                                <option value="Todo el Mundo">Todo el Mundo</option>
+                                <option value="Argentina">Argentina</option>
+                                <option value="Italia">Italia</option>
+                                <option value="Turquía">Turquía</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label for="precio">Precio</label><input type="number" id="precio" name="precio" step="0.01" min="0" required></div>
+                        <div class="form-group"><label for="stock">Stock</label><input type="number" id="stock" name="stock" min="0" required></div>
+                        <div class="form-group span-2"><label for="descripcion">Descripción</label><textarea id="descripcion" name="descripcion" required rows="4"></textarea></div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" id="submit-button" class="btn primary"><i class="fas fa-save"></i> Guardar</button>
+                        <button type="reset" class="btn secondary"><i class="fas fa-undo"></i> Limpiar</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+
+        <div id="confirm-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+                <h2>Confirmar Eliminación</h2>
+                <p id="confirm-message"></p>
+                <div class="modal-actions">
+                    <button id="confirm-yes" class="btn danger">Sí, eliminar</button>
+                    <button id="confirm-no" class="btn secondary">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

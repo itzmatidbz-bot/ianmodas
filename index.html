@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ian Modas - Ropa por Mayor en Montevideo</title>
+    <meta name="description" content="Líderes en moda mayorista. Descubrí las últimas tendencias en ropa de Argentina, Italia y Turquía. Visitanos en Dr. Juan José de Amézaga 1784/1786.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="index.html" class="nav__logo">Ian Modas</a>
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="#inicio" class="nav__link">Inicio</a></li>
+                    <li class="nav__item"><a href="#productos" class="nav__link">Catálogo</a></li>
+                    <li class="nav__item"><a href="#contacto" class="nav__link">Contacto</a></li>
+                </ul>
+                <button class="nav__close" id="nav-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="nav__actions">
+                <a href="login.html" id="user-session" class="nav__link user-link">
+                    <i class="fas fa-user"></i>
+                    <span>Mayoristas</span>
+                </a>
+                <button class="nav__toggle" id="nav-toggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero" id="inicio">
+            <div class="hero__overlay"></div>
+            <div class="hero__content container">
+                <h1 class="hero__title">⚡️ Moda Mayorista que Impulsa tu Negocio ⚡️</h1>
+                <p class="hero__subtitle">Las últimas tendencias de Argentina, Italia y Turquía directo a tu local.</p>
+                <a href="#productos" class="btn">Ver Catálogo</a>
+            </div>
+        </section>
+
+        <section class="info-bar">
+            <div class="container info-bar__grid">
+                <div class="info-bar__item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Amézaga 1784/1786, Montevideo</span>
+                </div>
+                <div class="info-bar__item">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Atención por WhatsApp: 094 772 730</span>
+                </div>
+                <div class="info-bar__item">
+                    <i class="fas fa-globe"></i>
+                    <span>+98 mil seguidores en redes</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="products" id="productos">
+            <div class="container">
+                <h2 class="section-title">Catálogo</h2>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="category-filter">Filtrar por Colección:</label>
+                        <select id="category-filter">
+                            <option value="all">Todas</option>
+                            <option value="Outlet">Outlet</option>
+                            <option value="Todo el Mundo">Todo el Mundo</option>
+                            <option value="Argentina">Argentina</option>
+                            <option value="Italia">Italia</option>
+                            <option value="Turquía">Turquía</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="product-grid" class="product-grid">
+                    <!-- Los productos se cargarán aquí -->
+                </div>
+                <p id="no-results-message" class="no-results-message" style="display: none;">
+                    No se encontraron productos en esta colección.
+                </p>
+            </div>
+        </section>
+
+        <section class="contact" id="contacto">
+            <div class="container">
+                <h2 class="section-title">Visitanos o Contactanos</h2>
+                <div class="contact__content">
+                    <div class="contact__info">
+                        <h3><i class="fas fa-store"></i> Nuestros Locales</h3>
+                        <p>📍 Dr. Juan J. de Amézaga 1784/1786 esquina Justicia</p>
+                        <p><strong>Lunes a Viernes:</strong> 8:30 a 18:00 hs</p>
+                        <p><strong>Sábados:</strong> 9:00 a 13:00 hs</p>
+                    </div>
+                    <div class="contact__social">
+                        <h3><i class="fas fa-share-alt"></i> Seguinos</h3>
+                        <p>¡Enterate de todas las novedades al instante!</p>
+                        <a href="https://wa.me/59894772730?text=Hola!%20Quisiera%20hacer%20una%20consulta%20desde%20la%20web." class="btn" target="_blank">
+                            <i class="fab fa-whatsapp"></i> Chatear por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 Ian Modas. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

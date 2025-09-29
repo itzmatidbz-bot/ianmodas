@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Mayoristas - Ian Modas</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="login-page-bg">
+    <div class="login-container">
+        <div class="login-header">
+            <a href="index.html" class="nav__logo">Ian Modas</a>
+            <h2>Acceso Mayoristas</h2>
+        </div>
+
+        <form id="login-form" class="login-form">
+            <div class="form-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" class="form-input" placeholder="Correo electrónico" required>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" class="form-input" placeholder="Contraseña" required>
+            </div>
+            <button type="submit" id="submit-btn" class="btn">Ingresar</button>
+        </form>
+        <p id="error-message" class="error-message"></p>
+        <p class="login-switch">¿No tenés cuenta? <a href="#" id="show-register">Registrate acá</a></p>
+
+        <!-- Formulario de Registro (oculto por defecto) -->
+        <form id="register-form" class="login-form" style="display: none;">
+             <div class="form-group">
+                <i class="fas fa-store"></i>
+                <input type="text" id="register-empresa" class="form-input" placeholder="Nombre del Emprendimiento" required>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="register-email" class="form-input" placeholder="Correo electrónico" required>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="register-password" class="form-input" placeholder="Crear Contraseña" required>
+            </div>
+            <button type="submit" id="register-submit-btn" class="btn">Registrarme</button>
+        </form>
+        <p id="register-error-message" class="error-message"></p>
+        <p id="register-success-message" class="success-message"></p>
+        <p class="login-switch" id="show-login" style="display: none;">¿Ya tenés cuenta? <a href="#">Ingresá acá</a></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
