@@ -1,7 +1,7 @@
-// Este archivo es casi idéntico al que corregimos, solo cambia las categorías.
 document.addEventListener('DOMContentLoaded', () => {
     // --- Selectores del DOM ---
     const DOMElements = {
+        // ... (elementos del DOM sin cambios)
         sections: document.querySelectorAll('.admin-section'),
         navItems: document.querySelectorAll('.nav-item'),
         sidebar: document.querySelector('.admin-sidebar'),
@@ -28,18 +28,42 @@ document.addEventListener('DOMContentLoaded', () => {
     let allProducts = [];
     let editingProductId = null;
 
-    // --- INICIALIZACIÓN ---
+    // --- INICIALIZACIÓN Y SEGURIDAD ---
     async function init() {
-        await checkAdmin();
+        await protectPage(); // Función de seguridad mejorada
         setupEventListeners();
         await loadInitialData();
         switchSection('dashboard');
     }
 
-    async function checkAdmin() {
+    /**
+     * Función de seguridad principal. Verifica la sesión y el rol de administrador.
+     * Si no es admin, redirige al login.
+     */
+    async function protectPage() {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { // Simple check, en producción se verificaría un rol de admin
+        
+        if (!session) {
             window.location.href = 'login.html';
+            return;
+        }
+
+        try {
+            // Llamamos a la función de la base de datos para verificar si es admin
+            const { data: isAdmin, error } = await supabase.rpc('is_admin');
+            
+            if (error) throw error;
+
+            if (!isAdmin) {
+                // Si el usuario está logueado pero no es admin, lo expulsamos
+                await supabase.auth.signOut();
+                window.location.href = 'login.html?error=auth';
+            }
+            // Si es admin, la ejecución continúa normalmente.
+        } catch (error) {
+            console.error("Error de autenticación:", error);
+            await supabase.auth.signOut();
+            window.location.href = 'login.html?error=auth';
         }
     }
 
@@ -219,3 +243,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
+
