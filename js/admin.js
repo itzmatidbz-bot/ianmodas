@@ -1,12 +1,14 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Variable para saber si estamos editando o creando
+    let editingProductId = null;
+
     // --- Selectores del DOM ---
     const DOMElements = {
-        // ... (elementos del DOM sin cambios)
-        sections: document.querySelectorAll('.admin-section'),
-        navItems: document.querySelectorAll('.nav-item'),
         sidebar: document.querySelector('.admin-sidebar'),
         menuToggle: document.getElementById('menu-toggle'),
         sidebarOverlay: document.getElementById('sidebar-overlay'),
+        sections: document.querySelectorAll('.admin-section'),
+        navItems: document.querySelectorAll('.nav-item'),
         totalProducts: document.getElementById('total-products'),
         lowStock: document.getElementById('low-stock'),
         totalCategories: document.getElementById('total-categories'),
@@ -19,55 +21,47 @@ document.addEventListener('DOMContentLoaded', () => {
         imageInput: document.getElementById('imagen'),
         imagePreview: document.getElementById('image-preview'),
         confirmModal: document.getElementById('confirm-modal'),
-        confirmMessage: document.getElementById('confirm-message'),
         confirmYesBtn: document.getElementById('confirm-yes'),
         confirmNoBtn: document.getElementById('confirm-no'),
         logoutButton: document.getElementById('logout-button')
     };
 
-    let allProducts = [];
-    let editingProductId = null;
-
-    // --- INICIALIZACIÓN Y SEGURIDAD ---
-    async function init() {
-        await protectPage(); // Función de seguridad mejorada
-        setupEventListeners();
-        await loadInitialData();
-        switchSection('dashboard');
+    // --- SEGURIDAD Y CARGA INICIAL ---
+    await protectPage();
+    const allProducts = await loadInitialData();
+    if (allProducts) {
+        renderUI(allProducts);
+        setupEventListeners(allProducts);
     }
 
-    /**
-     * Función de seguridad principal. Verifica la sesión y el rol de administrador.
-     * Si no es admin, redirige al login.
-     */
     async function protectPage() {
         const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-            window.location.href = 'login.html';
-            return;
-        }
-
-        try {
-            // Llamamos a la función de la base de datos para verificar si es admin
-            const { data: isAdmin, error } = await supabase.rpc('is_admin');
-            
-            if (error) throw error;
-
-            if (!isAdmin) {
-                // Si el usuario está logueado pero no es admin, lo expulsamos
-                await supabase.auth.signOut();
-                window.location.href = 'login.html?error=auth';
-            }
-            // Si es admin, la ejecución continúa normalmente.
-        } catch (error) {
-            console.error("Error de autenticación:", error);
+        if (!session) return window.location.href = 'login.html';
+        const { data: isAdmin, error } = await supabase.rpc('is_admin');
+        if (error || !isAdmin) {
             await supabase.auth.signOut();
-            window.location.href = 'login.html?error=auth';
+            return window.location.href = 'login.html?error=auth';
         }
     }
 
-    function setupEventListeners() {
+    async function loadInitialData() {
+        try {
+            const { data, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            alert('Error al cargar productos: ' + error.message);
+            return null;
+        }
+    }
+    
+    function renderUI(products) {
+        updateDashboardStats(products);
+        renderProductsTable(products);
+    }
+
+    // --- EVENT LISTENERS ---
+    function setupEventListeners(products) {
         DOMElements.navItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 if (DOMElements.sidebar.classList.contains('active')) toggleMobileMenu();
@@ -75,30 +69,169 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (section) switchSection(section);
             });
         });
+
         DOMElements.menuToggle.addEventListener('click', toggleMobileMenu);
         DOMElements.sidebarOverlay.addEventListener('click', toggleMobileMenu);
+
         DOMElements.logoutButton.addEventListener('click', async () => {
             await supabase.auth.signOut();
             window.location.href = 'login.html';
         });
-        DOMElements.searchInput.addEventListener('input', debounce(() => renderProductsTable(DOMElements.searchInput.value), 300));
-        DOMElements.productForm.addEventListener('submit', handleProductFormSubmit);
+
+        DOMElements.searchInput.addEventListener('input', debounce(() => {
+            const searchTerm = DOMElements.searchInput.value.toLowerCase();
+            const filtered = products.filter(p => p.nombre.toLowerCase().includes(searchTerm));
+            renderProductsTable(filtered);
+        }, 300));
+        
+        DOMElements.productForm.addEventListener('submit', (e) => handleProductFormSubmit(e, products));
         DOMElements.productForm.addEventListener('reset', resetProductForm);
-        DOMElements.productsTableBody.addEventListener('click', handleTableActions);
+        
+        DOMElements.productsTableBody.addEventListener('click', (e) => handleTableActions(e, products));
+        
         setupImageUploadListeners();
+
         DOMElements.confirmNoBtn.addEventListener('click', () => DOMElements.confirmModal.style.display = 'none');
     }
 
-    async function loadInitialData() {
+    // --- LÓGICA DEL FORMULARIO ---
+    async function handleProductFormSubmit(e, products) {
+        e.preventDefault();
+        DOMElements.submitButton.disabled = true;
+        DOMElements.submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Guardando...`;
+
         try {
-            const { data, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
+            const formData = new FormData(DOMElements.productForm);
+            const productData = {
+                nombre: formData.get('nombre'),
+                descripcion: formData.get('descripcion'),
+                precio: parseFloat(formData.get('precio')),
+                stock: parseInt(formData.get('stock')),
+                categoria: formData.get('categoria')
+            };
+
+            const file = DOMElements.imageInput.files[0];
+            let imageUrl;
+
+            if (file) {
+                const filePath = `public/${Date.now()}-${file.name}`;
+                const { error: uploadError } = await supabase.storage.from('productos').upload(filePath, file);
+                if (uploadError) throw uploadError;
+                const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filePath);
+                imageUrl = urlData.publicUrl;
+            } else if (editingProductId) {
+                imageUrl = products.find(p => p.id === editingProductId).imagen_url;
+            } else {
+                throw new Error('Debes seleccionar una imagen para un nuevo producto.');
+            }
+
+            productData.imagen_url = imageUrl;
+
+            const { error } = editingProductId
+                ? await supabase.from('productos').update(productData).eq('id', editingProductId)
+                : await supabase.from('productos').insert([productData]);
+
             if (error) throw error;
-            allProducts = data;
-            updateDashboardStats();
-            renderProductsTable();
+
+            alert(`Producto ${editingProductId ? 'actualizado' : 'creado'} con éxito.`);
+            window.location.reload(); // Recarga para ver todos los cambios
+
         } catch (error) {
-            alert('Error al cargar datos: ' + error.message);
+            alert('Error al guardar el producto: ' + error.message);
+        } finally {
+            DOMElements.submitButton.disabled = false;
+            resetProductForm();
         }
+    }
+    
+    function openEditForm(productId, products) {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        editingProductId = productId;
+
+        DOMElements.formTitle.textContent = 'Editar Producto';
+        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+        DOMElements.productForm.nombre.value = product.nombre;
+        DOMElements.productForm.descripcion.value = product.descripcion;
+        DOMElements.productForm.precio.value = product.precio;
+        DOMElements.productForm.stock.value = product.stock;
+        DOMElements.productForm.categoria.value = product.categoria;
+        DOMElements.imagePreview.src = product.imagen_url;
+        DOMElements.imagePreview.style.display = 'block';
+
+        switchSection('new-product');
+    }
+
+    function resetProductForm() {
+        editingProductId = null;
+        DOMElements.productForm.reset();
+        DOMElements.imagePreview.src = '';
+        DOMElements.imagePreview.style.display = 'none';
+        DOMElements.formTitle.textContent = 'Añadir Nuevo Producto';
+        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
+    }
+
+    // --- FUNCIONES AUXILIARES ---
+    function renderProductsTable(products) {
+        DOMElements.productsTableBody.innerHTML = products.map(product => `
+            <tr data-id="${product.id}">
+                <td><img src="${product.imagen_url}" alt="${product.nombre}" class="product-table-img"></td>
+                <td>${product.nombre}</td>
+                <td>${product.categoria}</td>
+                <td>$${product.precio ? product.precio.toFixed(2) : '0.00'}</td>
+                <td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock}</td>
+                <td>
+                    <button class="btn-icon edit" data-action="edit" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-icon danger" data-action="delete" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join('');
+    }
+
+    function updateDashboardStats(products) {
+        DOMElements.totalProducts.textContent = products.length;
+        DOMElements.lowStock.textContent = products.filter(p => p.stock > 0 && p.stock < 5).length;
+        DOMElements.totalCategories.textContent = new Set(products.map(p => p.categoria)).size;
+    }
+    
+    function handleTableActions(e, products) {
+        const button = e.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        const productId = parseInt(button.closest('tr').dataset.id);
+        if (action === 'edit') openEditForm(productId, products);
+        else if (action === 'delete') confirmDelete(productId, products);
+    }
+
+    function confirmDelete(productId, products) {
+        const product = products.find(p => p.id === productId);
+        document.getElementById('confirm-message').textContent = `¿Seguro que quieres eliminar "${product.nombre}"?`;
+        DOMElements.confirmModal.style.display = 'flex';
+        DOMElements.confirmYesBtn.onclick = async () => {
+            try {
+                const { error } = await supabase.from('productos').delete().eq('id', productId);
+                if (error) throw error;
+                alert('Producto eliminado.');
+                window.location.reload();
+            } catch (error) {
+                alert('Error al eliminar: ' + error.message);
+            }
+        };
+    }
+
+    function setupImageUploadListeners() {
+        DOMElements.imageUploadArea.addEventListener('click', () => DOMElements.imageInput.click());
+        DOMElements.imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    DOMElements.imagePreview.src = event.target.result;
+                    DOMElements.imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     }
 
     function toggleMobileMenu() {
@@ -112,127 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
         DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.section === sectionName));
     }
 
-    function updateDashboardStats() {
-        DOMElements.totalProducts.textContent = allProducts.length;
-        DOMElements.lowStock.textContent = allProducts.filter(p => p.stock > 0 && p.stock < 5).length;
-        DOMElements.totalCategories.textContent = new Set(allProducts.map(p => p.categoria)).size;
-    }
-
-    function renderProductsTable(searchTerm = '') {
-        const filtered = allProducts.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
-        DOMElements.productsTableBody.innerHTML = filtered.map(product => `
-            <tr data-id="${product.id}">
-                <td><img src="${product.imagen_url}" alt="${product.nombre}" class="product-table-img"></td>
-                <td>${product.nombre}</td><td>${product.categoria}</td>
-                <td>$${product.precio.toFixed(2)}</td><td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock}</td>
-                <td>
-                    <button class="btn-icon" data-action="edit"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon" data-action="delete"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`).join('');
-    }
-
-    function handleTableActions(e) {
-        const button = e.target.closest('button');
-        if (!button) return;
-        const action = button.dataset.action;
-        const productId = parseInt(button.closest('tr').dataset.id);
-        if (action === 'edit') openEditForm(productId);
-        else if (action === 'delete') confirmDelete(productId);
-    }
-
-    function openEditForm(id) {
-        const product = allProducts.find(p => p.id === id);
-        editingProductId = id;
-        DOMElements.formTitle.textContent = 'Editar Producto';
-        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-        DOMElements.productForm.nombre.value = product.nombre;
-        DOMElements.productForm.descripcion.value = product.descripcion;
-        DOMElements.productForm.precio.value = product.precio;
-        DOMElements.productForm.stock.value = product.stock;
-        DOMElements.productForm.categoria.value = product.categoria;
-        DOMElements.imagePreview.src = product.imagen_url;
-        DOMElements.imagePreview.style.display = 'block';
-        switchSection('new-product');
-    }
-    
-    async function handleProductFormSubmit(e) {
-        e.preventDefault();
-        DOMElements.submitButton.disabled = true;
-        try {
-            const formData = new FormData(DOMElements.productForm);
-            const productData = Object.fromEntries(formData.entries());
-            const file = DOMElements.imageInput.files[0];
-
-            if (file) {
-                const filePath = `public/${Date.now()}-${file.name}`;
-                await supabase.storage.from('productos').upload(filePath, file);
-                const { data: { publicUrl } } = supabase.storage.from('productos').getPublicUrl(filePath);
-                productData.imagen_url = publicUrl;
-            } else if (!editingProductId) {
-                throw new Error('Debes seleccionar una imagen para un nuevo producto.');
-            }
-
-            const { error } = editingProductId
-                ? await supabase.from('productos').update(productData).eq('id', editingProductId)
-                : await supabase.from('productos').insert([productData]);
-            
-            if (error) throw error;
-            alert(`Producto ${editingProductId ? 'actualizado' : 'creado'}!`);
-            await loadInitialData();
-            switchSection('products');
-        } catch (error) {
-            alert('Error: ' + error.message);
-        } finally {
-            DOMElements.submitButton.disabled = false;
-        }
-    }
-
-    function resetProductForm() {
-        editingProductId = null;
-        DOMElements.productForm.reset();
-        DOMElements.imagePreview.src = '';
-        DOMElements.imagePreview.style.display = 'none';
-        DOMElements.formTitle.textContent = 'Añadir Nuevo Producto';
-        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
-    }
-
-    function setupImageUploadListeners() {
-        DOMElements.imageUploadArea.addEventListener('click', () => DOMElements.imageInput.click());
-        DOMElements.imageInput.addEventListener('change', e => handleFileSelect(e.target.files));
-    }
-
-    function handleFileSelect(files) {
-        const file = files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                DOMElements.imagePreview.src = e.target.result;
-                DOMElements.imagePreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-    
-    function confirmDelete(id) {
-        const product = allProducts.find(p => p.id === id);
-        DOMElements.confirmMessage.textContent = `¿Seguro que quieres eliminar "${product.nombre}"?`;
-        DOMElements.confirmModal.style.display = 'flex';
-        DOMElements.confirmYesBtn.onclick = () => deleteProduct(id);
-    }
-    
-    async function deleteProduct(id) {
-        try {
-            const { error } = await supabase.from('productos').delete().eq('id', id);
-            if (error) throw error;
-            alert('Producto eliminado.');
-            DOMElements.confirmModal.style.display = 'none';
-            await loadInitialData();
-        } catch (error) {
-            alert('Error al eliminar: ' + error.message);
-        }
-    }
-    
     function debounce(func, delay) {
         let timeout;
         return (...args) => {
@@ -240,7 +252,5 @@ document.addEventListener('DOMContentLoaded', () => {
             timeout = setTimeout(() => func.apply(this, args), delay);
         };
     }
-
-    init();
 });
 
