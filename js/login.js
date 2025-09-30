@@ -1,16 +1,38 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Selectores del DOM ---
-    const adminLoginForm = document.getElementById('admin-login-form');
-    const mayoristasLoginForm = document.getElementById('login-form');
-    // (Removed duplicate variable declarations and duplicate block for switching forms)
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const showRegisterLink = document.getElementById('show-register');
+    const showLoginLink = document.getElementById('show-login');
+    const errorMessage = document.getElementById('error-message');
+    const registerErrorMessage = document.getElementById('register-error-message');
+    const registerSuccessMessage = document.getElementById('register-success-message');
+    
+    // Detectar si estamos en el login de admin
+    const isAdminLogin = window.location.pathname.includes('admin_login.html');
 
-    // Muestra un mensaje si el usuario fue redirigido por no tener permisos
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('error') === 'auth') {
-        errorMessage.textContent = 'No tienes permisos para acceder al panel.';
-        errorMessage.style.display = 'block';
+    if (!loginForm) return;
+
+    // Toggle entre formularios
+    if (showRegisterLink && showLoginLink) {
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            showRegisterLink.parentElement.style.display = 'none';
+            registerForm.style.display = 'flex';
+            showLoginLink.parentElement.style.display = 'block';
+        });
+
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerForm.style.display = 'none';
+            showLoginLink.parentElement.style.display = 'none';
+            loginForm.style.display = 'flex';
+            showRegisterLink.parentElement.style.display = 'block';
+        });
     }
 
+    // Manejo del Login
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         errorMessage.style.display = 'none';
@@ -75,6 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('mayorista_check_error');
                 }
 
+                if (!mayorista) {
+                    console.error('Usuario no es mayorista');
+                    throw new Error('not_mayorista');
+                }
+
                 window.location.href = 'index.html';
             }
 
@@ -94,6 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
                 case 'mayorista_check_error':
                     userMessage = 'Error al verificar cuenta de mayorista.';
+                    break;
+                case 'not_mayorista':
+                    userMessage = 'No tienes una cuenta de mayorista registrada.';
                     break;
                 default:
                     console.error('Error no manejado:', error);
