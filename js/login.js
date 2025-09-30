@@ -1,17 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Detectar qué formulario tenemos
+    // --- Selectores del DOM ---
     const adminLoginForm = document.getElementById('admin-login-form');
     const mayoristasLoginForm = document.getElementById('login-form');
-    const isAdminLogin = window.location.pathname.includes('admin_login.html');
-
-    // Seleccionar el formulario y mensaje de error correspondiente
-    const loginForm = isAdminLogin ? adminLoginForm : mayoristasLoginForm;
-    const errorMessage = document.getElementById('error-message');
-
-    if (!loginForm || !errorMessage) {
-        console.error('Elementos del formulario no encontrados');
-        return;
-    }
+    // (Removed duplicate variable declarations and duplicate block for switching forms)
 
     // Muestra un mensaje si el usuario fue redirigido por no tener permisos
     const urlParams = new URLSearchParams(window.location.search);
@@ -112,5 +103,68 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMessage.style.display = 'block';
         }
     });
-});
 
+    // Manejar el registro de mayoristas
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            registerErrorMessage.style.display = 'none';
+            registerSuccessMessage.style.display = 'none';
+
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const nombreEmpresa = document.getElementById('register-empresa').value;
+
+            try {
+                // 1. Crear el usuario en auth
+                const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            nombre_empresa: nombreEmpresa
+                        }
+                    }
+                });
+
+                if (signUpError) throw signUpError;
+
+                if (!user) {
+                    throw new Error('No se pudo crear el usuario');
+                }
+
+                // 2. Crear el registro en la tabla mayoristas
+                const { error: mayoristaError } = await supabase.from('mayoristas').insert([
+                    {
+                        id: user.id,
+                        nombre_empresa: nombreEmpresa
+                    }
+                ]);
+
+                if (mayoristaError) {
+                    // Si falla la inserción en mayoristas, eliminamos el usuario creado
+                    await supabase.auth.admin.deleteUser(user.id);
+                    throw mayoristaError;
+                }
+
+                registerSuccessMessage.textContent = '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta.';
+                registerSuccessMessage.style.display = 'block';
+                registerForm.reset();
+
+            } catch (error) {
+                console.error('Error en registro:', error);
+                let errorMsg = 'Error al crear la cuenta. Por favor, intenta nuevamente.';
+                
+                if (error.message.includes('Email rate limit exceeded')) {
+                    errorMsg = 'Has realizado demasiados intentos. Por favor, espera unos minutos.';
+                } else if (error.message.includes('Email already registered')) {
+                    errorMsg = 'Este email ya está registrado.';
+                }
+
+                registerErrorMessage.textContent = errorMsg;
+                registerErrorMessage.style.display = 'block';
+            }
+        });
+    }
+        }
+);
