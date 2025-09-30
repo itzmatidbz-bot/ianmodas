@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Variable para saber si estamos editando o creando
     let editingProductId = null;
 
+    // --- Selectores del DOM ---
     const DOMElements = {
         sidebar: document.querySelector('.admin-sidebar'),
         menuToggle: document.getElementById('menu-toggle'),
@@ -9,10 +11,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         navItems: document.querySelectorAll('.nav-item'),
         totalProducts: document.getElementById('total-products'),
         lowStock: document.getElementById('low-stock'),
-        totalWholesalers: document.getElementById('total-wholesalers'),
+        totalCategories: document.getElementById('total-categories'),
         productsTableBody: document.getElementById('products-table-body'),
-        wholesalersTableBody: document.getElementById('wholesalers-table-body'),
-        searchInput: document.getElementById('search-input'),
+        searchInput: document.getElementById('search-products'),
         productForm: document.getElementById('product-form'),
         formTitle: document.querySelector('#new-product h2'),
         submitButton: document.getElementById('submit-button'),
@@ -25,11 +26,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         logoutButton: document.getElementById('logout-button')
     };
 
+    // --- SEGURIDAD Y CARGA INICIAL ---
     await protectPage();
-    const { products, wholesalers } = await loadInitialData();
-    if (products && wholesalers) {
-        renderUI(products, wholesalers);
-        setupEventListeners(products, wholesalers);
+    const allProducts = await loadInitialData();
+    if (allProducts) {
+        renderUI(allProducts);
+        setupEventListeners(allProducts);
     }
 
     async function protectPage() {
@@ -44,30 +46,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadInitialData() {
         try {
-            // CONSULTA CORREGIDA
-            const [productsRes, wholesalersRes] = await Promise.all([
-                supabase.from('productos').select('*').order('id', { ascending: true }),
-                supabase.from('mayoristas').select('*, users(email, created_at)')
-            ]);
-            
-            if (productsRes.error) throw productsRes.error;
-            if (wholesalersRes.error) throw wholesalersRes.error;
-            
-            return { products: productsRes.data, wholesalers: wholesalersRes.data };
+            const { data, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
+            if (error) throw error;
+            return data;
         } catch (error) {
-            alert('Error al cargar datos: ' + error.message);
-            console.error(error); // Muestra el error detallado en consola
-            return { products: null, wholesalers: null };
+            alert('Error al cargar productos: ' + error.message);
+            return null;
         }
     }
     
-    function renderUI(products, wholesalers) {
-        updateDashboardStats(products, wholesalers);
+    function renderUI(products) {
+        updateDashboardStats(products);
         renderProductsTable(products);
-        renderWholesalersTable(wholesalers);
     }
 
-    function setupEventListeners(products, wholesalers) {
+    // --- EVENT LISTENERS ---
+    function setupEventListeners(products) {
         DOMElements.navItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 if (DOMElements.sidebar.classList.contains('active')) toggleMobileMenu();
@@ -86,28 +80,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         DOMElements.searchInput.addEventListener('input', debounce(() => {
             const searchTerm = DOMElements.searchInput.value.toLowerCase();
-            const currentSection = document.querySelector('.admin-section.active').id;
-            
-            if (currentSection === 'products') {
-                 const filtered = products.filter(p => p.nombre.toLowerCase().includes(searchTerm));
-                 renderProductsTable(filtered);
-            } else if (currentSection === 'wholesalers' && wholesalers) {
-                const filtered = wholesalers.filter(w => 
-                    (w.nombre_empresa && w.nombre_empresa.toLowerCase().includes(searchTerm)) || 
-                    (w.users && w.users.email.toLowerCase().includes(searchTerm))
-                );
-                renderWholesalersTable(filtered);
-            }
+            const filtered = products.filter(p => p.nombre.toLowerCase().includes(searchTerm));
+            renderProductsTable(filtered);
         }, 300));
         
-        DOMElements.productForm.addEventListener('submit', handleProductFormSubmit);
+        DOMElements.productForm.addEventListener('submit', (e) => handleProductFormSubmit(e, products));
         DOMElements.productForm.addEventListener('reset', resetProductForm);
+        
         DOMElements.productsTableBody.addEventListener('click', (e) => handleTableActions(e, products));
+        
         setupImageUploadListeners();
+
         DOMElements.confirmNoBtn.addEventListener('click', () => DOMElements.confirmModal.style.display = 'none');
     }
 
-    async function handleProductFormSubmit(e) {
+    // --- LÓGICA DEL FORMULARIO ---
+    async function handleProductFormSubmit(e, products) {
         e.preventDefault();
         DOMElements.submitButton.disabled = true;
         DOMElements.submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Guardando...`;
@@ -132,9 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filePath);
                 imageUrl = urlData.publicUrl;
             } else if (editingProductId) {
-                 const { data: existingProduct } = await supabase.from('productos').select('imagen_url').eq('id', editingProductId).single();
-                if(!existingProduct) throw new Error("Producto a editar no encontrado");
-                imageUrl = existingProduct.imagen_url;
+                imageUrl = products.find(p => p.id === editingProductId).imagen_url;
             } else {
                 throw new Error('Debes seleccionar una imagen para un nuevo producto.');
             }
@@ -148,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (error) throw error;
 
             alert(`Producto ${editingProductId ? 'actualizado' : 'creado'} con éxito.`);
-            window.location.reload();
+            window.location.reload(); // Recarga para ver todos los cambios
 
         } catch (error) {
             alert('Error al guardar el producto: ' + error.message);
@@ -158,53 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    function resetProductForm() {
-        editingProductId = null;
-        DOMElements.productForm.reset();
-        DOMElements.imagePreview.src = '';
-        DOMElements.imagePreview.style.display = 'none';
-        DOMElements.formTitle.textContent = 'Añadir Nuevo Producto';
-        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
-    }
-
-    function renderProductsTable(products) {
-        if(!products) return;
-        DOMElements.productsTableBody.innerHTML = products.map(product => `
-            <tr data-id="${product.id}">
-                <td><img src="${product.imagen_url || 'https://placehold.co/100x100/eee/ccc?text=?'}" alt="${product.nombre}" class="product-table-img"></td>
-                <td>${product.nombre}</td>
-                <td>${product.categoria}</td>
-                <td>$${product.precio ? product.precio.toFixed(2) : '0.00'}</td>
-                <td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock}</td>
-                <td>
-                    <button class="btn-icon edit" data-action="edit" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon danger" data-action="delete" title="Eliminar"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`).join('');
-    }
-
-    function renderWholesalersTable(wholesalers) {
-        if(!wholesalers) return;
-        DOMElements.wholesalersTableBody.innerHTML = wholesalers.map(w => {
-            const registeredDate = new Date(w.users.created_at).toLocaleDateString();
-            return `
-                <tr>
-                    <td>${w.nombre_empresa}</td>
-                    <td>${w.users.email}</td>
-                    <td>${registeredDate}</td>
-                    <td>-</td> 
-                </tr>
-            `;
-        }).join('');
-    }
-    
-    function updateDashboardStats(products, wholesalers) {
-        DOMElements.totalProducts.textContent = products?.length || 0;
-        DOMElements.lowStock.textContent = products?.filter(p => p.stock > 0 && p.stock < 5).length || 0;
-        DOMElements.totalWholesalers.textContent = wholesalers?.length || 0;
-    }
-    
-    async function openEditForm(productId, products) {
+    function openEditForm(productId, products) {
         const product = products.find(p => p.id === productId);
         if (!product) return;
 
@@ -223,6 +163,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         switchSection('new-product');
     }
 
+    function resetProductForm() {
+        editingProductId = null;
+        DOMElements.productForm.reset();
+        DOMElements.imagePreview.src = '';
+        DOMElements.imagePreview.style.display = 'none';
+        DOMElements.formTitle.textContent = 'Añadir Nuevo Producto';
+        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
+    }
+
+    // --- FUNCIONES AUXILIARES ---
+    function renderProductsTable(products) {
+        DOMElements.productsTableBody.innerHTML = products.map(product => `
+            <tr data-id="${product.id}">
+                <td><img src="${product.imagen_url}" alt="${product.nombre}" class="product-table-img"></td>
+                <td>${product.nombre}</td>
+                <td>${product.categoria}</td>
+                <td>$${product.precio ? product.precio.toFixed(2) : '0.00'}</td>
+                <td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock}</td>
+                <td>
+                    <button class="btn-icon edit" data-action="edit" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-icon danger" data-action="delete" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join('');
+    }
+
+    function updateDashboardStats(products) {
+        DOMElements.totalProducts.textContent = products.length;
+        DOMElements.lowStock.textContent = products.filter(p => p.stock > 0 && p.stock < 5).length;
+        DOMElements.totalCategories.textContent = new Set(products.map(p => p.categoria)).size;
+    }
+    
     function handleTableActions(e, products) {
         const button = e.target.closest('button[data-action]');
         if (!button) return;
@@ -272,7 +243,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sectionName === 'new-product') resetProductForm();
         DOMElements.sections.forEach(s => s.classList.toggle('active', s.id === sectionName));
         DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.section === sectionName));
-        DOMElements.searchInput.placeholder = sectionName === 'wholesalers' ? 'Buscar mayoristas...' : 'Buscar productos...';
     }
 
     function debounce(func, delay) {
