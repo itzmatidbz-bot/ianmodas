@@ -135,14 +135,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             try {
                 // 1. Crear el usuario en auth
-                const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+                const { data, error: signUpError } = await supabase.auth.signUp({
                     email,
                     password
                 });
 
                 if (signUpError) throw signUpError;
 
-                if (!user) {
+                if (!data?.user?.id) {
                     throw new Error('No se pudo crear el usuario');
                 }
 
@@ -150,16 +150,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const { error: mayoristaError } = await supabase
                     .from('mayoristas')
                     .insert([{
-                        id: user.id,
-                        nombre_empresa: nombreEmpresa,
-                        created_at: new Date().toISOString()
+                        id: data.user.id,
+                        nombre_empresa: nombreEmpresa
                     }]);
 
                 if (mayoristaError) {
                     console.error('Error al crear registro de mayorista:', mayoristaError);
-                    // Si falla la inserción en mayoristas, intentamos eliminar el usuario creado
-                    await supabase.auth.admin.deleteUser(user.id).catch(console.error);
-                    throw new Error('Error al registrar la cuenta de mayorista');
+                    let errorMessage = 'Error al registrar la cuenta de mayorista';
+                    if (mayoristaError.code === '42501') {
+                        errorMessage = 'No tienes permisos para escribir en esta tabla';
+                    } else if (mayoristaError.code === '23502') {
+                        errorMessage = 'Datos inválidos o incompletos: falta el nombre de la empresa';
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 registerSuccessMessage.textContent = '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta.';
