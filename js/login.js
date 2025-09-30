@@ -122,10 +122,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Función para deshabilitar el formulario temporalmente
+    const disableFormTemporarily = (seconds, errorMsg) => {
+        const submitButton = document.getElementById('register-submit-btn');
+        submitButton.disabled = true;
+        
+        let timeLeft = seconds;
+        submitButton.textContent = `Espera ${timeLeft} segundos...`;
+        
+        const timer = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Registrarme';
+                registerErrorMessage.style.display = 'none';
+            } else {
+                submitButton.textContent = `Espera ${timeLeft} segundos...`;
+            }
+        }, 1000);
+
+        if (errorMsg) {
+            registerErrorMessage.textContent = errorMsg;
+            registerErrorMessage.style.display = 'block';
+        }
+    };
+
     // Manejar el registro de mayoristas
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const submitButton = document.getElementById('register-submit-btn');
+            if (submitButton.disabled) return;
+
             registerErrorMessage.style.display = 'none';
             registerSuccessMessage.style.display = 'none';
 
@@ -174,8 +203,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let errorMsg = 'Error al crear la cuenta. Por favor, intenta nuevamente.';
                 
                 if (error.message && typeof error.message === 'string') {
-                    if (error.message.includes('rate limit')) {
-                        errorMsg = 'Has realizado demasiados intentos. Por favor, espera unos minutos.';
+                    if (error.message.includes('after')) {
+                        // Extraer el número de segundos del mensaje de error
+                        const seconds = parseInt(error.message.match(/after (\d+) seconds/)?.[1] || '60');
+                        disableFormTemporarily(seconds, 'Has realizado demasiados intentos. Por favor espera.');
+                        return;
                     } else if (error.message.includes('already registered')) {
                         errorMsg = 'Este email ya está registrado.';
                     } else if (error.message.includes('Invalid email')) {
