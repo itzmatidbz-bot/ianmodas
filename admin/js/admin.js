@@ -67,8 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderWholesalersTable(wholesalers);
     }
 
-    // --- EVENT LISTENERS ---
-    function setupEventListeners(products) {
+    function setupEventListeners(products, wholesalers) {
         DOMElements.navItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 if (DOMElements.sidebar.classList.contains('active')) toggleMobileMenu();
@@ -87,22 +86,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         DOMElements.searchInput.addEventListener('input', debounce(() => {
             const searchTerm = DOMElements.searchInput.value.toLowerCase();
-            const filtered = products.filter(p => p.nombre.toLowerCase().includes(searchTerm));
-            renderProductsTable(filtered);
+            const currentSection = document.querySelector('.admin-section.active').id;
+            
+            if (currentSection === 'products') {
+                 const filtered = products.filter(p => p.nombre.toLowerCase().includes(searchTerm));
+                 renderProductsTable(filtered);
+            } else if (currentSection === 'wholesalers' && wholesalers) {
+                const filtered = wholesalers.filter(w => 
+                    (w.nombre_empresa && w.nombre_empresa.toLowerCase().includes(searchTerm)) || 
+                    (w.users && w.users.email.toLowerCase().includes(searchTerm))
+                );
+                renderWholesalersTable(filtered);
+            }
         }, 300));
         
-        DOMElements.productForm.addEventListener('submit', (e) => handleProductFormSubmit(e, products));
+        DOMElements.productForm.addEventListener('submit', handleProductFormSubmit);
         DOMElements.productForm.addEventListener('reset', resetProductForm);
-        
         DOMElements.productsTableBody.addEventListener('click', (e) => handleTableActions(e, products));
-        
         setupImageUploadListeners();
-
         DOMElements.confirmNoBtn.addEventListener('click', () => DOMElements.confirmModal.style.display = 'none');
     }
 
-    // --- LÓGICA DEL FORMULARIO ---
-    async function handleProductFormSubmit(e, products) {
+    async function handleProductFormSubmit(e) {
         e.preventDefault();
         DOMElements.submitButton.disabled = true;
         DOMElements.submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Guardando...`;
@@ -127,7 +132,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filePath);
                 imageUrl = urlData.publicUrl;
             } else if (editingProductId) {
-                imageUrl = products.find(p => p.id === editingProductId).imagen_url;
+                 const { data: existingProduct } = await supabase.from('productos').select('imagen_url').eq('id', editingProductId).single();
+                if(!existingProduct) throw new Error("Producto a editar no encontrado");
+                imageUrl = existingProduct.imagen_url;
             } else {
                 throw new Error('Debes seleccionar una imagen para un nuevo producto.');
             }
@@ -141,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (error) throw error;
 
             alert(`Producto ${editingProductId ? 'actualizado' : 'creado'} con éxito.`);
-            window.location.reload(); // Recarga para ver todos los cambios
+            window.location.reload();
 
         } catch (error) {
             alert('Error al guardar el producto: ' + error.message);
@@ -151,7 +158,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    function openEditForm(productId, products) {
+    function resetProductForm() {
+        editingProductId = null;
+        DOMElements.productForm.reset();
+        DOMElements.imagePreview.src = '';
+        DOMElements.imagePreview.style.display = 'none';
+        DOMElements.formTitle.textContent = 'Añadir Nuevo Producto';
+        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
+    }
+
+    function renderProductsTable(products) {
+        if(!products) return;
+        DOMElements.productsTableBody.innerHTML = products.map(product => `
+            <tr data-id="${product.id}">
+                <td><img src="${product.imagen_url || 'https://placehold.co/100x100/eee/ccc?text=?'}" alt="${product.nombre}" class="product-table-img"></td>
+                <td>${product.nombre}</td>
+                <td>${product.categoria}</td>
+                <td>$${product.precio ? product.precio.toFixed(2) : '0.00'}</td>
+                <td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock}</td>
+                <td>
+                    <button class="btn-icon edit" data-action="edit" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-icon danger" data-action="delete" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join('');
+    }
+
+    function renderWholesalersTable(wholesalers) {
+        if(!wholesalers) return;
+        DOMElements.wholesalersTableBody.innerHTML = wholesalers.map(w => {
+            const registeredDate = new Date(w.users.created_at).toLocaleDateString();
+            return `
+                <tr>
+                    <td>${w.nombre_empresa}</td>
+                    <td>${w.users.email}</td>
+                    <td>${registeredDate}</td>
+                    <td>-</td> 
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    function updateDashboardStats(products, wholesalers) {
+        DOMElements.totalProducts.textContent = products?.length || 0;
+        DOMElements.lowStock.textContent = products?.filter(p => p.stock > 0 && p.stock < 5).length || 0;
+        DOMElements.totalWholesalers.textContent = wholesalers?.length || 0;
+    }
+    
+    async function openEditForm(productId, products) {
         const product = products.find(p => p.id === productId);
         if (!product) return;
 
@@ -170,52 +223,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         switchSection('new-product');
     }
 
-    function resetProductForm() {
-        editingProductId = null;
-        DOMElements.productForm.reset();
-        DOMElements.imagePreview.src = '';
-        DOMElements.imagePreview.style.display = 'none';
-        DOMElements.formTitle.textContent = 'Añadir Nuevo Producto';
-        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
-    }
-
-    // --- FUNCIONES AUXILIARES ---
-    function renderProductsTable(products) {
-        DOMElements.productsTableBody.innerHTML = products.map(product => `
-            <tr data-id="${product.id}">
-                <td><img src="${product.imagen_url}" alt="${product.nombre}" class="product-table-img"></td>
-                <td>${product.nombre}</td>
-                <td>${product.categoria}</td>
-                <td>$${product.precio ? product.precio.toFixed(2) : '0.00'}</td>
-                <td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock}</td>
-                <td>
-                    <button class="btn-icon edit" data-action="edit" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon danger" data-action="delete" title="Eliminar"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`).join('');
-    }
-
-    function updateDashboardStats(products, wholesalers) {
-        DOMElements.totalProducts.textContent = products?.length || 0;
-        DOMElements.lowStock.textContent = products?.filter(p => p.stock > 0 && p.stock < 5).length || 0;
-        DOMElements.totalWholesalers.textContent = wholesalers?.length || 0;
-    }
-
-    function renderWholesalersTable(wholesalers) {
-        if(!wholesalers) return;
-        DOMElements.wholesalersTableBody.innerHTML = wholesalers.map(w => {
-            const registeredDate = new Date(w.users.created_at).toLocaleDateString();
-            return `
-                <tr>
-                    <td>${w.nombre_empresa}</td>
-                    <td>${w.users.email}</td>
-                    <td>${registeredDate}</td>
-                    <td>-</td> 
-                </tr>
-            `;
-        }).join('');
-    }
-    
     function handleTableActions(e, products) {
         const button = e.target.closest('button[data-action]');
         if (!button) return;
