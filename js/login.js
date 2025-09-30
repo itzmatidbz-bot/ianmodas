@@ -148,6 +148,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // Función de validación del formulario
+    const validateRegisterForm = (email, password, nombreEmpresa) => {
+        if (password.length < 6) {
+            throw new Error('La contraseña debe tener al menos 6 caracteres');
+        }
+        if (!email.includes('@')) {
+            throw new Error('Por favor ingresa un email válido');
+        }
+        if (!nombreEmpresa.trim()) {
+            throw new Error('El nombre de la empresa es requerido');
+        }
+    };
+
     // Manejar el registro de mayoristas
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
@@ -163,10 +176,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const nombreEmpresa = document.getElementById('register-empresa').value;
 
             try {
+                // Validar el formulario primero
+                validateRegisterForm(email, password, nombreEmpresa);
+
                 // 1. Crear el usuario en auth
                 const { data, error: signUpError } = await supabase.auth.signUp({
                     email,
-                    password
+                    password,
+                    options: {
+                        data: {
+                            nombre_empresa: nombreEmpresa
+                        }
+                    }
                 });
 
                 if (signUpError) throw signUpError;
@@ -202,7 +223,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error('Error en registro:', error);
                 let errorMsg = 'Error al crear la cuenta. Por favor, intenta nuevamente.';
                 
-                if (error.message && typeof error.message === 'string') {
+                // Manejar errores específicos primero
+                if (error.message === 'La contraseña debe tener al menos 6 caracteres' ||
+                    error.message === 'Por favor ingresa un email válido' ||
+                    error.message === 'El nombre de la empresa es requerido') {
+                    errorMsg = error.message;
+                }
+                // Manejar errores de Supabase
+                else if (error.message && typeof error.message === 'string') {
                     if (error.message.includes('after')) {
                         // Extraer el número de segundos del mensaje de error
                         const seconds = parseInt(error.message.match(/after (\d+) seconds/)?.[1] || '60');
