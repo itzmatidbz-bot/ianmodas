@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const successMessage = document.getElementById('success-message');
     const registerErrorMessage = document.getElementById('register-error-message');
     const registerSuccessMessage = document.getElementById('register-success-message');
+    
+    // Variable para almacenar mensajes de éxito
+    const successMessage = document.getElementById('success-message');
 
     if (!loginForm) return;
 
@@ -47,7 +50,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (loginError) {
-                console.error('Error de autenticación:', loginError);
+                console.error('Error de autenticación:', {
+                    code: loginError.code,
+                    message: loginError.message,
+                    details: loginError.details
+                });
                 throw new Error('auth_error');
             }
 
@@ -56,15 +63,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error('auth_error');
             }
 
-            // Verificar si el usuario es admin
+                        // Verificar si el usuario es admin
             const { data: isAdmin, error: adminCheckError } = await supabase.rpc('is_admin');
 
             if (adminCheckError) {
-                console.error('Error al verificar rol de admin:', adminCheckError);
+                console.error('Error al verificar rol de admin:', {
+                    code: adminCheckError.code,
+                    message: adminCheckError.message,
+                    details: adminCheckError.details
+                });
                 throw new Error('role_check_error');
             }
 
-            // Si es admin, redirigir al panel
             if (isAdmin) {
                 successMessage.textContent = '¡Bienvenido/a Administrador/a!';
                 successMessage.style.display = 'block';
@@ -73,28 +83,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }, 1500);
                 return;
             }
-
-            // Si no es admin, verificar si es mayorista
-            const { data: mayorista, error: mayoristaError } = await supabase
-                .from('mayoristas')
-                .select('*')
-                .eq('id', authData.user.id)
-                .single();
-
-            if (mayoristaError) {
-                console.error('Error al verificar mayorista:', mayoristaError);
-                throw new Error('mayorista_check_error');
+                successMessage.textContent = '¡Bienvenido/a Administrador/a!';
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1500);
+                return;
             }
 
-            if (!mayorista) {
-                throw new Error('not_mayorista');
-            }
+            // Si no es admin, verificar si es mayorista            } else {
+                // Para mayoristas, verificar que exista en la tabla de mayoristas
+                const { data: mayorista, error: mayoristaError } = await supabase
+                    .from('mayoristas')
+                    .select('*')
+                    .eq('id', authData.user.id)
+                    .single();
 
-            successMessage.textContent = '¡Bienvenido/a!';
-            successMessage.style.display = 'block';
-            setTimeout(() => {
+                if (mayoristaError) {
+                    console.error('Error al verificar mayorista:', {
+                        code: mayoristaError.code,
+                        message: mayoristaError.message,
+                        details: mayoristaError.details
+                    });
+                    throw new Error('mayorista_check_error');
+                }
+
+                if (!mayorista) {
+                    console.error('Usuario no es mayorista');
+                    throw new Error('not_mayorista');
+                }
+
                 window.location.href = 'index.html';
-            }, 1500);
+            }
 
         } catch (error) {
             // Mensajes amigables para el usuario según el tipo de error
@@ -106,6 +126,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     break;
                 case 'role_check_error':
                     userMessage = 'No se pudo verificar tu rol de usuario. Por favor, intenta nuevamente.';
+                    break;
+                case 'not_admin':
+                    userMessage = 'No tienes permisos de administrador.';
                     break;
                 case 'mayorista_check_error':
                     userMessage = 'Error al verificar cuenta de mayorista.';
@@ -157,8 +180,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (mayoristaError) {
                     console.error('Error al crear registro de mayorista:', mayoristaError);
-                    // Si falla la inserción en mayoristas, intentamos eliminar el usuario creado
-                    await supabase.auth.admin.deleteUser(user.id).catch(console.error);
                     throw new Error('Error al registrar la cuenta de mayorista');
                 }
 
@@ -170,16 +191,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error('Error en registro:', error);
                 let errorMsg = 'Error al crear la cuenta. Por favor, intenta nuevamente.';
                 
-                if (error.message && typeof error.message === 'string') {
-                    if (error.message.includes('rate limit')) {
-                        errorMsg = 'Has realizado demasiados intentos. Por favor, espera unos minutos.';
-                    } else if (error.message.includes('already registered')) {
-                        errorMsg = 'Este email ya está registrado.';
-                    } else if (error.message.includes('Invalid email')) {
-                        errorMsg = 'El email ingresado no es válido.';
-                    } else if (error.message.includes('at least 6 characters')) {
-                        errorMsg = 'La contraseña debe tener al menos 6 caracteres.';
-                    }
+                if (error.message.includes('Email rate limit exceeded')) {
+                    errorMsg = 'Has realizado demasiados intentos. Por favor, espera unos minutos.';
+                } else if (error.message.includes('Email already registered')) {
+                    errorMsg = 'Este email ya está registrado.';
                 }
 
                 registerErrorMessage.textContent = errorMsg;
@@ -187,4 +202,5 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-});
+        }
+);
