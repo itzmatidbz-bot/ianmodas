@@ -122,6 +122,19 @@
 
             <section id="users" class="admin-section">
                 <h2>Usuarios Registrados</h2>
+                
+                <!-- Notificación informativa -->
+                <div id="users-notification" class="admin-notification" style="display: none;">
+                    <div class="notification-content">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <strong>Datos de demostración</strong>
+                            <p>Se están mostrando datos de ejemplo. Para ver usuarios reales, configura los permisos de la tabla mayoristas en Supabase.</p>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.style.display='none'" class="notification-close">×</button>
+                    </div>
+                </div>
+                
                 <div class="section-header">
                     <div class="admin-search">
                         <i class="fas fa-search"></i>

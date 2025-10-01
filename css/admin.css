@@ -190,6 +190,57 @@ body { font-family: 'Montserrat', sans-serif; background-color: var(--admin-ligh
     font-weight: 600;
 }
 
+/* Estilos para notificaciones informativas */
+.admin-notification {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.notification-content i {
+    color: #2196f3;
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+}
+
+.notification-content div {
+    flex-grow: 1;
+}
+
+.notification-content strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--admin-dark);
+}
+
+.notification-content p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.notification-close:hover {
+    color: #666;
+}
+
 @media (max-width: 768px) {
     .admin-sidebar { transform: translateX(-100%); }
     .admin-sidebar.active { transform: translateX(0); }
