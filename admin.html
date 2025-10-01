@@ -190,13 +190,21 @@
                         <div class="form-group"><label for="precio">Precio</label><input type="number" id="precio" name="precio" step="0.01" min="0" required></div>
                         <div class="form-group"><label for="stock">Stock</label><input type="number" id="stock" name="stock" min="0" required></div>
                         <div class="form-group span-2">
-                            <label for="descripcion">Descripción 
-                                <button type="button" id="generate-description-btn" class="ai-button" title="Generar con IA">
-                                    🤖 Generar con IA
+                            <div class="description-header">
+                                <label for="descripcion">Descripción del Producto</label>
+                                <button type="button" id="generate-description-btn" class="ai-button-modern" title="Generar descripción profesional usando Inteligencia Artificial">
+                                    <span class="ai-icon">✨</span>
+                                    <span class="ai-text">Generar con IA</span>
+                                    <span class="ai-badge">GRATIS</span>
                                 </button>
-                            </label>
-                            <textarea id="descripcion" name="descripcion" required rows="4"></textarea>
-                            <small class="ai-status" id="ai-status" style="display: none; color: #666; font-style: italic;"></small>
+                            </div>
+                            <textarea id="descripcion" name="descripcion" required rows="4" placeholder="La IA generará automáticamente una descripción profesional para mayoristas..."></textarea>
+                            <div class="ai-feedback" id="ai-feedback" style="display: none;">
+                                <div class="ai-status" id="ai-status"></div>
+                                <div class="ai-tips">
+                                    💡 <strong>Tip:</strong> Completa nombre y categoría para mejores resultados
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-actions">

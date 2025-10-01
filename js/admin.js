@@ -80,15 +80,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const { data: stats, error: statsError } = await supabase.rpc('obtener_estadisticas_dashboard');
                 if (!statsError && stats) {
                     console.log('✅ Estadísticas cargadas:', stats);
-                    // Actualizar estadísticas directamente
+                    // Actualizar estadísticas de manera segura
                     setTimeout(() => {
-                        document.getElementById('total-users').textContent = stats.total_users || 0;
-                        document.getElementById('total-products').textContent = stats.total_products || 0;
-                        document.getElementById('total-categories').textContent = stats.total_categories || 0;
-                        document.getElementById('recent-registrations').textContent = stats.recent_registrations || 0;
-                        document.getElementById('active-sessions').textContent = stats.active_sessions || 0;
-                        document.getElementById('pending-orders').textContent = stats.pending_orders || 0;
-                    }, 100);
+                        const updateElement = (id, value) => {
+                            const element = document.getElementById(id);
+                            if (element) element.textContent = value;
+                        };
+                        
+                        updateElement('total-users', stats.total_users || 0);
+                        updateElement('total-products', stats.total_products || 0);
+                        updateElement('total-categories', stats.total_categories || 0);
+                        updateElement('recent-registrations', stats.recent_registrations || 0);
+                        updateElement('active-sessions', stats.active_sessions || 0);
+                        updateElement('pending-orders', stats.pending_orders || 0);
+                    }, 200);
                 }
             } catch (e) {
                 console.log('Estadísticas no disponibles, usando fallback');
@@ -548,32 +553,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setupAIDescriptionGenerator() {
         const generateBtn = document.getElementById('generate-description-btn');
         const descripcionTextarea = document.getElementById('descripcion');
+        const aiFeedback = document.getElementById('ai-feedback');
         const aiStatus = document.getElementById('ai-status');
         
         if (!generateBtn || !descripcionTextarea) return;
         
         generateBtn.addEventListener('click', async () => {
             // Obtener datos del formulario
-            const nombre = document.getElementById('nombre').value.trim();
-            const categoria = document.getElementById('categoria').value;
-            const precio = document.getElementById('precio').value;
-            const talla = document.getElementById('talla').value;
-            const color = document.getElementById('color').value;
+            const nombre = document.getElementById('nombre')?.value.trim() || '';
+            const categoria = document.getElementById('categoria')?.value || '';
+            const precio = document.getElementById('precio')?.value || '';
+            const talla = document.getElementById('talla')?.value || '';
+            const color = document.getElementById('color')?.value || '';
             
             if (!nombre || !categoria) {
-                alert('⚠️ Completa al menos el nombre y categoría antes de generar la descripción');
+                // Mostrar error sexy
+                aiFeedback.style.display = 'block';
+                aiStatus.className = 'ai-status error';
+                aiStatus.textContent = 'Completa el nombre y categoría primero';
+                
+                setTimeout(() => {
+                    aiFeedback.style.display = 'none';
+                }, 3000);
                 return;
             }
             
-            // Mostrar estado de carga
+            // Estado de carga sexy
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '⏳ Generando...';
-            aiStatus.style.display = 'block';
+            const originalHTML = generateBtn.innerHTML;
+            generateBtn.innerHTML = `
+                <span class="ai-icon">⚡</span>
+                <span class="ai-text">Generando...</span>
+            `;
+            
+            aiFeedback.style.display = 'block';
             aiStatus.className = 'ai-status loading';
-            aiStatus.textContent = 'ChatGPT está generando la descripción...';
+            aiStatus.textContent = 'Llama 3.1 está creando tu descripción profesional...';
             
             try {
-                console.log('🤖 Generando descripción con IA...');
+                console.log('🤖 Generando descripción con Groq (Llama 3.1)...');
                 
                 const { data, error } = await supabase.functions.invoke('generate-product-description', {
                     body: {
@@ -590,15 +608,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 if (data.success) {
-                    // Insertar descripción generada
-                    descripcionTextarea.value = data.data.descripcion;
+                    // Animación de escritura
+                    descripcionTextarea.value = '';
+                    const descripcion = data.data.descripcion;
+                    let i = 0;
+                    
+                    const typeWriter = () => {
+                        if (i < descripcion.length) {
+                            descripcionTextarea.value += descripcion.charAt(i);
+                            i++;
+                            setTimeout(typeWriter, 20);
+                        }
+                    };
+                    typeWriter();
                     
                     // Mostrar éxito
                     aiStatus.className = 'ai-status success';
-                    aiStatus.textContent = '✅ Descripción generada exitosamente';
+                    aiStatus.textContent = `Descripción generada con ${data.data.generado_con || 'IA'}`;
                     
                     console.log('✅ Descripción generada:', data.data.descripcion);
-                    console.log('🏷️ Tags sugeridos:', data.data.tags);
+                    console.log('🏷️ Tags:', data.data.tags);
                     
                 } else {
                     throw new Error(data.error || 'Error desconocido');
@@ -608,21 +637,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error('❌ Error generando descripción:', error);
                 
                 aiStatus.className = 'ai-status error';
-                aiStatus.textContent = '❌ Error: ' + (error.message || 'No se pudo generar la descripción');
+                aiStatus.textContent = 'Error de conexión - usando descripción de respaldo';
                 
-                // Fallback: descripción básica
-                const fallbackDescription = `${nombre} de alta calidad. Ideal para mayoristas que buscan productos versátiles y de buena relación precio-calidad. Perfecto para reventa en ${categoria.toLowerCase()}.`;
+                // Fallback mejorado
+                const fallbackDescription = `${nombre} de excelente calidad, especialmente diseñado para el mercado mayorista. Este producto de ${categoria} combina durabilidad y estilo, ofreciendo una excelente oportunidad de negocio para revendedores. Ideal para clientes que buscan productos confiables con alto potencial de rotación.`;
                 descripcionTextarea.value = fallbackDescription;
                 
             } finally {
-                // Restaurar botón
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '🤖 Generar con IA';
-                
-                // Ocultar estado después de 3 segundos
+                // Restaurar botón con animación
                 setTimeout(() => {
-                    aiStatus.style.display = 'none';
-                }, 3000);
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = originalHTML;
+                }, 1000);
+                
+                // Ocultar feedback después de 4 segundos
+                setTimeout(() => {
+                    aiFeedback.style.display = 'none';
+                }, 4000);
             }
         });
     }
