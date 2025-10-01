@@ -73,6 +73,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadInitialData() {
         try {
+            console.log('🚀 Cargando datos iniciales con sistema renovado...');
+            
+            // Cargar estadísticas usando la nueva función RPC
+            try {
+                const { data: stats, error: statsError } = await supabase.rpc('obtener_estadisticas_dashboard');
+                if (!statsError && stats) {
+                    console.log('✅ Estadísticas cargadas:', stats);
+                    // Actualizar estadísticas directamente
+                    setTimeout(() => {
+                        document.getElementById('total-users').textContent = stats.total_users || 0;
+                        document.getElementById('total-products').textContent = stats.total_products || 0;
+                        document.getElementById('total-categories').textContent = stats.total_categories || 0;
+                        document.getElementById('recent-registrations').textContent = stats.recent_registrations || 0;
+                        document.getElementById('active-sessions').textContent = stats.active_sessions || 0;
+                        document.getElementById('pending-orders').textContent = stats.pending_orders || 0;
+                    }, 100);
+                }
+            } catch (e) {
+                console.log('Estadísticas no disponibles, usando fallback');
+            }
+            
             // Cargar productos
             const { data: products, error: productsError } = await supabase
                 .from('productos')
@@ -81,11 +102,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (productsError) throw productsError;
 
-            // Cargar usuarios (mayoristas)
+            // Cargar usuarios desde la nueva tabla
             const users = await loadUsers();
             
+            console.log(`✅ Datos iniciales cargados: ${products?.length || 0} productos, ${users?.length || 0} usuarios`);
             return { products, users };
         } catch (error) {
+            console.error('❌ Error al cargar datos:', error.message);
             alert('Error al cargar datos: ' + error.message);
             return null;
         }
@@ -93,76 +116,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadUsers() {
         try {
-            console.log('🔄 Cargando información de usuarios registrados...');
+            console.log('🔄 Cargando usuarios desde la nueva tabla...');
             
-            // Método principal: Usar función RPC que accede a auth.users de manera segura
-            try {
-                const { data: authUsers, error: authError } = await supabase.rpc('get_registered_users');
-                if (!authError && authUsers && authUsers.length > 0) {
-                    console.log(`✅ Usuarios reales encontrados via RPC: ${authUsers.length}`);
-                    
-                    const realUsers = authUsers.map(user => ({
-                        id: user.id,
-                        email: user.email || 'email@privado.com',
-                        nombre_empresa: user.empresa || `${user.email?.split('@')[0]} Empresa` || 'Mi Empresa',
-                        created_at: user.created_at,
-                        status: user.email_confirmed ? 'confirmed' : 'pending'
-                    }));
-                    
-                    // Ocultar notificación ya que tenemos datos reales
-                    const notification = document.getElementById('users-notification');
-                    if (notification) notification.style.display = 'none';
-                    
-                    return realUsers;
-                }
-            } catch (e) {
-                console.log('📝 RPC get_registered_users no disponible, creando función...');
+            // Usar la nueva función RPC simple
+            const { data: usuarios, error: usuariosError } = await supabase.rpc('obtener_usuarios_negocio');
+            
+            if (!usuariosError && usuarios && usuarios.length > 0) {
+                console.log(`✅ Usuarios cargados desde tabla: ${usuarios.length}`);
+                
+                // Ocultar notificación ya que tenemos datos reales
+                const notification = document.getElementById('users-notification');
+                if (notification) notification.style.display = 'none';
+                
+                return usuarios;
+            } else {
+                console.log('⚠️ Error al cargar usuarios o tabla vacía:', usuariosError);
             }
 
-            // Método alternativo: Usar datos basados en productos y actividad
-            try {
-                const { data: products, error: productsError } = await supabase
-                    .from('productos')
-                    .select('categoria, created_at')
-                    .order('created_at', { ascending: false })
-                    .limit(10);
-
-                if (!productsError && products && products.length > 0) {
-                    console.log('📊 Generando usuarios basado en actividad del sistema');
-                    
-                    // Simular usuarios basado en la actividad de productos
-                    const categories = [...new Set(products.map(p => p.categoria))];
-                    const estimatedUsers = Math.max(3, Math.ceil(products.length / 3));
-                    
-                    const businessTypes = [
-                        'Boutique', 'Distribuidora', 'Comercial', 'Almacén', 'Centro de',
-                        'Modas', 'Textiles', 'Vestimenta', 'Fashion', 'Elegancia'
-                    ];
-                    
-                    const users = [];
-                    for (let i = 0; i < Math.min(estimatedUsers, 8); i++) {
-                        const businessType = businessTypes[i % businessTypes.length];
-                        const category = categories[i % categories.length] || 'Moda';
-                        const empresa = `${businessType} ${category} ${i + 1}`;
-                        
-                        users.push({
-                            id: `active-user-${i + 1}`,
-                            email: `contacto@${empresa.toLowerCase().replace(/\s+/g, '')}.com`,
-                            nombre_empresa: empresa,
-                            created_at: new Date(Date.now() - i * 2 * 24 * 60 * 60 * 1000).toISOString(),
-                            status: Math.random() > 0.2 ? 'confirmed' : 'pending'
-                        });
-                    }
-                    
-                    console.log(`📈 Usuarios estimados basado en actividad: ${users.length}`);
-                    return users;
-                }
-            } catch (e) {
-                console.log('No se pudieron usar productos para estimar usuarios');
-            }
-
-            // Último recurso: Datos de demostración realistas
-            console.log('🎭 Usando datos de demostración realistas');
+            // Fallback si no funciona la RPC
+            console.log('🎭 Usando datos de respaldo');
             return generateRealisticUsers();
 
         } catch (error) {

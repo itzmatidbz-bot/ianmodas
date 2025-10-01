@@ -11,41 +11,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!loginForm) return;
 
-    // --- Función helper para crear registro de mayorista ---
-    const createMayoristaRecord = async (user) => {
+    // --- Función helper para crear registro en nueva tabla usuarios_negocio ---
+    const createUsuarioNegocio = async (user) => {
         try {
             const nombreEmpresa = user.user_metadata?.nombre_empresa || `${user.email?.split('@')[0]} Empresa` || 'Mi Empresa';
             
-            console.log('Intentando crear registro de mayorista para:', user.email);
+            console.log('🏢 Creando registro en usuarios_negocio para:', user.email);
             
             const { data, error: createError } = await supabase
-                .from('mayoristas')
+                .from('usuarios_negocio')
                 .insert([{
-                    id: user.id,
-                    nombre_empresa: nombreEmpresa
+                    email: user.email,
+                    nombre_empresa: nombreEmpresa,
+                    telefono: user.user_metadata?.telefono || null,
+                    direccion: user.user_metadata?.direccion || null
                 }])
                 .select();
 
             if (createError) {
-                console.warn('Error al crear registro de mayorista:', createError);
+                console.warn('Error al crear usuario de negocio:', createError);
                 
-                // Intentar actualizar si ya existe
+                // Intentar actualizar si ya existe (por email único)
                 if (createError.code === '23505') { // duplicate key
-                    console.log('Registro ya existe, intentando actualizar...');
+                    console.log('Usuario ya existe, intentando actualizar...');
                     const { error: updateError } = await supabase
-                        .from('mayoristas')
-                        .update({ nombre_empresa: nombreEmpresa })
-                        .eq('id', user.id);
+                        .from('usuarios_negocio')
+                        .update({ 
+                            nombre_empresa: nombreEmpresa,
+                            updated_at: 'NOW()'
+                        })
+                        .eq('email', user.email);
                     
                     if (!updateError) {
-                        console.log('Registro de mayorista actualizado exitosamente');
+                        console.log('✅ Registro de usuario de negocio actualizado exitosamente');
                     }
                 }
             } else {
-                console.log('✅ Registro de mayorista creado exitosamente:', data);
+                console.log('✅ Registro de usuario de negocio creado exitosamente:', data);
             }
         } catch (error) {
-            console.warn('Error general al crear mayorista:', error);
+            console.warn('Error general al crear usuario de negocio:', error);
         }
     };
 
@@ -68,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (data.user) {
                     // Intentar crear el registro de mayorista
-                    await createMayoristaRecord(data.user);
+                    await createUsuarioNegocio(data.user);
 
                     const nombreEmpresa = data.user.user_metadata?.nombre_empresa || 'Mi Empresa';
                     const nombreUsuario = data.user.email?.split('@')[0] || 'Usuario';
@@ -178,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (mayoristaError.code === 'PGRST116' || mayoristaError.message?.includes('500') || !mayoristaError.code) {
                         console.log('Mayorista no encontrado, creando nuevo registro...');
                         // Intentar crear mayorista
-                        await createMayoristaRecord(authData.user);
+                        await createUsuarioNegocio(authData.user);
                     } else {
                         // Otros errores, pero permitir login igual
                         console.warn('Error de BD, permitiendo login sin verificar mayorista');
