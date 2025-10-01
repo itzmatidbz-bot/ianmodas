@@ -9,11 +9,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         sidebarOverlay: document.getElementById('sidebar-overlay'),
         sections: document.querySelectorAll('.admin-section'),
         navItems: document.querySelectorAll('.nav-item'),
+        totalUsers: document.getElementById('total-users'),
         totalProducts: document.getElementById('total-products'),
         lowStock: document.getElementById('low-stock'),
         totalCategories: document.getElementById('total-categories'),
+        totalStockValue: document.getElementById('total-stock-value'),
+        lastRegistration: document.getElementById('last-registration'),
         productsTableBody: document.getElementById('products-table-body'),
         searchInput: document.getElementById('search-products'),
+        searchUsersInput: document.getElementById('search-users'),
+        usersTableBody: document.getElementById('users-table-body'),
         productForm: document.getElementById('product-form'),
         formTitle: document.querySelector('#new-product h2'),
         submitButton: document.getElementById('submit-button'),
@@ -28,10 +33,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- SEGURIDAD Y CARGA INICIAL ---
     await protectPage();
-    const allProducts = await loadInitialData();
-    if (allProducts) {
-        renderUI(allProducts);
-        setupEventListeners(allProducts);
+    const allData = await loadInitialData();
+    if (allData) {
+        renderUI(allData);
+        setupEventListeners(allData.products, allData.users);
     }
 
     async function protectPage() {
@@ -68,22 +73,74 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadInitialData() {
         try {
-            const { data, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
-            if (error) throw error;
-            return data;
+            // Cargar productos
+            const { data: products, error: productsError } = await supabase
+                .from('productos')
+                .select('*')
+                .order('id', { ascending: true });
+            
+            if (productsError) throw productsError;
+
+            // Cargar usuarios (mayoristas)
+            const users = await loadUsers();
+            
+            return { products, users };
         } catch (error) {
-            alert('Error al cargar productos: ' + error.message);
+            alert('Error al cargar datos: ' + error.message);
             return null;
         }
     }
+
+    async function loadUsers() {
+        try {
+            // Intentar cargar mayoristas con información de auth
+            const { data: mayoristas, error: mayoristasError } = await supabase
+                .from('mayoristas')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (mayoristasError) {
+                console.warn('Error al cargar mayoristas:', mayoristasError);
+                return [];
+            }
+
+            // Para cada mayorista, obtener información adicional de auth si es posible
+            const usersWithDetails = [];
+            for (const mayorista of mayoristas || []) {
+                try {
+                    // Nota: En producción, podrías tener una vista o función que combine esta info
+                    const userInfo = {
+                        id: mayorista.id,
+                        email: 'Información no disponible',
+                        nombre_empresa: mayorista.nombre_empresa,
+                        created_at: mayorista.created_at,
+                        status: 'confirmed' // Asumimos confirmado si está en mayoristas
+                    };
+                    usersWithDetails.push(userInfo);
+                } catch (error) {
+                    console.warn('Error al obtener detalles del usuario:', error);
+                }
+            }
+
+            return usersWithDetails;
+        } catch (error) {
+            console.error('Error al cargar usuarios:', error);
+            return [];
+        }
+    }
     
-    function renderUI(products) {
-        updateDashboardStats(products);
+    function renderUI(data) {
+        if (!data) return;
+        const { products, users } = data;
+        
+        updateDashboardStats(products, users);
         renderProductsTable(products);
+        renderUsersTable(users);
+        renderRecentActivity(products, users);
     }
 
     // --- EVENT LISTENERS ---
-    function setupEventListeners(products) {
+    function setupEventListeners(products, users) {
         DOMElements.navItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 if (DOMElements.sidebar.classList.contains('active')) toggleMobileMenu();
@@ -94,6 +151,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         DOMElements.menuToggle.addEventListener('click', toggleMobileMenu);
         DOMElements.sidebarOverlay.addEventListener('click', toggleMobileMenu);
+
+        // Búsqueda de productos
+        if (DOMElements.searchInput) {
+            DOMElements.searchInput.addEventListener('input', debounce(() => {
+                const query = DOMElements.searchInput.value.toLowerCase();
+                const filteredProducts = products.filter(p => 
+                    p.nombre.toLowerCase().includes(query) || 
+                    p.categoria.toLowerCase().includes(query)
+                );
+                renderProductsTable(filteredProducts);
+            }, 300));
+        }
+
+        // Búsqueda de usuarios
+        if (DOMElements.searchUsersInput && users) {
+            DOMElements.searchUsersInput.addEventListener('input', debounce(() => {
+                const query = DOMElements.searchUsersInput.value.toLowerCase();
+                const filteredUsers = users.filter(u => 
+                    u.nombre_empresa.toLowerCase().includes(query) || 
+                    u.email.toLowerCase().includes(query)
+                );
+                renderUsersTable(filteredUsers);
+            }, 300));
+        }
 
         DOMElements.logoutButton.addEventListener('click', async () => {
             await supabase.auth.signOut();
@@ -213,12 +294,111 @@ document.addEventListener('DOMContentLoaded', async () => {
             </tr>`).join('');
     }
 
-    function updateDashboardStats(products) {
-        DOMElements.totalProducts.textContent = products.length;
-        DOMElements.lowStock.textContent = products.filter(p => p.stock > 0 && p.stock < 5).length;
-        DOMElements.totalCategories.textContent = new Set(products.map(p => p.categoria)).size;
+    function updateDashboardStats(products, users) {
+        // Estadísticas de usuarios
+        const totalUsersElement = document.getElementById('total-users');
+        if (totalUsersElement) {
+            totalUsersElement.textContent = users?.length || 0;
+        }
+
+        // Estadísticas de productos
+        const totalProductsElement = document.getElementById('total-products');
+        if (totalProductsElement) {
+            totalProductsElement.textContent = products?.length || 0;
+        }
+
+        const lowStockElement = document.getElementById('low-stock');
+        if (lowStockElement) {
+            lowStockElement.textContent = products?.filter(p => p.stock > 0 && p.stock < 5).length || 0;
+        }
+
+        const totalCategoriesElement = document.getElementById('total-categories');
+        if (totalCategoriesElement) {
+            totalCategoriesElement.textContent = new Set(products?.map(p => p.categoria) || []).size;
+        }
+
+        // Valor total del stock
+        const totalStockValueElement = document.getElementById('total-stock-value');
+        if (totalStockValueElement && products) {
+            const totalValue = products.reduce((sum, product) => sum + (product.precio * product.stock), 0);
+            totalStockValueElement.textContent = `$${totalValue.toLocaleString()}`;
+        }
+
+        // Último registro
+        const lastRegistrationElement = document.getElementById('last-registration');
+        if (lastRegistrationElement && users && users.length > 0) {
+            const lastUser = users[0]; // Ya están ordenados por fecha descendente
+            const date = new Date(lastUser.created_at);
+            lastRegistrationElement.textContent = date.toLocaleDateString();
+        }
     }
     
+    function renderUsersTable(users) {
+        const usersTableBody = document.getElementById('users-table-body');
+        const usersCount = document.getElementById('users-count');
+        
+        if (!usersTableBody || !users) return;
+
+        usersCount.textContent = users.length;
+        
+        usersTableBody.innerHTML = users.map(user => {
+            const createdDate = new Date(user.created_at).toLocaleDateString();
+            const status = user.status === 'confirmed' ? 
+                '<span class="user-status confirmed">Confirmado</span>' : 
+                '<span class="user-status pending">Pendiente</span>';
+            
+            return `
+                <tr data-id="${user.id}">
+                    <td>${user.email}</td>
+                    <td><strong>${user.nombre_empresa}</strong></td>
+                    <td>${createdDate}</td>
+                    <td>${status}</td>
+                    <td>-</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderRecentActivity(products, users) {
+        // Productos recientes
+        const recentProductsContainer = document.getElementById('recent-products');
+        if (recentProductsContainer && products) {
+            const recentProducts = products
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 5);
+            
+            recentProductsContainer.innerHTML = recentProducts.map(product => `
+                <div class="recent-item">
+                    <div class="recent-item-info">
+                        <strong>${product.nombre}</strong>
+                        <small>${product.categoria} - Stock: ${product.stock}</small>
+                    </div>
+                    <div class="recent-item-date">
+                        ${new Date(product.created_at).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Usuarios recientes
+        const recentUsersContainer = document.getElementById('recent-users');
+        if (recentUsersContainer && users) {
+            const recentUsers = users.slice(0, 5);
+            
+            recentUsersContainer.innerHTML = recentUsers.map(user => `
+                <div class="recent-item">
+                    <div class="recent-item-info">
+                        <strong>${user.nombre_empresa}</strong>
+                        <small>${user.email}</small>
+                    </div>
+                    <div class="recent-item-date">
+                        ${new Date(user.created_at).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
     function handleTableActions(e, products) {
         const button = e.target.closest('button[data-action]');
         if (!button) return;
