@@ -29,6 +29,50 @@ body { font-family: 'Montserrat', sans-serif; background-color: var(--admin-ligh
 .admin-search { position: relative; width: 350px; }
 .admin-search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #aaa; }
 .admin-search input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; border: 1px solid var(--admin-border); border-radius: var(--radius); }
+
+/* Estilos para botón de IA */
+.ai-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ai-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.ai-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.ai-status {
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.ai-status.loading {
+    color: #667eea !important;
+}
+
+.ai-status.success {
+    color: #4CAF50 !important;
+}
+
+.ai-status.error {
+    color: #f44336 !important;
+}
 .admin-user { display: flex; align-items: center; gap: 1rem; font-weight: 600; }
 .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
 .stat-card { background: var(--admin-bg-light); padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; align-items: center; gap: 1.5rem; transition: var(--transition); }

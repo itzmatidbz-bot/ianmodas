@@ -1,0 +1,35 @@
+🆓 VERSIÓN 100% GRATIS SIN PAGAR NADA
+================================================================
+
+OPCIÓN 1: USAR OLLAMA (IA LOCAL GRATIS)
+- Descargar Ollama: https://ollama.ai
+- Correr modelo local: ollama run llama2
+- Sin límites, sin pagos, funciona offline
+
+OPCIÓN 2: USAR GROQ (LLAMA GRATIS CON API)
+- API KEY gratis: https://console.groq.com
+- Llama 3.1 70B completamente gratis
+- Más rápido que ChatGPT y sin límites diarios
+
+OPCIÓN 3: USAR HUGGING FACE (GRATIS)
+- Modelos de IA gratuitos via API
+- Crear cuenta gratis
+- Acceso a cientos de modelos
+
+OPCIÓN 4: USAR COHERE (GRATIS)
+- 1000 generaciones/mes gratis
+- Muy bueno para texto comercial
+
+OPCIÓN 5: PLANTILLAS INTELIGENTES (SIN IA)
+- Sistema de plantillas que genera descripciones
+- Basado en categoría + características
+- 100% gratis, funciona siempre
+
+================================================================
+
+¿CUÁL PREFERÍS?
+- Si querés lo más simple: GROQ (Llama gratis)
+- Si querés offline: OLLAMA local
+- Si no querés APIs: Sistema de plantillas
+
+================================================================

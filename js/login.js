@@ -48,6 +48,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } else {
                 console.log('✅ Registro de usuario de negocio creado exitosamente:', data);
+                
+                // 📧 ENVIAR EMAIL DE BIENVENIDA
+                try {
+                    console.log('📧 Enviando email de bienvenida...');
+                    const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+                        body: {
+                            email: user.email,
+                            nombreEmpresa: nombreEmpresa
+                        }
+                    });
+                    
+                    if (emailError) {
+                        console.warn('Error enviando email de bienvenida:', emailError);
+                    } else {
+                        console.log('✅ Email de bienvenida enviado exitosamente');
+                    }
+                } catch (emailError) {
+                    console.warn('Error general enviando email:', emailError);
+                }
             }
         } catch (error) {
             console.warn('Error general al crear usuario de negocio:', error);

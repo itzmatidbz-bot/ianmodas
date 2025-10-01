@@ -540,5 +540,97 @@ document.addEventListener('DOMContentLoaded', async () => {
             timeout = setTimeout(() => func.apply(this, args), delay);
         };
     }
+
+    // ===================================================================
+    // 🤖 FUNCIONALIDAD DE IA PARA GENERAR DESCRIPCIONES
+    // ===================================================================
+    
+    function setupAIDescriptionGenerator() {
+        const generateBtn = document.getElementById('generate-description-btn');
+        const descripcionTextarea = document.getElementById('descripcion');
+        const aiStatus = document.getElementById('ai-status');
+        
+        if (!generateBtn || !descripcionTextarea) return;
+        
+        generateBtn.addEventListener('click', async () => {
+            // Obtener datos del formulario
+            const nombre = document.getElementById('nombre').value.trim();
+            const categoria = document.getElementById('categoria').value;
+            const precio = document.getElementById('precio').value;
+            const talla = document.getElementById('talla').value;
+            const color = document.getElementById('color').value;
+            
+            if (!nombre || !categoria) {
+                alert('⚠️ Completa al menos el nombre y categoría antes de generar la descripción');
+                return;
+            }
+            
+            // Mostrar estado de carga
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '⏳ Generando...';
+            aiStatus.style.display = 'block';
+            aiStatus.className = 'ai-status loading';
+            aiStatus.textContent = 'ChatGPT está generando la descripción...';
+            
+            try {
+                console.log('🤖 Generando descripción con IA...');
+                
+                const { data, error } = await supabase.functions.invoke('generate-product-description', {
+                    body: {
+                        nombre,
+                        categoria,
+                        precio: parseFloat(precio) || 0,
+                        talla,
+                        color
+                    }
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.success) {
+                    // Insertar descripción generada
+                    descripcionTextarea.value = data.data.descripcion;
+                    
+                    // Mostrar éxito
+                    aiStatus.className = 'ai-status success';
+                    aiStatus.textContent = '✅ Descripción generada exitosamente';
+                    
+                    console.log('✅ Descripción generada:', data.data.descripcion);
+                    console.log('🏷️ Tags sugeridos:', data.data.tags);
+                    
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error generando descripción:', error);
+                
+                aiStatus.className = 'ai-status error';
+                aiStatus.textContent = '❌ Error: ' + (error.message || 'No se pudo generar la descripción');
+                
+                // Fallback: descripción básica
+                const fallbackDescription = `${nombre} de alta calidad. Ideal para mayoristas que buscan productos versátiles y de buena relación precio-calidad. Perfecto para reventa en ${categoria.toLowerCase()}.`;
+                descripcionTextarea.value = fallbackDescription;
+                
+            } finally {
+                // Restaurar botón
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '🤖 Generar con IA';
+                
+                // Ocultar estado después de 3 segundos
+                setTimeout(() => {
+                    aiStatus.style.display = 'none';
+                }, 3000);
+            }
+        });
+    }
+    
+    // Inicializar generador de IA cuando se carga la página
+    document.addEventListener('DOMContentLoaded', () => {
+        // Esperar un poco para que se carguen todos los elementos
+        setTimeout(setupAIDescriptionGenerator, 500);
+    });
 });
 
