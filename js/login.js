@@ -14,24 +14,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Función helper para crear registro de mayorista ---
     const createMayoristaRecord = async (user) => {
         try {
-            const nombreEmpresa = user.user_metadata?.nombre_empresa || user.email?.split('@')[0] || 'Mi Empresa';
+            const nombreEmpresa = user.user_metadata?.nombre_empresa || `${user.email?.split('@')[0]} Empresa` || 'Mi Empresa';
             
-            const { error: createError } = await supabase
+            console.log('Intentando crear registro de mayorista para:', user.email);
+            
+            const { data, error: createError } = await supabase
                 .from('mayoristas')
                 .insert([{
                     id: user.id,
                     nombre_empresa: nombreEmpresa
-                }]);
+                }])
+                .select();
 
             if (createError) {
-                console.warn('No se pudo crear registro de mayorista:', createError);
-                // No lanzar error, permitir login igual
+                console.warn('Error al crear registro de mayorista:', createError);
+                
+                // Intentar actualizar si ya existe
+                if (createError.code === '23505') { // duplicate key
+                    console.log('Registro ya existe, intentando actualizar...');
+                    const { error: updateError } = await supabase
+                        .from('mayoristas')
+                        .update({ nombre_empresa: nombreEmpresa })
+                        .eq('id', user.id);
+                    
+                    if (!updateError) {
+                        console.log('Registro de mayorista actualizado exitosamente');
+                    }
+                }
             } else {
-                console.log('Registro de mayorista creado exitosamente');
+                console.log('✅ Registro de mayorista creado exitosamente:', data);
             }
         } catch (error) {
-            console.warn('Error al crear mayorista:', error);
-            // No lanzar error, permitir login igual
+            console.warn('Error general al crear mayorista:', error);
         }
     };
 

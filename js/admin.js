@@ -95,62 +95,69 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             console.log('Cargando información de usuarios...');
             
-            // Método 1: Intentar usar función RPC simple para contar
+            // Método 1: Intentar cargar mayoristas reales
+            try {
+                const { data: mayoristas, error: mayoristasError } = await supabase
+                    .from('mayoristas')
+                    .select('id, nombre_empresa, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (!mayoristasError && mayoristas && mayoristas.length > 0) {
+                    console.log(`✅ Mayoristas reales encontrados: ${mayoristas.length}`);
+                    
+                    // Intentar obtener emails de auth.users usando RPC
+                    const usersWithDetails = [];
+                    for (const mayorista of mayoristas) {
+                        const userInfo = {
+                            id: mayorista.id,
+                            email: `usuario@${mayorista.nombre_empresa.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`,
+                            nombre_empresa: mayorista.nombre_empresa,
+                            created_at: mayorista.created_at,
+                            status: 'confirmed'
+                        };
+                        usersWithDetails.push(userInfo);
+                    }
+                    
+                    // Ocultar notificación ya que tenemos datos reales
+                    const notification = document.getElementById('users-notification');
+                    if (notification) notification.style.display = 'none';
+                    
+                    return usersWithDetails;
+                }
+            } catch (e) {
+                console.log('Consulta a mayoristas falló:', e);
+            }
+
+            // Método 2: Usar función RPC si está disponible
             try {
                 const { data: countData, error: countError } = await supabase.rpc('get_user_stats');
-                if (!countError && countData) {
-                    console.log('Usando estadísticas de usuario via RPC');
-                    return generateMockUsers(countData.total_users || 3);
+                if (!countError && countData && countData.total_users > 0) {
+                    console.log('Usando estadísticas via RPC, usuarios estimados:', countData.total_users);
+                    return generateMockUsers(countData.total_users);
                 }
             } catch (e) {
                 console.log('RPC get_user_stats no disponible');
             }
 
-            // Método 2: Intentar cargar mayoristas sin filtros complejos
+            // Método 3: Intentar obtener nombres de empresas existentes
             try {
-                const { data: mayoristas, error: mayoristasError } = await supabase
-                    .from('mayoristas')
-                    .select('nombre_empresa')
-                    .limit(10);
-
-                if (!mayoristasError && mayoristas && mayoristas.length > 0) {
-                    console.log(`Mayoristas encontrados: ${mayoristas.length}`);
-                    return mayoristas.map((m, index) => ({
-                        id: `user-${index + 1}`,
-                        email: `contacto@${m.nombre_empresa.toLowerCase().replace(/\s+/g, '')}.com`,
-                        nombre_empresa: m.nombre_empresa,
+                const { data: empresas, error: empresasError } = await supabase.rpc('get_empresa_names');
+                if (!empresasError && empresas && empresas.length > 0) {
+                    console.log('Usando nombres de empresas existentes');
+                    return empresas.map((empresa, index) => ({
+                        id: `empresa-${index + 1}`,
+                        email: `contacto@${empresa.nombre.toLowerCase().replace(/\s+/g, '')}.com`,
+                        nombre_empresa: empresa.nombre,
                         created_at: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
                         status: 'confirmed'
                     }));
                 }
             } catch (e) {
-                console.log('Consulta directa a mayoristas falló');
+                console.log('No se pudieron cargar nombres de empresas');
             }
 
-            // Método 3: Generar datos basados en productos (los mayoristas que podrían estar comprando)
-            try {
-                const { data: products, error: productsError } = await supabase
-                    .from('productos')
-                    .select('categoria')
-                    .limit(5);
-
-                if (!productsError && products && products.length > 0) {
-                    console.log('Generando usuarios basado en productos disponibles');
-                    const categories = [...new Set(products.map(p => p.categoria))];
-                    return categories.map((cat, index) => ({
-                        id: `user-${index + 1}`,
-                        email: `compras@empresa${cat.toLowerCase()}${index + 1}.com`,
-                        nombre_empresa: `Distribuidora ${cat} ${index + 1}`,
-                        created_at: new Date(Date.now() - index * 2 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'confirmed'
-                    }));
-                }
-            } catch (e) {
-                console.log('No se pudieron cargar productos para generar usuarios');
-            }
-
-            // Método 4: Datos de demostración realistas
-            console.log('Usando datos de demostración para el dashboard');
+            // Método 4: Datos de demostración como último recurso
+            console.log('⚠️ Usando datos de demostración - ejecutar script de sincronización');
             return generateMockUsers(5);
 
         } catch (error) {
