@@ -104,9 +104,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Cargar colores
             try {
+                console.log('🎨 Cargando colores...');
                 const { data: colores, error: colError } = await supabase.rpc('get_colores_activos');
-                if (!colError && colores) {
+                if (colError) {
+                    console.log('Error colores:', colError);
+                    loadFallbackColores();
+                } else if (colores && colores.length > 0) {
+                    console.log('✅ Colores cargados:', colores.length);
                     populateMultiColorSelect(colores);
+                } else {
+                    console.log('Sin colores, usando fallback');
+                    loadFallbackColores();
                 }
             } catch (e) {
                 console.log('Función RPC de colores no disponible');
@@ -424,18 +432,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         populateSelect('tipo-prenda', tipos, 'Selecciona tipo de prenda');
     }
 
+    function loadFallbackEstilos() {
+        const fallbackEstilos = [
+            { id: 1, nombre: 'Oversize', descripcion: 'Corte holgado y relajado' }, 
+            { id: 2, nombre: 'Slim', descripcion: 'Corte ajustado al cuerpo' }, 
+            { id: 3, nombre: 'Skinny', descripcion: 'Muy ajustado y ceñido' },
+            { id: 4, nombre: 'Cargo', descripcion: 'Con bolsillos laterales grandes' }, 
+            { id: 5, nombre: 'High Waist', descripcion: 'Talle alto que estiliza' }, 
+            { id: 6, nombre: 'Crop', descripcion: 'Cortado, no llega a la cintura' },
+            { id: 7, nombre: 'Straight', descripcion: 'Corte recto clásico' },
+            { id: 8, nombre: 'Flare', descripcion: 'Acampanado desde la rodilla' },
+            { id: 9, nombre: 'Wrap', descripcion: 'Estilo cruzado que se ata' },
+            { id: 10, nombre: 'Off Shoulder', descripcion: 'Con hombros descubiertos' }
+        ];
+        
+        populateSelect('estilo', fallbackEstilos, 'Selecciona estilo');
+    }
+
     function loadFallbackCategories() {
         console.log('📦 Cargando categorías de respaldo...');
         
+        const fallbackCategorias = [
+            { id: 1, nombre: 'Tops', descripcion: 'Prendas superiores' },
+            { id: 2, nombre: 'Pantalones', descripcion: 'Todo tipo de pantalones' },
+            { id: 3, nombre: 'Vestidos', descripcion: 'Vestidos casuales y elegantes' },
+            { id: 4, nombre: 'Faldas', descripcion: 'Faldas de diferentes estilos' },
+            { id: 5, nombre: 'Conjuntos', descripcion: 'Sets coordinados' },
+            { id: 6, nombre: 'Abrigos', descripcion: 'Chaquetas y abrigos' },
+            { id: 7, nombre: 'Buzos', descripcion: 'Buzos y sudaderas' },
+            { id: 8, nombre: 'Camperas', descripcion: 'Camperas y chaquetas' },
+            { id: 9, nombre: 'Tapados', descripcion: 'Tapados y abrigos elegantes' },
+            { id: 10, nombre: 'Accesorios', descripcion: 'Complementos y accesorios' },
+            { id: 11, nombre: 'Calzado', descripcion: 'Zapatos y calzado' },
+            { id: 12, nombre: 'Ropa Interior', descripcion: 'Lencería y ropa interior' },
+            { id: 13, nombre: 'Pijamas', descripcion: 'Ropa de dormir' },
+            { id: 14, nombre: 'Trajes de Baño', descripcion: 'Bikinis y mallas' }
+        ];
+        
+        populateSelect('categoria', fallbackCategorias, 'Selecciona categoría');
+        
         const fallbackData = {
-            categorias: [
-                { id: 1, nombre: 'Tops', descripcion: 'Prendas superiores' },
-                { id: 2, nombre: 'Pantalones', descripcion: 'Todo tipo de pantalones' },
-                { id: 3, nombre: 'Vestidos', descripcion: 'Vestidos casuales y elegantes' },
-                { id: 4, nombre: 'Faldas', descripcion: 'Faldas de diferentes estilos' },
-                { id: 5, nombre: 'Conjuntos', descripcion: 'Sets coordinados' },
-                { id: 6, nombre: 'Abrigos', descripcion: 'Chaquetas y abrigos' }
-            ],
+            categorias: fallbackCategorias,
             estilos: [
                 { id: 1, nombre: 'Oversize', descripcion: 'Corte holgado' }, 
                 { id: 2, nombre: 'Slim', descripcion: 'Corte ajustado' }, 
