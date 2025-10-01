@@ -168,10 +168,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }));
     }
 
-    // Función eliminada - ahora usamos generateRealisticUsers()
-
-
-    
     function renderUI(data) {
         if (!data) return;
         const { products, users } = data;
@@ -189,9 +185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (DOMElements.sidebar.classList.contains('active')) toggleMobileMenu();
                 const section = e.currentTarget.dataset.section;
                 if (section) switchSection(section);
-                });
-            
-            /*
+            });
         });
 
         DOMElements.menuToggle.addEventListener('click', toggleMobileMenu);
@@ -225,12 +219,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await supabase.auth.signOut();
             window.location.href = 'login.html';
         });
-
-        DOMElements.searchInput.addEventListener('input', debounce(() => {
-            const searchTerm = DOMElements.searchInput.value.toLowerCase();
-            const filtered = products.filter(p => p.nombre.toLowerCase().includes(searchTerm));
-            renderProductsTable(filtered);
-        }, 300));
         
         DOMElements.productForm.addEventListener('submit', (e) => handleProductFormSubmit(e, products));
         DOMElements.productForm.addEventListener('reset', resetProductForm);
@@ -548,130 +536,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
-// ===================================================================
-// FUNCIÓN DE IA ELIMINADA - AHORA USA ia-script-independiente.js
-// ===================================================================
-
-// FUNCIÓN ELIMINADA PARA EVITAR CONFLICTOS
-/*function setupAIDescriptionGeneratorQueFunc() {
-        const generateBtn = document.getElementById('generate-description-btn');
-        const descripcionTextarea = document.getElementById('descripcion');
-        const aiFeedback = document.getElementById('ai-feedback');
-        const aiStatus = document.getElementById('ai-status');
-        
-        if (!generateBtn || !descripcionTextarea) return;
-        
-        generateBtn.addEventListener('click', async () => {
-            // Obtener datos del formulario
-            const nombre = document.getElementById('nombre')?.value.trim() || '';
-            const categoria = document.getElementById('categoria')?.value || '';
-            const precio = document.getElementById('precio')?.value || '';
-            const talla = document.getElementById('talla')?.value || '';
-            const color = document.getElementById('color')?.value || '';
-            
-            if (!nombre || !categoria) {
-                // Mostrar error
-                aiFeedback.style.display = 'block';
-                aiStatus.className = 'ai-status error';
-                aiStatus.textContent = 'Completa el nombre y categoría primero';
-                
-                setTimeout(() => {
-                    aiFeedback.style.display = 'none';
-                }, 3000);
-                return;
-            }
-            
-            // Estado de carga
-            generateBtn.disabled = true;
-            const originalHTML = generateBtn.innerHTML;
-            generateBtn.innerHTML = `
-                <span class="ai-icon">⚡</span>
-                <span class="ai-text">Generando...</span>
-            `;
-            
-            aiFeedback.style.display = 'block';
-            aiStatus.className = 'ai-status loading';
-            aiStatus.textContent = 'IA está creando tu descripción profesional...';
-            
-            try {
-                // Simular delay realista
-                await new Promise(resolve => setTimeout(resolve, 2500));
-                
-                // GENERADOR INTELIGENTE (funciona sin API)
-                const templates = {
-                    'Remeras': [
-                        `${nombre} confeccionada en algodón premium de alta durabilidad. Ideal para mayoristas que buscan productos versátiles con excelente relación calidad-precio. Su diseño atemporal y ${color ? `atractivo color ${color}` : 'variedad de colores'} la convierte en una opción segura para todo tipo de cliente. Perfecta para reventa en boutiques, tiendas casuales y locales de moda urbana.`,
-                        `${nombre} de corte moderno y máxima comodidad, diseñada especialmente para el mercado mayorista. Fabricada con materiales de primera calidad que garantizan durabilidad y suavidad al tacto. Su versatilidad la hace perfecta para diferentes estilos y ocasiones, asegurando alta rotación en tu negocio.`
-                    ],
-                    'Pantalones': [
-                        `${nombre} con diseño contemporáneo y confección superior, ideal para mayoristas exigentes. Combina comodidad, estilo y durabilidad en una prenda versátil que se adapta a múltiples ocasiones. ${talla ? `Disponible en talla ${talla}, ` : ''}perfecto para clientela que busca calidad y buen precio en el segmento de pantalones.`,
-                        `${nombre} de alta calidad, especialmente diseñado para el mercado de reventa. Su corte favorecedor y materiales resistentes lo convierten en una inversión segura para tu negocio. Ideal para tiendas que buscan productos con alta demanda y excelente margen de ganancia.`
-                    ],
-                    'Vestidos': [
-                        `${nombre} elegante y versátil, perfecto para mayoristas del rubro moda femenina. Su diseño sofisticado y confección impecable lo posicionan como una pieza clave en cualquier colección. ${color ? `El color ${color} aporta distinción y modernidad, ` : ''}garantizando alta aceptación en el mercado objetivo.`,
-                        `${nombre} de línea moderna y acabado profesional, ideal para revendedores que priorizan la calidad. Su versatilidad permite adaptarse a diferentes ocasiones, desde eventos casuales hasta compromisos más formales. Una inversión inteligente para tu catálogo de productos.`
-                    ],
-                    'default': [
-                        `${nombre} de excelente calidad, especialmente diseñado para el mercado mayorista. Este producto de ${categoria} combina durabilidad, estilo y funcionalidad, ofreciendo una excelente oportunidad de negocio para revendedores. Su versatilidad y acabado profesional garantizan alta rotación y satisfacción del cliente final.`,
-                        `${nombre} premium con características ideales para mayoristas exigentes. Fabricado con materiales de primera calidad y atención al detalle, este producto de ${categoria} representa una inversión segura para tu negocio. Perfecto para clientela que busca productos confiables con excelente relación precio-calidad.`
-                    ]
-                };
-                
-                // Seleccionar template inteligente
-                const categoryTemplates = templates[categoria] || templates['default'];
-                const descripcion = categoryTemplates[Math.floor(Math.random() * categoryTemplates.length)];
-                
-                // Animación de escritura tipo máquina
-                descripcionTextarea.value = '';
-                let i = 0;
-                
-                const typeWriter = () => {
-                    if (i < descripcion.length) {
-                        descripcionTextarea.value += descripcion.charAt(i);
-                        i++;
-                        setTimeout(typeWriter, 25);
-                    }
-                };
-                typeWriter();
-                
-                // Mostrar éxito
-                aiStatus.className = 'ai-status success';
-                aiStatus.textContent = 'Descripción generada con IA inteligente';
-                
-                console.log('✅ Descripción generada:', descripcion);
-                
-            } catch (error) {
-                console.error('❌ Error:', error);
-                
-                aiStatus.className = 'ai-status error';
-                aiStatus.textContent = 'Error - usando descripción de respaldo';
-                
-                // Fallback básico
-                const fallback = `${nombre} de alta calidad para mayoristas. Producto versátil de ${categoria} con excelente relación precio-calidad. Ideal para reventa y alta rotación en tu negocio.`;
-                descripcionTextarea.value = fallback;
-                
-            } finally {
-                // Restaurar botón
-                setTimeout(() => {
-                    generateBtn.disabled = false;
-                    generateBtn.innerHTML = originalHTML;
-                }, 1000);
-                
-                // Ocultar feedback
-                setTimeout(() => {
-                    if (aiFeedback) aiFeedback.style.display = 'none';
-                }, 4000);
-            }
-        });
-        }
+    // ===================================================================
+    // IA manejada por ia-script-independiente.js
+    // ===================================================================
     
-            // Inicializar generador funcional
-        
-            // FUNCIÓN DE IA ELIMINADA - Ahora usa ia-script-independiente.js
-            // setupAIDescriptionGeneratorQueFunc(); // COMENTADO PARA EVITAR DUPLICACIÓN
-        
-        });
-    
-    /*
-    */
-
+});
