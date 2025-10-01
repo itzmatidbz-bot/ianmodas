@@ -11,6 +11,62 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!loginForm) return;
 
+    // --- Manejar confirmación de email desde URL ---
+    const handleEmailConfirmation = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token');
+        const tokenType = urlParams.get('token_type');
+
+        if (accessToken && refreshToken) {
+            try {
+                // Establecer la sesión con los tokens de la URL
+                const { data, error } = await supabase.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken
+                });
+
+                if (error) throw error;
+
+                if (data.user) {
+                    // Crear el registro de mayorista ahora que está confirmado
+                    const nombreEmpresa = data.user.user_metadata?.nombre_empresa || 'Mi Empresa';
+                    
+                    const { error: mayoristaError } = await supabase
+                        .from('mayoristas')
+                        .insert([{
+                            id: data.user.id,
+                            nombre_empresa: nombreEmpresa
+                        }]);
+
+                    if (mayoristaError && mayoristaError.code !== '23505') { // 23505 = duplicate key
+                        console.warn('Error al crear mayorista tras confirmación:', mayoristaError);
+                    }
+
+                    // Mostrar mensaje de bienvenida y redirigir
+                    successMessage.innerHTML = `
+                        <strong>¡Cuenta confirmada exitosamente!</strong><br>
+                        Bienvenido/a a Ian Modas, ${nombreEmpresa}<br>
+                        Redirigiendo al catálogo...
+                    `;
+                    successMessage.style.display = 'block';
+
+                    setTimeout(() => {
+                        window.location.href = 'index.html#productos';
+                    }, 2000);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error al confirmar email:', error);
+                errorMessage.textContent = 'Error al confirmar tu cuenta. Por favor, intenta iniciar sesión manualmente.';
+                errorMessage.style.display = 'block';
+            }
+        }
+    };
+
+    // Ejecutar la verificación de confirmación al cargar la página
+    await handleEmailConfirmation();
+
     // Toggle entre formularios
     if (showRegisterLink && showLoginLink) {
         showRegisterLink.addEventListener('click', (e) => {
@@ -74,14 +130,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Si no es admin, verificar si es mayorista
-            const { data: mayorista, error: mayoristaError } = await supabase
+            // Si no es admin, verificar si es mayorista o crearlo si no existe
+            let { data: mayorista, error: mayoristaError } = await supabase
                 .from('mayoristas')
                 .select('*')
                 .eq('id', authData.user.id)
                 .single();
 
-            if (mayoristaError) {
+            // Si no existe el mayorista, crearlo ahora (usuario confirmado)
+            if (mayoristaError && mayoristaError.code === 'PGRST116') {
+                const nombreEmpresaFromAuth = authData.user.user_metadata?.nombre_empresa || 'Mi Empresa';
+                
+                const { data: newMayorista, error: createError } = await supabase
+                    .from('mayoristas')
+                    .insert([{
+                        id: authData.user.id,
+                        nombre_empresa: nombreEmpresaFromAuth
+                    }])
+                    .select()
+                    .single();
+
+                if (createError) {
+                    console.error('Error al crear mayorista en login:', createError);
+                    throw new Error('mayorista_create_error');
+                }
+                
+                mayorista = newMayorista;
+            } else if (mayoristaError) {
                 console.error('Error al verificar mayorista:', mayoristaError);
                 throw new Error('mayorista_check_error');
             }
@@ -90,10 +165,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error('not_mayorista');
             }
 
-            successMessage.textContent = '¡Bienvenido/a!';
+            successMessage.textContent = `¡Bienvenido/a ${mayorista.nombre_empresa}!`;
             successMessage.style.display = 'block';
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'index.html#productos'; // Redirigir al catálogo
             }, 1500);
 
         } catch (error) {
@@ -109,6 +184,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     break;
                 case 'mayorista_check_error':
                     userMessage = 'Error al verificar cuenta de mayorista.';
+                    break;
+                case 'mayorista_create_error':
+                    userMessage = 'Error al crear tu cuenta de mayorista. Contacta al administrador.';
                     break;
                 case 'not_mayorista':
                     userMessage = 'No tienes una cuenta de mayorista registrada.';
@@ -179,7 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Validar el formulario primero
                 validateRegisterForm(email, password, nombreEmpresa);
 
-                // 1. Crear el usuario en auth
+                // 1. Crear el usuario en auth (con confirmación por email)
                 const { data, error: signUpError } = await supabase.auth.signUp({
                     email,
                     password,
@@ -202,63 +280,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     throw new Error('No se pudo crear el usuario');
                 }
 
-                // 2. Verificar si el usuario necesita confirmación de email
-                if (!data.user.email_confirmed_at && data.user.confirmation_sent_at) {
-                    // El usuario necesita confirmar su email
-                    registerSuccessMessage.textContent = '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta antes de iniciar sesión.';
-                    registerSuccessMessage.style.display = 'block';
-                    registerForm.reset();
-                    return;
-                }
-
-                // 3. Si el email ya está confirmado, intentar crear el registro de mayorista directamente
-                let mayoristaCreated = false;
-                
-                // Intentar crear mayorista con el método directo (si RLS lo permite)
-                const { error: mayoristaError } = await supabase
-                    .from('mayoristas')
-                    .insert([{
-                        id: data.user.id,
-                        nombre_empresa: nombreEmpresa
-                    }]);
-
-                if (!mayoristaError) {
-                    mayoristaCreated = true;
-                } else {
-                    console.warn('No se pudo crear mayorista directamente:', mayoristaError);
-                    
-                    // Intentar con login + función RPC como respaldo
-                    try {
-                        const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
-                            email,
-                            password
-                        });
-
-                        if (!sessionError && sessionData?.user) {
-                            // Usar la función de base de datos para registrar mayorista
-                            const { data: functionResult, error: functionError } = await supabase.rpc('register_mayorista', {
-                                user_email: email,
-                                user_password: password,
-                                empresa_name: nombreEmpresa
-                            });
-
-                            if (!functionError && functionResult?.success) {
-                                mayoristaCreated = true;
-                            }
-                            
-                            // Cerrar la sesión automática
-                            await supabase.auth.signOut();
-                        }
-                    } catch (fallbackError) {
-                        console.warn('Método de respaldo también falló:', fallbackError);
-                    }
-                }
-
-                if (!mayoristaCreated) {
-                    throw new Error('No se pudo completar el registro de mayorista. Contacta al administrador.');
-                }
-
-                registerSuccessMessage.textContent = '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta.';
+                // 2. Mostrar mensaje de confirmación (siempre necesario)
+                registerSuccessMessage.innerHTML = `
+                    <strong>¡Registro exitoso!</strong><br>
+                    📧 Te hemos enviado un correo de confirmación a <strong>${email}</strong><br>
+                    🔗 Haz clic en el enlace del correo para activar tu cuenta de mayorista<br>
+                    ✅ Una vez confirmado, podrás iniciar sesión y acceder al catálogo exclusivo
+                `;
                 registerSuccessMessage.style.display = 'block';
                 registerForm.reset();
 
