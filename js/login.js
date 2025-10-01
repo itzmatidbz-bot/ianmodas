@@ -204,33 +204,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (sessionError) {
                     console.warn('No se pudo iniciar sesión automáticamente:', sessionError);
+                    throw new Error('Error al autenticar el usuario recién creado');
                 }
 
-                // 3. Crear el registro en la tabla mayoristas
-                const { error: mayoristaError } = await supabase
-                    .from('mayoristas')
-                    .insert([{
-                        id: data.user.id,
-                        nombre_empresa: nombreEmpresa
-                    }]);
+                // 3. Usar la función de base de datos para registrar mayorista
+                const { data: functionResult, error: functionError } = await supabase.rpc('register_mayorista', {
+                    user_email: email,
+                    user_password: password,
+                    empresa_name: nombreEmpresa
+                });
 
-                if (mayoristaError) {
-                    console.error('Error al crear registro de mayorista:', mayoristaError);
-                    let errorMessage = 'Error al registrar la cuenta de mayorista';
-                    if (mayoristaError.code === '42501') {
-                        errorMessage = 'No tienes permisos para escribir en esta tabla. Contacta al administrador.';
-                    } else if (mayoristaError.code === '23502') {
-                        errorMessage = 'Datos inválidos o incompletos: falta el nombre de la empresa';
-                    } else if (mayoristaError.code === '23505') {
-                        errorMessage = 'Ya existe un registro para este usuario';
-                    }
-                    throw new Error(errorMessage);
+                if (functionError) {
+                    console.error('Error al ejecutar función register_mayorista:', functionError);
+                    throw new Error('Error al registrar la cuenta de mayorista');
                 }
 
-                // 4. Cerrar la sesión automática si se inició
-                if (sessionData?.user) {
-                    await supabase.auth.signOut();
+                if (!functionResult?.success) {
+                    console.error('Error en función register_mayorista:', functionResult?.message);
+                    throw new Error(functionResult?.message || 'Error al registrar mayorista');
                 }
+
+                // 4. Cerrar la sesión automática
+                await supabase.auth.signOut();
 
                 registerSuccessMessage.textContent = '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta.';
                 registerSuccessMessage.style.display = 'block';
