@@ -196,7 +196,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     throw new Error('No se pudo crear el usuario');
                 }
 
-                // 2. Crear el registro en la tabla mayoristas
+                // 2. Iniciar sesión automáticamente para obtener permisos
+                const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (sessionError) {
+                    console.warn('No se pudo iniciar sesión automáticamente:', sessionError);
+                }
+
+                // 3. Crear el registro en la tabla mayoristas
                 const { error: mayoristaError } = await supabase
                     .from('mayoristas')
                     .insert([{
@@ -208,11 +218,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.error('Error al crear registro de mayorista:', mayoristaError);
                     let errorMessage = 'Error al registrar la cuenta de mayorista';
                     if (mayoristaError.code === '42501') {
-                        errorMessage = 'No tienes permisos para escribir en esta tabla';
+                        errorMessage = 'No tienes permisos para escribir en esta tabla. Contacta al administrador.';
                     } else if (mayoristaError.code === '23502') {
                         errorMessage = 'Datos inválidos o incompletos: falta el nombre de la empresa';
+                    } else if (mayoristaError.code === '23505') {
+                        errorMessage = 'Ya existe un registro para este usuario';
                     }
                     throw new Error(errorMessage);
+                }
+
+                // 4. Cerrar la sesión automática si se inició
+                if (sessionData?.user) {
+                    await supabase.auth.signOut();
                 }
 
                 registerSuccessMessage.textContent = '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta.';
