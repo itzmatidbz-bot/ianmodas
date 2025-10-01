@@ -202,6 +202,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Configurar dependencias 3FN
             setup3FNDependencies();
             
+            // Cargar display de categorías activas
+            loadActiveCategoriesDisplay();
+            
         } catch (error) {
             console.error('❌ Error cargando sistema 3FN:', error);
         }
@@ -479,53 +482,136 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- FUNCIONES PARA SELECTOR DE COLORES MÚLTIPLES ---
+    // --- FUNCIONES PARA SELECTOR DE COLORES MÚLTIPLES CORREGIDA ---
     function populateMultiColorSelect(colores) {
+        console.log('🎨 Poblando selector de colores:', colores?.length);
+        
         const coloresGrid = document.getElementById('colores-grid');
-        if (!coloresGrid || !colores) return;
+        if (!coloresGrid) {
+            console.warn('⚠️ No se encontró #colores-grid en el DOM');
+            return;
+        }
+        
+        if (!colores || colores.length === 0) {
+            console.warn('⚠️ No hay colores para mostrar');
+            coloresGrid.innerHTML = '<p>No hay colores disponibles</p>';
+            return;
+        }
 
         coloresGrid.innerHTML = '';
+        console.log(`✅ Creando ${colores.length} opciones de color`);
         
-        colores.forEach(color => {
+        colores.forEach((color, index) => {
             const colorOption = document.createElement('div');
             colorOption.className = 'color-option';
             colorOption.innerHTML = `
-                <input type="checkbox" id="color-${color.id}" value="${color.id}">
-                <div class="color-swatch" style="background-color: ${color.codigo_hex || '#ddd'}"></div>
+                <input type="checkbox" id="color-${color.id}" name="colores[]" value="${color.id}">
+                <div class="color-swatch" style="background-color: ${color.codigo_hex || '#ddd'}; border: 2px solid #ccc;"></div>
                 <span class="color-name">${color.nombre}</span>
             `;
 
-            colorOption.addEventListener('click', () => {
-                const checkbox = colorOption.querySelector('input');
-                checkbox.checked = !checkbox.checked;
-                colorOption.classList.toggle('selected', checkbox.checked);
+            colorOption.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = colorOption.querySelector('input');
+                    checkbox.checked = !checkbox.checked;
+                }
+                colorOption.classList.toggle('selected', colorOption.querySelector('input').checked);
                 updateSelectedColors();
             });
 
             coloresGrid.appendChild(colorOption);
         });
+        
+        console.log('✅ Selector de colores creado exitosamente');
+    }
+
+    // NUEVA FUNCIÓN: Mostrar categorías activas en dashboard
+    async function loadActiveCategoriesDisplay() {
+        try {
+            const { data: categorias, error } = await supabase.rpc('get_categorias');
+            const container = document.getElementById('active-categories');
+            
+            if (!error && categorias && categorias.length > 0 && container) {
+                container.innerHTML = categorias.slice(0, 5).map(cat => `
+                    <div class="recent-item">
+                        <strong>${cat.nombre}</strong>
+                        <small>Categoría activa</small>
+                    </div>
+                `).join('');
+            } else if (container) {
+                container.innerHTML = '<p>Categorías no disponibles</p>';
+            }
+        } catch (error) {
+            console.log('Error cargando categorías para dashboard:', error);
+        }
     }
 
     function updateSelectedColors() {
-        const selectedColorIds = Array.from(document.querySelectorAll('#colores-grid input:checked'))
-            .map(input => input.value);
-        document.getElementById('colores-selected').value = selectedColorIds.join(',');
+        const selectedInputs = document.querySelectorAll('#colores-grid input:checked');
+        const selectedColorIds = Array.from(selectedInputs).map(input => input.value);
+        
+        console.log('🎨 Colores seleccionados:', selectedColorIds);
+        
+        const hiddenInput = document.getElementById('colores-selected');
+        if (hiddenInput) {
+            hiddenInput.value = selectedColorIds.join(',');
+        } else {
+            console.warn('⚠️ No se encontró #colores-selected input');
+        }
     }
 
     function loadFallbackColores() {
+        console.log('🎨 Cargando colores fallback extendidos...');
+        
         const fallbackColores = [
+            // Básicos
             { id: 1, nombre: 'Negro', codigo_hex: '#000000' },
             { id: 2, nombre: 'Blanco', codigo_hex: '#FFFFFF' },
-            { id: 3, nombre: 'Azul', codigo_hex: '#0066CC' },
-            { id: 4, nombre: 'Rojo', codigo_hex: '#FF0000' },
-            { id: 5, nombre: 'Rosa', codigo_hex: '#FFC0CB' },
-            { id: 6, nombre: 'Verde', codigo_hex: '#008000' },
-            { id: 7, nombre: 'Gris', codigo_hex: '#808080' },
-            { id: 8, nombre: 'Marrón', codigo_hex: '#A52A2A' },
-            { id: 9, nombre: 'Amarillo', codigo_hex: '#FFD700' },
-            { id: 10, nombre: 'Violeta', codigo_hex: '#8A2BE2' }
+            { id: 3, nombre: 'Gris', codigo_hex: '#808080' },
+            { id: 4, nombre: 'Gris Claro', codigo_hex: '#D3D3D3' },
+            
+            // Azules
+            { id: 5, nombre: 'Azul', codigo_hex: '#0066CC' },
+            { id: 6, nombre: 'Azul Marino', codigo_hex: '#000080' },
+            { id: 7, nombre: 'Celeste', codigo_hex: '#87CEEB' },
+            { id: 8, nombre: 'Turquesa', codigo_hex: '#40E0D0' },
+            
+            // Rojos y Rosas
+            { id: 9, nombre: 'Rojo', codigo_hex: '#FF0000' },
+            { id: 10, nombre: 'Rosa', codigo_hex: '#FFC0CB' },
+            { id: 11, nombre: 'Coral', codigo_hex: '#FF7F50' },
+            { id: 12, nombre: 'Fucsia', codigo_hex: '#FF1493' },
+            
+            // Verdes
+            { id: 13, nombre: 'Verde', codigo_hex: '#008000' },
+            { id: 14, nombre: 'Verde Oliva', codigo_hex: '#808000' },
+            { id: 15, nombre: 'Verde Lima', codigo_hex: '#32CD32' },
+            
+            // Amarillos
+            { id: 16, nombre: 'Amarillo', codigo_hex: '#FFD700' },
+            { id: 17, nombre: 'Mostaza', codigo_hex: '#FFDB58' },
+            { id: 18, nombre: 'Naranja', codigo_hex: '#FF8C00' },
+            
+            // Violetas
+            { id: 19, nombre: 'Violeta', codigo_hex: '#8A2BE2' },
+            { id: 20, nombre: 'Morado', codigo_hex: '#800080' },
+            { id: 21, nombre: 'Lila', codigo_hex: '#C8A2C8' },
+            
+            // Marrones
+            { id: 22, nombre: 'Marrón', codigo_hex: '#A52A2A' },
+            { id: 23, nombre: 'Beige', codigo_hex: '#F5F5DC' },
+            { id: 24, nombre: 'Café', codigo_hex: '#8B4513' },
+            
+            // Especiales
+            { id: 25, nombre: 'Dorado', codigo_hex: '#FFD700' },
+            { id: 26, nombre: 'Plata', codigo_hex: '#C0C0C0' },
+            { id: 27, nombre: 'Nude', codigo_hex: '#F5DEB3' },
+            { id: 28, nombre: 'Crema', codigo_hex: '#FFFDD0' },
+            { id: 29, nombre: 'Khaki', codigo_hex: '#F0E68C' },
+            { id: 30, nombre: 'Denim', codigo_hex: '#1560BD' }
         ];
         
+        console.log(`✅ Cargando ${fallbackColores.length} colores fallback`);
         populateMultiColorSelect(fallbackColores);
     }
 
@@ -1089,9 +1175,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const nombre = formData.get('nombre')?.trim();
             const descripcion = formData.get('descripcion')?.trim();
             const precio = parseFloat(formData.get('precio'));
-            const stock = parseInt(formData.get('stock'));
-            
-            if (!nombre || !descripcion || isNaN(precio) || isNaN(stock)) {
+            // SIN VALIDACIÓN DE STOCK
+            if (!nombre || !descripcion || isNaN(precio)) {
                 throw new Error('Por favor completa todos los campos requeridos');
             }
             
@@ -1099,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 nombre: nombre,
                 descripcion: descripcion,
                 precio: precio,
-                stock: stock,
+                // SIN STOCK - Todo siempre disponible
                 // Campos de categorización avanzada (con fallback a null si no están disponibles)
                 categoria_id: parseInt(formData.get('categoria')) || null,
                 tipo_prenda_id: parseInt(formData.get('tipo-prenda')) || null,
@@ -1305,7 +1390,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </td>
                     <td>${categoria}</td>
                     <td>$${product.precio ? Math.round(product.precio) : '0'} UYU</td>
-                    <td class="${(product.stock || 0) < 5 ? 'low-stock' : ''}">${product.stock || 'N/A'}</td>
+                    <td><span class="available-badge">✅ Disponible</span></td>
                     <td class="table-actions">
                         <button class="btn-icon edit" data-action="edit" title="Editar">
                             <i class="fas fa-edit"></i>
@@ -1351,13 +1436,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateDashboardStats(products, users) {
         if (!products || !users) return;
         
-        const lowStockCount = products.filter(p => p.stock < 5).length;
-        const totalStockValue = products.reduce((sum, p) => sum + ((p.precio || 0) * (p.stock || 0)), 0);
-        
+        // STATS SIN STOCK - Solo productos y usuarios
         if (DOMElements.totalUsers) DOMElements.totalUsers.textContent = users.length;
         if (DOMElements.totalProducts) DOMElements.totalProducts.textContent = products.length;
-        if (DOMElements.lowStock) DOMElements.lowStock.textContent = lowStockCount;
-        if (DOMElements.totalStockValue) DOMElements.totalStockValue.textContent = `$${Math.round(totalStockValue)} UYU`;
+        
+        // Mostrar estadísticas del catálogo (sin stock)
+        const totalValue = products.reduce((sum, p) => sum + (p.precio || 0), 0);
+        const catalogValueElement = document.getElementById('total-catalog-value');
+        if (catalogValueElement) catalogValueElement.textContent = `$${Math.round(totalValue)} UYU`;
+        
+        // Mostrar total de colores disponibles
+        const totalColorsElement = document.getElementById('total-colors');
+        if (totalColorsElement) {
+            // Intentar obtener colores de la función 3FN
+            supabase.rpc('get_colores').then(({ data }) => {
+                if (data) totalColorsElement.textContent = data.length;
+            }).catch(() => {
+                totalColorsElement.textContent = '30+'; // Fallback
+            });
+        }
     }
 
     function handleImagePreview(e) {

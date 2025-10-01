@@ -2,7 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <me                    <div class="stat-card">
+                        <i class="fas fa-palette"></i><div><h3>Colores Disponibles</h3><p id="total-colors">0</p></div>
+                    </div>name="viewport" content=                    <div class="dashboard-card">
+                        <h3><i class="fas fa-tags"></i> Categorías Activas</h3>
+                        <div id="active-categories" class="recent-list categories-dashboard">
+                            <div class="loading-placeholder">Cargando categorías...</div>
+                        </div>
+                    </div>=device-width, initial-scale=1.0">
     <title>Panel de Administración - Ian Modas</title>
     <link rel="stylesheet" href="css/admin.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -79,7 +86,7 @@
                         <i class="fas fa-tag"></i><div><h3>Categorías</h3><p id="total-categories">0</p></div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-dollar-sign"></i><div><h3>Valor Total Stock</h3><p id="total-stock-value">$0</p></div>
+                        <i class="fas fa-dollar-sign"></i><div><h3>Valor Catálogo</h3><p id="total-catalog-value">$0</p></div>
                     </div>
                     <div class="stat-card">
                         <i class="fas fa-calendar"></i><div><h3>Último Registro</h3><p id="last-registration">-</p></div>
@@ -119,7 +126,7 @@
                 <div class="products-table-container">
                     <table class="products-table">
                         <thead>
-                            <tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+                            <tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
                         </thead>
                         <tbody id="products-table-body"></tbody>
                     </table>
@@ -267,7 +274,7 @@
                         </div>
                         
                         <div class="form-group"><label for="precio">Precio (UYU)</label><input type="number" id="precio" name="precio" step="1" min="0" required placeholder="0"></div>
-                        <div class="form-group"><label for="stock">Stock Disponible</label><input type="number" id="stock" name="stock" min="0" required placeholder="0"></div>
+                        <!-- CAMPO STOCK ELIMINADO - TODO SIEMPRE DISPONIBLE -->
                         <div class="form-group span-2">
                             <div class="description-header">
                                 <label for="descripcion">Descripción del Producto</label>

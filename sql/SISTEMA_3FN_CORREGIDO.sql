@@ -1,16 +1,7 @@
--- REESTRUCTURACIÓN COMPLETA IAN MODAS - 3FN SIN STOCK
+-- REESTRUCTURACIÓN COMPLETA IAN MODAS - 3FN SIN STOCK (CORREGIDO)
 -- Este script elimina todo y recrea el sistema correctamente
 
--- =-- Insertar tipos de prenda por categoría (MEJORADO - COBERTURA COMPLETA)
-INSERT INTO tipos_prenda (nombre, categoria_id) VALUES 
--- Ropa Interior (7 tipos)
-('Calzones', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
-('Tanga', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
-('Bombacha', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
-('Corpiño', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
-('Conjunto Lencejía', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
-('Boxer', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
-('Body', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),==========================================
+-- =====================================================
 -- PASO 1: ELIMINAR TODO EL SISTEMA ANTERIOR
 -- =====================================================
 
@@ -24,6 +15,12 @@ DROP FUNCTION IF EXISTS get_colores_activos();
 DROP FUNCTION IF EXISTS get_tipos_tela_activos();
 DROP FUNCTION IF EXISTS get_tipos_prenda_por_categoria(INTEGER);
 DROP FUNCTION IF EXISTS get_estilos_por_categoria(INTEGER);
+DROP FUNCTION IF EXISTS get_categorias();
+DROP FUNCTION IF EXISTS get_tipos_prenda(INTEGER);
+DROP FUNCTION IF EXISTS get_estilos(INTEGER);
+DROP FUNCTION IF EXISTS get_telas();
+DROP FUNCTION IF EXISTS get_colores();
+DROP FUNCTION IF EXISTS get_dashboard_stats();
 
 -- Eliminar tablas en orden correcto (respetando foreign keys)
 DROP TABLE IF EXISTS producto_colores CASCADE;
@@ -88,7 +85,7 @@ CREATE TABLE colores (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Tabla productos (3FN - SIN STOCK)
+-- Tabla productos (3FN - SIN STOCK COMPLETAMENTE)
 CREATE TABLE productos (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(200) NOT NULL,
@@ -132,18 +129,18 @@ INSERT INTO categorias (nombre) VALUES
 ('Trajes de Baño'),
 ('Deportiva');
 
--- Insertar tipos de prenda por categoría
+-- Insertar tipos de prenda por categoría (COBERTURA COMPLETA)
 INSERT INTO tipos_prenda (nombre, categoria_id) VALUES 
--- Ropa Interior
+-- Ropa Interior (7 tipos)
 ('Calzones', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
 ('Tanga', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
 ('Bombacha', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
 ('Corpiño', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
 ('Conjunto Lencería', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
 ('Boxer', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
-('Camiseta Interior', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
+('Body Interior', (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
 
--- Calzado
+-- Calzado (8 tipos)
 ('Zapatillas', (SELECT id FROM categorias WHERE nombre = 'Calzado')),
 ('Botas', (SELECT id FROM categorias WHERE nombre = 'Calzado')),
 ('Botinetas', (SELECT id FROM categorias WHERE nombre = 'Calzado')),
@@ -153,7 +150,7 @@ INSERT INTO tipos_prenda (nombre, categoria_id) VALUES
 ('Plataformas', (SELECT id FROM categorias WHERE nombre = 'Calzado')),
 ('Alpargatas', (SELECT id FROM categorias WHERE nombre = 'Calzado')),
 
--- Tops
+-- Tops (7 tipos)
 ('Blusa', (SELECT id FROM categorias WHERE nombre = 'Tops')),
 ('Camiseta', (SELECT id FROM categorias WHERE nombre = 'Tops')),
 ('Top', (SELECT id FROM categorias WHERE nombre = 'Tops')),
@@ -162,7 +159,7 @@ INSERT INTO tipos_prenda (nombre, categoria_id) VALUES
 ('Crop Top', (SELECT id FROM categorias WHERE nombre = 'Tops')),
 ('Tank Top', (SELECT id FROM categorias WHERE nombre = 'Tops')),
 
--- Pantalones
+-- Pantalones (7 tipos)
 ('Jean', (SELECT id FROM categorias WHERE nombre = 'Pantalones')),
 ('Pantalón de Vestir', (SELECT id FROM categorias WHERE nombre = 'Pantalones')),
 ('Legging', (SELECT id FROM categorias WHERE nombre = 'Pantalones')),
@@ -171,26 +168,53 @@ INSERT INTO tipos_prenda (nombre, categoria_id) VALUES
 ('Palazzo', (SELECT id FROM categorias WHERE nombre = 'Pantalones')),
 ('Cargo', (SELECT id FROM categorias WHERE nombre = 'Pantalones')),
 
--- Vestidos
+-- Vestidos (5 tipos)
 ('Vestido Casual', (SELECT id FROM categorias WHERE nombre = 'Vestidos')),
 ('Vestido de Fiesta', (SELECT id FROM categorias WHERE nombre = 'Vestidos')),
 ('Vestido Largo', (SELECT id FROM categorias WHERE nombre = 'Vestidos')),
 ('Vestido Corto', (SELECT id FROM categorias WHERE nombre = 'Vestidos')),
 ('Vestido Midi', (SELECT id FROM categorias WHERE nombre = 'Vestidos')),
 
--- Buzos
+-- Faldas (6 tipos)
+('Falda Mini', (SELECT id FROM categorias WHERE nombre = 'Faldas')),
+('Falda Midi', (SELECT id FROM categorias WHERE nombre = 'Faldas')),
+('Falda Larga', (SELECT id FROM categorias WHERE nombre = 'Faldas')),
+('Falda Tubo', (SELECT id FROM categorias WHERE nombre = 'Faldas')),
+('Falda Plisada', (SELECT id FROM categorias WHERE nombre = 'Faldas')),
+('Falda Circular', (SELECT id FROM categorias WHERE nombre = 'Faldas')),
+
+-- Conjuntos (5 tipos)
+('Conjunto Deportivo', (SELECT id FROM categorias WHERE nombre = 'Conjuntos')),
+('Conjunto Casual', (SELECT id FROM categorias WHERE nombre = 'Conjuntos')),
+('Conjunto Formal', (SELECT id FROM categorias WHERE nombre = 'Conjuntos')),
+('Conjunto de Punto', (SELECT id FROM categorias WHERE nombre = 'Conjuntos')),
+('Conjunto de Verano', (SELECT id FROM categorias WHERE nombre = 'Conjuntos')),
+
+-- Abrigos (4 tipos)
+('Saco', (SELECT id FROM categorias WHERE nombre = 'Abrigos')),
+('Chal', (SELECT id FROM categorias WHERE nombre = 'Abrigos')),
+('Poncho', (SELECT id FROM categorias WHERE nombre = 'Abrigos')),
+('Cardigan', (SELECT id FROM categorias WHERE nombre = 'Abrigos')),
+
+-- Buzos (4 tipos)
 ('Buzo con Capucha', (SELECT id FROM categorias WHERE nombre = 'Buzos')),
 ('Buzo Canguro', (SELECT id FROM categorias WHERE nombre = 'Buzos')),
 ('Sudadera', (SELECT id FROM categorias WHERE nombre = 'Buzos')),
 ('Buzo Deportivo', (SELECT id FROM categorias WHERE nombre = 'Buzos')),
 
--- Camperas
+-- Camperas (4 tipos)
 ('Campera Jean', (SELECT id FROM categorias WHERE nombre = 'Camperas')),
 ('Campera Cuero', (SELECT id FROM categorias WHERE nombre = 'Camperas')),
 ('Bomber', (SELECT id FROM categorias WHERE nombre = 'Camperas')),
 ('Blazer', (SELECT id FROM categorias WHERE nombre = 'Camperas')),
 
--- Accesorios
+-- Tapados (4 tipos)
+('Tapado Clásico', (SELECT id FROM categorias WHERE nombre = 'Tapados')),
+('Tapado Largo', (SELECT id FROM categorias WHERE nombre = 'Tapados')),
+('Trench', (SELECT id FROM categorias WHERE nombre = 'Tapados')),
+('Sobretodo', (SELECT id FROM categorias WHERE nombre = 'Tapados')),
+
+-- Accesorios (6 tipos)
 ('Cartera', (SELECT id FROM categorias WHERE nombre = 'Accesorios')),
 ('Mochila', (SELECT id FROM categorias WHERE nombre = 'Accesorios')),
 ('Cinturón', (SELECT id FROM categorias WHERE nombre = 'Accesorios')),
@@ -198,70 +222,57 @@ INSERT INTO tipos_prenda (nombre, categoria_id) VALUES
 ('Pulsera', (SELECT id FROM categorias WHERE nombre = 'Accesorios')),
 ('Aros', (SELECT id FROM categorias WHERE nombre = 'Accesorios')),
 
--- Pijamas
+-- Pijamas (3 tipos)
 ('Pijama Completo', (SELECT id FROM categorias WHERE nombre = 'Pijamas')),
 ('Camisón', (SELECT id FROM categorias WHERE nombre = 'Pijamas')),
 ('Short Dormir', (SELECT id FROM categorias WHERE nombre = 'Pijamas')),
 
--- Trajes de Baño
+-- Trajes de Baño (3 tipos)
 ('Bikini', (SELECT id FROM categorias WHERE nombre = 'Trajes de Baño')),
 ('Malla Entera', (SELECT id FROM categorias WHERE nombre = 'Trajes de Baño')),
-('Short de Baño', (SELECT id FROM categorias WHERE nombre = 'Trajes de Baño'));
+('Short de Baño', (SELECT id FROM categorias WHERE nombre = 'Trajes de Baño')),
 
--- Insertar estilos por tipo de prenda (algunos tipos no tienen estilos)
+-- Deportiva (6 tipos)
+('Calza Deportiva', (SELECT id FROM categorias WHERE nombre = 'Deportiva')),
+('Top Deportivo', (SELECT id FROM categorias WHERE nombre = 'Deportiva')),
+('Short Deportivo', (SELECT id FROM categorias WHERE nombre = 'Deportiva')),
+('Remera Deportiva', (SELECT id FROM categorias WHERE nombre = 'Deportiva')),
+('Campera Deportiva', (SELECT id FROM categorias WHERE nombre = 'Deportiva')),
+('Conjunto Gym', (SELECT id FROM categorias WHERE nombre = 'Deportiva'));
+
+-- Insertar estilos por tipo de prenda (REFERENCIAS CORREGIDAS)
 INSERT INTO estilos (nombre, tipo_prenda_id) VALUES 
 -- Estilos para Jean
-('Skinny', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' LIMIT 1)),
-('Straight', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' LIMIT 1)),
-('High Waist', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' LIMIT 1)),
-('Mom Jeans', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' LIMIT 1)),
-('Boyfriend', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' LIMIT 1)),
+('Skinny', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones'))),
+('Straight', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones'))),
+('High Waist', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones'))),
+('Mom Jeans', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones'))),
+('Boyfriend', (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones'))),
 
--- Estilos para Vestidos (CORREGIDO)
-('A-Line', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Vestido Casual' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos') LIMIT 1)),
-('Bodycon', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Vestido de Fiesta' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos') LIMIT 1)),
-('Wrap', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Vestido Casual' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos') LIMIT 1)),
-('Slip Dress', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Vestido de Fiesta' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos') LIMIT 1)),
-('Maxi', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Vestido Largo' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos') LIMIT 1)),
+-- Estilos para Vestidos
+('A-Line', (SELECT id FROM tipos_prenda WHERE nombre = 'Vestido Casual' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos'))),
+('Bodycon', (SELECT id FROM tipos_prenda WHERE nombre = 'Vestido de Fiesta' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos'))),
+('Wrap', (SELECT id FROM tipos_prenda WHERE nombre = 'Vestido Casual' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos'))),
+('Slip Dress', (SELECT id FROM tipos_prenda WHERE nombre = 'Vestido de Fiesta' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos'))),
+('Maxi', (SELECT id FROM tipos_prenda WHERE nombre = 'Vestido Largo' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos'))),
 
--- Estilos para Tops (CORREGIDO)
-('Oversize', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Camiseta' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops') LIMIT 1)),
-('Fitted', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Top' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops') LIMIT 1)),
-('Off Shoulder', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Blusa' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops') LIMIT 1)),
-('Crop', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Crop Top' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops') LIMIT 1)),
+-- Estilos para Tops
+('Oversize', (SELECT id FROM tipos_prenda WHERE nombre = 'Camiseta' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops'))),
+('Fitted', (SELECT id FROM tipos_prenda WHERE nombre = 'Top' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops'))),
+('Off Shoulder', (SELECT id FROM tipos_prenda WHERE nombre = 'Blusa' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops'))),
+('Crop Style', (SELECT id FROM tipos_prenda WHERE nombre = 'Crop Top' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops'))),
 
--- Estilos para Buzos (CORREGIDO)
-('Oversize Buzo', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Buzo con Capucha' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Buzos') LIMIT 1)),
-('Crop Buzo', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Sudadera' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Buzos') LIMIT 1)),
+-- Estilos para Buzos
+('Oversize Buzo', (SELECT id FROM tipos_prenda WHERE nombre = 'Buzo con Capucha' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Buzos'))),
+('Crop Buzo', (SELECT id FROM tipos_prenda WHERE nombre = 'Sudadera' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Buzos'))),
 
--- Estilos para Pantalones (NUEVOS)
-('High Waist Palazzo', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Palazzo' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones') LIMIT 1)),
-('Cargo Style', (SELECT tp.id FROM tipos_prenda tp WHERE tp.nombre = 'Cargo' AND tp.categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones') LIMIT 1));
+-- Estilos para Pantalones
+('High Waist Palazzo', (SELECT id FROM tipos_prenda WHERE nombre = 'Palazzo' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones'))),
+('Cargo Style', (SELECT id FROM tipos_prenda WHERE nombre = 'Cargo' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones')));
 
--- Insertar telas completas
-INSERT INTO telas (nombre, descripcion) VALUES 
-('Algodón', 'Fibra natural suave y transpirable'),
-('Jean', 'Tejido de algodón resistente y duradero'),
-('Seda', 'Fibra natural lujosa y elegante'),
-('Lino', 'Fibra natural fresca y transpirable'),
-('Lycra', 'Fibra elástica para prendas ajustadas'),
-('Encaje', 'Tejido delicado con patrones calados'),
-('Satén', 'Tejido brillante y suave'),
-('Viscosa', 'Fibra semisintética con caída fluida'),
-('Bengalina', 'Tejido elástico con estructura firme'),
-('Tencel', 'Fibra ecológica suave y antibacteriana'),
-('Polar', 'Tejido sintético cálido'),
-('Terciopelo', 'Tejido aterciopelado y elegante'),
-('Crepe', 'Tejido con textura rugosa'),
-('Gabardina', 'Tejido resistente para abrigos'),
-('Mohair', 'Fibra de cabra angora'),
-('Lana', 'Fibra natural cálida'),
-('Ecocuero', 'Material sintético que imita el cuero'),
-('Hilo', 'Tejido fino y delicado');
-
--- Insertar TODOS los colores (40+)
+-- Insertar TODOS los colores (40+) ordenados inteligentemente
 INSERT INTO colores (nombre, codigo_hex) VALUES 
--- Básicos
+-- Básicos (siempre primero)
 ('Negro', '#000000'),
 ('Blanco', '#FFFFFF'),
 ('Gris', '#808080'),
@@ -323,7 +334,29 @@ INSERT INTO colores (nombre, codigo_hex) VALUES
 ('Cobre', '#B87333'),
 ('Nude', '#F5DEB3'),
 ('Crema', '#FFFDD0'),
-('Khaki', '#F0E68C');
+('Khaki', '#F0E68C'),
+('Denim', '#1560BD');
+
+-- Insertar telas completas
+INSERT INTO telas (nombre, descripcion) VALUES 
+('Algodón', 'Fibra natural suave y transpirable'),
+('Jean', 'Tejido de algodón resistente y duradero'),
+('Seda', 'Fibra natural lujosa y elegante'),
+('Lino', 'Fibra natural fresca y transpirable'),
+('Lycra', 'Fibra elástica para prendas ajustadas'),
+('Encaje', 'Tejido delicado con patrones calados'),
+('Satén', 'Tejido brillante y suave'),
+('Viscosa', 'Fibra semisintética con caída fluida'),
+('Bengalina', 'Tejido elástico con estructura firme'),
+('Tencel', 'Fibra ecológica suave y antibacteriana'),
+('Polar', 'Tejido sintético cálido'),
+('Terciopelo', 'Tejido aterciopelado y elegante'),
+('Crepe', 'Tejido con textura rugosa'),
+('Gabardina', 'Tejido resistente para abrigos'),
+('Mohair', 'Fibra de cabra angora'),
+('Lana', 'Fibra natural cálida'),
+('Ecocuero', 'Material sintético que imita el cuero'),
+('Hilo', 'Tejido fino y delicado');
 
 -- =====================================================
 -- PASO 4: CREAR VISTA PRINCIPAL (SIN STOCK)
@@ -338,10 +371,16 @@ SELECT
     p.imagen_url,
     c.nombre AS categoria,
     tp.nombre AS tipo_prenda,
-    COALESCE(e.nombre, 'no hay estilos') AS estilo,
-    COALESCE(t.nombre, 'desconocido') AS tela,
-    COALESCE(col.nombre, 'sin color') AS color,
-    COALESCE(col.codigo_hex, '#CCCCCC') AS color_hex
+    COALESCE(e.nombre, 'Sin estilo específico') AS estilo,
+    COALESCE(t.nombre, 'Material no especificado') AS tela,
+    COALESCE(col.nombre, 'Color no especificado') AS color,
+    COALESCE(col.codigo_hex, '#CCCCCC') AS color_hex,
+    p.categoria_id,
+    p.tipo_prenda_id,
+    p.estilo_id,
+    p.tela_id,
+    p.color_id,
+    true as disponible -- SIEMPRE DISPONIBLE - SIN STOCK
 FROM productos p
 INNER JOIN categorias c ON p.categoria_id = c.id
 INNER JOIN tipos_prenda tp ON p.tipo_prenda_id = tp.id
@@ -399,7 +438,7 @@ LANGUAGE sql AS $$
     ORDER BY nombre;
 $$;
 
--- Función para obtener todos los colores
+-- Función para obtener todos los colores (ORDENADO INTELIGENTE)
 CREATE OR REPLACE FUNCTION get_colores()
 RETURNS TABLE (id INTEGER, nombre TEXT, codigo_hex TEXT) 
 LANGUAGE sql AS $$
@@ -416,20 +455,22 @@ LANGUAGE sql AS $$
         nombre;
 $$;
 
--- Función para obtener estadísticas (SIN STOCK)
+-- Función para estadísticas (SIN STOCK)
 CREATE OR REPLACE FUNCTION get_dashboard_stats()
 RETURNS TABLE (
     total_categorias INTEGER,
     total_tipos_prenda INTEGER,
     total_productos INTEGER,
-    total_colores INTEGER
+    total_colores INTEGER,
+    total_telas INTEGER
 ) 
 LANGUAGE sql AS $$
     SELECT 
         (SELECT COUNT(*) FROM categorias WHERE activo = true)::INTEGER,
         (SELECT COUNT(*) FROM tipos_prenda WHERE activo = true)::INTEGER,
         (SELECT COUNT(*) FROM productos WHERE activo = true)::INTEGER,
-        (SELECT COUNT(*) FROM colores WHERE activo = true)::INTEGER;
+        (SELECT COUNT(*) FROM colores WHERE activo = true)::INTEGER,
+        (SELECT COUNT(*) FROM telas WHERE activo = true)::INTEGER;
 $$;
 
 -- =====================================================
@@ -442,6 +483,7 @@ GRANT EXECUTE ON FUNCTION get_tipos_prenda(INTEGER) TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION get_estilos(INTEGER) TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION get_telas() TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION get_colores() TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION get_dashboard_stats() TO authenticated, anon;
 
 -- =====================================================
 -- PASO 7: INSERTAR PRODUCTOS DE EJEMPLO
@@ -449,39 +491,46 @@ GRANT EXECUTE ON FUNCTION get_colores() TO authenticated, anon;
 
 INSERT INTO productos (nombre, precio, descripcion, categoria_id, tipo_prenda_id, estilo_id, tela_id, color_id) VALUES 
 -- Ejemplos con diferentes combinaciones
-('Jean Skinny Azul', 45.99, 'Jean ajustado clásico', 
+('Jean Skinny Azul', 45.99, 'Jean ajustado clásico en color azul', 
     (SELECT id FROM categorias WHERE nombre = 'Pantalones'),
-    (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' LIMIT 1),
-    (SELECT id FROM estilos WHERE nombre = 'Skinny' LIMIT 1),
+    (SELECT id FROM tipos_prenda WHERE nombre = 'Jean' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Pantalones')),
+    (SELECT id FROM estilos WHERE nombre = 'Skinny'),
     (SELECT id FROM telas WHERE nombre = 'Jean'),
     (SELECT id FROM colores WHERE nombre = 'Azul')),
 
-('Vestido Negro Elegante', 89.99, 'Vestido de fiesta elegante', 
+('Vestido Negro Elegante', 89.99, 'Vestido de fiesta elegante en satén negro', 
     (SELECT id FROM categorias WHERE nombre = 'Vestidos'),
-    (SELECT id FROM tipos_prenda WHERE nombre = 'Vestido de Fiesta' LIMIT 1),
-    (SELECT id FROM estilos WHERE nombre = 'Bodycon' LIMIT 1),
+    (SELECT id FROM tipos_prenda WHERE nombre = 'Vestido de Fiesta' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Vestidos')),
+    (SELECT id FROM estilos WHERE nombre = 'Bodycon'),
     (SELECT id FROM telas WHERE nombre = 'Satén'),
     (SELECT id FROM colores WHERE nombre = 'Negro')),
 
-('Conjunto Lencería Rosa', 35.50, 'Conjunto de lencería en encaje', 
+('Conjunto Lencería Rosa', 35.50, 'Conjunto de lencería en encaje rosa delicado', 
     (SELECT id FROM categorias WHERE nombre = 'Ropa Interior'),
-    (SELECT id FROM tipos_prenda WHERE nombre = 'Conjunto Lencería' LIMIT 1),
+    (SELECT id FROM tipos_prenda WHERE nombre = 'Conjunto Lencería' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Ropa Interior')),
     NULL, -- Sin estilo específico
     (SELECT id FROM telas WHERE nombre = 'Encaje'),
     (SELECT id FROM colores WHERE nombre = 'Rosa')),
 
-('Zapatillas Blancas Deportivas', 75.00, 'Zapatillas para uso diario', 
+('Zapatillas Blancas Deportivas', 75.00, 'Zapatillas deportivas para uso diario', 
     (SELECT id FROM categorias WHERE nombre = 'Calzado'),
-    (SELECT id FROM tipos_prenda WHERE nombre = 'Zapatillas' LIMIT 1),
+    (SELECT id FROM tipos_prenda WHERE nombre = 'Zapatillas' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Calzado')),
     NULL, -- Sin estilo específico
     NULL, -- Sin tela específica
+    (SELECT id FROM colores WHERE nombre = 'Blanco')),
+
+('Blusa Off Shoulder Blanca', 42.00, 'Blusa elegante con hombros descubiertos', 
+    (SELECT id FROM categorias WHERE nombre = 'Tops'),
+    (SELECT id FROM tipos_prenda WHERE nombre = 'Blusa' AND categoria_id = (SELECT id FROM categorias WHERE nombre = 'Tops')),
+    (SELECT id FROM estilos WHERE nombre = 'Off Shoulder'),
+    (SELECT id FROM telas WHERE nombre = 'Algodón'),
     (SELECT id FROM colores WHERE nombre = 'Blanco'));
 
 -- =====================================================
 -- PASO 8: VERIFICACIÓN FINAL
 -- =====================================================
 
-SELECT '🎉 SISTEMA REESTRUCTURADO EN 3FN - SIN STOCK' as mensaje;
+SELECT '🎉 SISTEMA REESTRUCTURADO EN 3FN - SIN STOCK - CORREGIDO' as mensaje;
 
 -- Verificar datos (DETALLADO)
 SELECT 'VERIFICACIÓN COMPLETA:' as seccion;
@@ -504,4 +553,10 @@ ORDER BY c.nombre;
 SELECT '✅ VISTA FUNCIONANDO:' as test;
 SELECT * FROM vista_productos_completa LIMIT 5;
 
-SELECT '✅ SISTEMA LISTO PARA FRONTEND' as resultado;
+-- Probar funciones RPC
+SELECT '✅ FUNCIONES RPC:' as test_rpc;
+SELECT 'Categorías:', COUNT(*) FROM get_categorias();
+SELECT 'Colores:', COUNT(*) FROM get_colores();
+SELECT 'Telas:', COUNT(*) FROM get_telas();
+
+SELECT '✅ SISTEMA LISTO PARA FRONTEND - SIN STOCK' as resultado;
