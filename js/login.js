@@ -11,6 +11,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!loginForm) return;
 
+    // --- Función helper para crear registro de mayorista ---
+    const createMayoristaRecord = async (user) => {
+        try {
+            const nombreEmpresa = user.user_metadata?.nombre_empresa || user.email?.split('@')[0] || 'Mi Empresa';
+            
+            const { error: createError } = await supabase
+                .from('mayoristas')
+                .insert([{
+                    id: user.id,
+                    nombre_empresa: nombreEmpresa
+                }]);
+
+            if (createError) {
+                console.warn('No se pudo crear registro de mayorista:', createError);
+                // No lanzar error, permitir login igual
+            } else {
+                console.log('Registro de mayorista creado exitosamente');
+            }
+        } catch (error) {
+            console.warn('Error al crear mayorista:', error);
+            // No lanzar error, permitir login igual
+        }
+    };
+
     // --- Manejar confirmación de email desde URL ---
     const handleEmailConfirmation = async () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -29,19 +53,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (error) throw error;
 
                 if (data.user) {
-                    // Crear el registro de mayorista ahora que está confirmado
-                    const nombreEmpresa = data.user.user_metadata?.nombre_empresa || 'Mi Empresa';
-                    
-                    const { error: mayoristaError } = await supabase
-                        .from('mayoristas')
-                        .insert([{
-                            id: data.user.id,
-                            nombre_empresa: nombreEmpresa
-                        }]);
+                    // Intentar crear el registro de mayorista
+                    await createMayoristaRecord(data.user);
 
-                    if (mayoristaError && mayoristaError.code !== '23505') { // 23505 = duplicate key
-                        console.warn('Error al crear mayorista tras confirmación:', mayoristaError);
-                    }
+                    const nombreEmpresa = data.user.user_metadata?.nombre_empresa || 
+                                         data.user.email?.split('@')[0] || 'Mayorista';
 
                     // Mostrar mensaje de bienvenida y redirigir
                     successMessage.innerHTML = `
@@ -130,42 +146,45 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Si no es admin, verificar si es mayorista o crearlo si no existe
-            let { data: mayorista, error: mayoristaError } = await supabase
-                .from('mayoristas')
-                .select('*')
-                .eq('id', authData.user.id)
-                .single();
+            // Si no es admin, verificar si es mayorista (con manejo de errores mejorado)
+            let mayorista = null;
+            let nombreEmpresa = 'Mayorista';
 
-            // Si no existe el mayorista, crearlo ahora (usuario confirmado)
-            if (mayoristaError && mayoristaError.code === 'PGRST116') {
-                const nombreEmpresaFromAuth = authData.user.user_metadata?.nombre_empresa || 'Mi Empresa';
-                
-                const { data: newMayorista, error: createError } = await supabase
+            try {
+                const { data: mayoristaData, error: mayoristaError } = await supabase
                     .from('mayoristas')
-                    .insert([{
-                        id: authData.user.id,
-                        nombre_empresa: nombreEmpresaFromAuth
-                    }])
-                    .select()
+                    .select('*')
+                    .eq('id', authData.user.id)
                     .single();
 
-                if (createError) {
-                    console.error('Error al crear mayorista en login:', createError);
-                    throw new Error('mayorista_create_error');
+                if (mayoristaError) {
+                    console.warn('Error al consultar mayorista:', mayoristaError);
+                    
+                    // Si es error 500 (servidor) o tabla no existe, crear mayorista igual
+                    if (mayoristaError.code === 'PGRST116' || mayoristaError.message?.includes('500') || !mayoristaError.code) {
+                        console.log('Mayorista no encontrado, creando nuevo registro...');
+                        // Intentar crear mayorista
+                        await createMayoristaRecord(authData.user);
+                    } else {
+                        // Otros errores, pero permitir login igual
+                        console.warn('Error de BD, permitiendo login sin verificar mayorista');
+                    }
+                } else {
+                    mayorista = mayoristaData;
+                    nombreEmpresa = mayorista?.nombre_empresa || 'Mayorista';
                 }
-                
-                mayorista = newMayorista;
-            } else if (mayoristaError) {
-                console.error('Error al verificar mayorista:', mayoristaError);
-                throw new Error('mayorista_check_error');
+            } catch (error) {
+                console.warn('Error general al manejar mayorista:', error);
+                // Permitir login aunque haya error con mayoristas
             }
 
+            // Obtener nombre de empresa de metadata si no hay mayorista
             if (!mayorista) {
-                throw new Error('not_mayorista');
+                nombreEmpresa = authData.user.user_metadata?.nombre_empresa || 
+                              authData.user.email?.split('@')[0] || 'Mayorista';
             }
 
-            successMessage.textContent = `¡Bienvenido/a ${mayorista.nombre_empresa}!`;
+            successMessage.textContent = `¡Bienvenido/a ${nombreEmpresa}!`;
             successMessage.style.display = 'block';
             setTimeout(() => {
                 window.location.href = 'index.html#productos'; // Redirigir al catálogo
@@ -183,13 +202,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     userMessage = 'No se pudo verificar tu rol de usuario. Por favor, intenta nuevamente.';
                     break;
                 case 'mayorista_check_error':
-                    userMessage = 'Error al verificar cuenta de mayorista.';
+                    userMessage = 'Error de conexión con la base de datos. Intenta nuevamente.';
                     break;
                 case 'mayorista_create_error':
-                    userMessage = 'Error al crear tu cuenta de mayorista. Contacta al administrador.';
+                    userMessage = 'Problema técnico. Tu cuenta está activa, intenta nuevamente.';
                     break;
                 case 'not_mayorista':
-                    userMessage = 'No tienes una cuenta de mayorista registrada.';
+                    userMessage = 'Problema con tu cuenta de mayorista. Contacta al administrador.';
                     break;
                 default:
                     console.error('Error no manejado:', error);
