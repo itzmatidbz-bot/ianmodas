@@ -5,6 +5,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🤖 Inicializando generador de IA...');
     
+    // Prevenir múltiples inicializaciones
+    if (window.iaGeneratorInitialized) {
+        console.log('⚠️ IA ya inicializada, saltando...');
+        return;
+    }
+    window.iaGeneratorInitialized = true;
+    
     // Esperar a que se carguen todos los elementos
     setTimeout(function() {
         const generateBtn = document.getElementById('generate-description-btn');
@@ -21,6 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         generateBtn.addEventListener('click', async function() {
             console.log('🚀 Click en botón de IA');
+            
+            // Prevenir múltiples clicks mientras está generando
+            if (generateBtn.disabled) {
+                console.log('⚠️ Generación en proceso, ignorando click');
+                return;
+            }
             
             // Obtener datos del formulario
             const nombre = document.getElementById('nombre')?.value.trim() || '';
@@ -65,17 +78,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Simular delay realista (2.5 segundos)
                 await new Promise(resolve => setTimeout(resolve, 2500));
                 
-                // GENERADOR INTELIGENTE CON MÚLTIPLES TEMPLATES
+                // GENERADOR INTELIGENTE CON TEMPLATES MEJORADOS
                 const templates = {
                     'Remeras': [
-                        `${nombre} confeccionada en algodón premium de alta durabilidad. Ideal para mayoristas que buscan productos versátiles con excelente relación calidad-precio. Su diseño atemporal ${color ? `y atractivo color ${color}` : ''} la convierte en una opción segura para todo tipo de cliente. Perfecta para reventa en boutiques, tiendas casuales y locales de moda urbana.`,
-                        `${nombre} de corte moderno y máxima comodidad, diseñada especialmente para el mercado mayorista. Fabricada con materiales de primera calidad que garantizan durabilidad y suavidad al tacto. Su versatilidad la hace perfecta para diferentes estilos y ocasiones, asegurando alta rotación en tu negocio.`,
-                        `${nombre} con acabado profesional y diseño contemporáneo. Esta prenda combina funcionalidad y estilo, ideal para revendedores que buscan productos con amplia aceptación en el mercado. ${talla ? `En talla ${talla}, ` : ''}representa una inversión inteligente para tu inventario de temporada.`
+                        `${nombre} fabricada con materiales de primera calidad, diseñada específicamente para el mercado mayorista. Su corte versátil y acabado profesional la posicionan como una opción estratégica para revendedores. ${color ? `El color ${color} añade versatilidad comercial, ` : ''}perfecta para boutiques, tiendas de moda casual y locales urbanos que buscan productos con alta rotación.`,
+                        `${nombre} con diseño contemporáneo y confección superior. Combina comodidad, durabilidad y estilo en una prenda ideal para mayoristas exigentes. Su tejido de calidad premium garantiza satisfacción del cliente final, mientras que su precio competitivo asegura márgenes atractivos para tu negocio.`,
+                        `${nombre} de línea comercial premium, especialmente desarrollada para el canal de reventa. ${talla ? `Disponible en talla ${talla}, ` : ''}esta prenda destaca por su versatilidad estacional y amplia aceptación en diferentes segmentos de mercado. Una inversión segura para inventarios de alto movimiento.`
                     ],
                     'Pantalones': [
-                        `${nombre} con diseño contemporáneo y confección superior, ideal para mayoristas exigentes. Combina comodidad, estilo y durabilidad en una prenda versátil que se adapta a múltiples ocasiones. ${talla ? `Disponible en talla ${talla}, ` : ''}perfecto para clientela que busca calidad y buen precio.`,
-                        `${nombre} de alta calidad, especialmente diseñado para el mercado de reventa. Su corte favorecedor y materiales resistentes lo convierten en una inversión segura para tu negocio. Ideal para tiendas que buscan productos con alta demanda y excelente margen de ganancia.`,
-                        `${nombre} con características técnicas superiores y diseño versátil. Perfecto para mayoristas que atienden diversos segmentos de mercado. ${color ? `El color ${color} complementa su línea moderna,` : ''} garantizando alta rotación y satisfacción del cliente final.`
+                        `${nombre} con ingeniería textil avanzada y corte anatómico, desarrollado para mayoristas del sector indumentaria. Su diseño ergonómico y materiales de alta resistencia ofrecen comodidad duradera y estilo contemporáneo. ${talla ? `En talla ${talla}, ` : ''}ideal para retailers que priorizan la satisfacción del cliente y márgenes competitivos.`,
+                        `${nombre} de construcción premium y acabado impecable, especialmente creado para el mercado de reventa profesional. Su versatilidad de uso y resistencia al desgaste lo convierten en una pieza fundamental para inventarios estratégicos. Perfecto para tiendas multisegmento que buscan productos de rotación garantizada.`,
+                        `${nombre} con tecnología textil superior y diseño comercial inteligente. ${color ? `Su color ${color} se adapta a múltiples combinaciones, ` : ''}maximizando las posibilidades de venta. Representa una inversión sólida para mayoristas que atienden clientela diversificada y exigente en calidad-precio.`
                     ],
                     'Vestidos': [
                         `${nombre} elegante y versátil, perfecto para mayoristas del rubro moda femenina. Su diseño sofisticado y confección impecable lo posicionan como una pieza clave en cualquier colección. ${color ? `El color ${color} aporta distinción y modernidad, ` : ''}garantizando alta aceptación en el mercado objetivo.`,
@@ -94,19 +107,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const descripcion = categoryTemplates[Math.floor(Math.random() * categoryTemplates.length)];
                 
                 console.log('✅ Descripción generada:', descripcion);
+                console.log('📝 Longitud descripción:', descripcion.length);
                 
-                // Animación de escritura tipo máquina de escribir
+                // VERSIÓN CORREGIDA: Escribir directamente (sin typewriter bugueado)
                 descripcionTextarea.value = '';
-                let i = 0;
+                descripcionTextarea.value = descripcion;
                 
-                const typeWriter = function() {
-                    if (i < descripcion.length) {
-                        descripcionTextarea.value += descripcion.charAt(i);
-                        i++;
-                        setTimeout(typeWriter, 25); // 25ms entre caracteres
-                    }
-                };
-                typeWriter();
+                // Efecto visual de "aparición" suave
+                descripcionTextarea.style.opacity = '0';
+                setTimeout(function() {
+                    descripcionTextarea.style.transition = 'opacity 0.5s ease-in';
+                    descripcionTextarea.style.opacity = '1';
+                }, 100);
                 
                 // Mostrar éxito
                 if (aiStatus) {
@@ -141,8 +153,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         console.log('🎉 Generador de IA configurado exitosamente');
+        console.log('🔧 Version: Script independiente v2.0 (sin duplicación)');
         
     }, 1500); // Esperar 1.5 segundos para que cargue todo
 });
 
-console.log('📜 Script de IA cargado');
+console.log('📜 Script de IA independiente cargado - versión corregida');

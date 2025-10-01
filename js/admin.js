@@ -189,7 +189,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (DOMElements.sidebar.classList.contains('active')) toggleMobileMenu();
                 const section = e.currentTarget.dataset.section;
                 if (section) switchSection(section);
-            });
+                });
+            
+            /*
         });
 
         DOMElements.menuToggle.addEventListener('click', toggleMobileMenu);
@@ -547,14 +549,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 // ===================================================================
-// FUNCIÓN ANTERIOR ELIMINADA - AHORA USAMOS setupAIDescriptionGeneratorQueFunc()
+// FUNCIÓN DE IA ELIMINADA - AHORA USA ia-script-independiente.js
 // ===================================================================
 
-// ===================================================================
-// 🤖 GENERADOR DE IA QUE FUNCIONA YA MISMO (SIN APIS)
-// ===================================================================
-
-function setupAIDescriptionGeneratorQueFunc() {
+// FUNCIÓN ELIMINADA PARA EVITAR CONFLICTOS
+/*function setupAIDescriptionGeneratorQueFunc() {
         const generateBtn = document.getElementById('generate-description-btn');
         const descripcionTextarea = document.getElementById('descripcion');
         const aiFeedback = document.getElementById('ai-feedback');
@@ -664,12 +663,15 @@ function setupAIDescriptionGeneratorQueFunc() {
                 }, 4000);
             }
         });
-    }
-
-        // Inicializar generador funcional
+        }
     
-        // Llama a la función para habilitar el generador de IA si existe el botón
-        setupAIDescriptionGeneratorQueFunc();
+            // Inicializar generador funcional
+        
+            // FUNCIÓN DE IA ELIMINADA - Ahora usa ia-script-independiente.js
+            // setupAIDescriptionGeneratorQueFunc(); // COMENTADO PARA EVITAR DUPLICACIÓN
+        
+        });
     
-    });
+    /*
+    */
 
