@@ -118,8 +118,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             console.log('🔄 Cargando usuarios desde la nueva tabla...');
             
-            // Usar la nueva función RPC simple
-            const { data: usuarios, error: usuariosError } = await supabase.rpc('obtener_usuarios_negocio');
+            // Usar la función que detecta usuarios REALES desde auth.users
+            const { data: usuarios, error: usuariosError } = await supabase.rpc('obtener_usuarios_reales');
             
             if (!usuariosError && usuarios && usuarios.length > 0) {
                 console.log(`✅ Usuarios cargados desde tabla: ${usuarios.length}`);
