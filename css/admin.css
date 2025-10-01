@@ -397,6 +397,96 @@ body { font-family: 'Montserrat', sans-serif; background-color: var(--admin-ligh
     color: #666;
 }
 
+/* ====================================================================
+   📋 ESTILOS PARA SISTEMA DE CATEGORIZACIÓN AVANZADA
+   ==================================================================== */
+
+.form-group select[id^="tipo-prenda"],
+.form-group select[id="categoria"],
+.form-group select[id="estilo"],
+.form-group select[id="color"] {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.form-group select[id^="tipo-prenda"]:focus,
+.form-group select[id="categoria"]:focus,
+.form-group select[id="estilo"]:focus,
+.form-group select[id="color"]:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.form-group select[id^="tipo-prenda"]:disabled,
+.form-group select[id="categoria"]:disabled,
+.form-group select[id="estilo"]:disabled,
+.form-group select[id="color"]:disabled {
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* Indicadores visuales para categorías */
+.form-group label[for="categoria"]::before { content: "🏷️ "; }
+.form-group label[for="tipo-prenda"]::before { content: "👗 "; }
+.form-group label[for="estilo"]::before { content: "✨ "; }
+.form-group label[for="color"]::before { content: "🎨 "; }
+.form-group label[for="genero"]::before { content: "👤 "; }
+.form-group label[for="temporada"]::before { content: "📅 "; }
+.form-group label[for="linea"]::before { content: "🌟 "; }
+
+/* Loading states para selects dependientes */
+.form-group select.loading {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3e%3cpath d='M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83' stroke='%236b7280' stroke-width='2' stroke-linecap='round'/%3e%3c/svg%3e");
+    background-size: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Tooltip para ayuda contextual */
+.form-group.has-tooltip {
+    position: relative;
+}
+
+.form-group.has-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 100;
+}
+
+.form-group.has-tooltip:hover::after {
+    opacity: 1;
+}
+
 @media (max-width: 768px) {
     .admin-sidebar { transform: translateX(-100%); }
     .admin-sidebar.active { transform: translateX(0); }
@@ -409,4 +499,9 @@ body { font-family: 'Montserrat', sans-serif; background-color: var(--admin-ligh
     .dashboard-stats { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
     .dashboard-recent { grid-template-columns: 1fr; }
     .section-header { flex-direction: column; align-items: stretch; }
+    
+    /* Móvil: Ajustar emojis en labels */
+    .form-group label::before {
+        display: none;
+    }
 }

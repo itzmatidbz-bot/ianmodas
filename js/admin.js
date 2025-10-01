@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- SEGURIDAD Y CARGA INICIAL ---
     await protectPage();
+    
+    // Cargar categorías para el formulario
+    await loadCategoriesData();
+    
     const allData = await loadInitialData();
     if (allData) {
         renderUI(allData);
@@ -55,8 +59,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             // Mostrar contenido del admin y ocultar pantalla de carga
-            document.getElementById('loading-screen').style.display = 'none';
-            document.querySelector('.admin-layout').style.display = 'block';
+            const loadingScreen = document.getElementById('loading-screen');
+            const adminLayout = document.querySelector('.admin-layout');
+            if (loadingScreen) loadingScreen.style.display = 'none';
+            if (adminLayout) adminLayout.style.display = 'block';
             
             // Mostrar nombre del usuario en la esquina
             const adminUserSpan = document.querySelector('.admin-user span');
@@ -71,9 +77,204 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // --- FUNCIONES PARA SISTEMA DE CATEGORIZACIÓN AVANZADA ---
+    async function loadCategoriesData() {
+        try {
+            console.log('🏷️ Cargando sistema de categorización avanzada...');
+            
+            // Cargar categorías principales
+            try {
+                const { data: categorias, error: catError } = await supabase.rpc('get_categorias_activas');
+                if (!catError && categorias) {
+                    populateSelect('categoria', categorias, 'Selecciona categoría');
+                }
+            } catch (e) {
+                console.log('Función RPC de categorías no disponible');
+            }
+            
+            // Cargar estilos
+            try {
+                const { data: estilos, error: estError } = await supabase.rpc('get_estilos_activos');
+                if (!estError && estilos) {
+                    populateSelect('estilo', estilos, 'Selecciona estilo');
+                }
+            } catch (e) {
+                console.log('Función RPC de estilos no disponible');
+            }
+            
+            // Cargar colores
+            try {
+                const { data: colores, error: colError } = await supabase.rpc('get_colores_activos');
+                if (!colError && colores) {
+                    populateColorsSelect('color', colores);
+                }
+            } catch (e) {
+                console.log('Función RPC de colores no disponible');
+            }
+            
+            // Configurar eventos de dependencia entre selects
+            setupCategoryDependencies();
+            
+            // Si las funciones RPC no están disponibles, usar fallback
+            loadFallbackCategories();
+            
+            console.log('✅ Sistema de categorización cargado');
+            
+        } catch (error) {
+            console.error('❌ Error al cargar categorías:', error);
+            // Fallback con datos locales
+            loadFallbackCategories();
+        }
+    }
+
+    function populateSelect(selectId, options, placeholder) {
+        const select = document.getElementById(selectId);
+        if (!select || !options || options.length === 0) return;
+        
+        select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+        
+        options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.id;
+            optionElement.textContent = option.nombre;
+            if (option.descripcion) {
+                optionElement.title = option.descripcion;
+            }
+            select.appendChild(optionElement);
+        });
+    }
+
+    function populateColorsSelect(selectId, colores) {
+        const select = document.getElementById(selectId);
+        if (!select || !colores || colores.length === 0) return;
+        
+        select.innerHTML = `<option value="" disabled selected>Selecciona color</option>`;
+        
+        colores.forEach(color => {
+            const optionElement = document.createElement('option');
+            optionElement.value = color.id;
+            optionElement.textContent = color.nombre;
+            
+            // Agregar indicador visual de color si tiene código hex
+            if (color.codigo_hex && color.codigo_hex !== '#000000' && color.codigo_hex !== '#FFFFFF') {
+                optionElement.style.background = `linear-gradient(90deg, ${color.codigo_hex} 0%, ${color.codigo_hex} 20%, transparent 20%)`;
+                optionElement.style.paddingLeft = '25px';
+            }
+            
+            select.appendChild(optionElement);
+        });
+    }
+
+    function setupCategoryDependencies() {
+        const categoriaSelect = document.getElementById('categoria');
+        const tipoPrendaSelect = document.getElementById('tipo-prenda');
+        
+        if (categoriaSelect && tipoPrendaSelect) {
+            categoriaSelect.addEventListener('change', async (e) => {
+                const categoriaId = e.target.value;
+                if (!categoriaId) return;
+                
+                // Mostrar loading
+                tipoPrendaSelect.classList.add('loading');
+                tipoPrendaSelect.innerHTML = '<option value="">Cargando tipos de prenda...</option>';
+                
+                try {
+                    const { data: tiposPrenda, error } = await supabase.rpc('get_tipos_prenda_por_categoria', { categoria_id: parseInt(categoriaId) });
+                    
+                    if (!error && tiposPrenda && tiposPrenda.length > 0) {
+                        populateSelect('tipo-prenda', tiposPrenda, 'Selecciona tipo de prenda');
+                    } else {
+                        // Fallback con tipos básicos según categoría
+                        loadFallbackTiposPrenda(categoriaId);
+                    }
+                } catch (error) {
+                    console.error('Error al cargar tipos de prenda:', error);
+                    loadFallbackTiposPrenda(categoriaId);
+                }
+                
+                tipoPrendaSelect.classList.remove('loading');
+            });
+        }
+    }
+
+    function loadFallbackTiposPrenda(categoriaId) {
+        const tipoPrendaSelect = document.getElementById('tipo-prenda');
+        if (!tipoPrendaSelect) return;
+        
+        const tiposPorCategoria = {
+            1: [{ id: 101, nombre: 'Blusa' }, { id: 102, nombre: 'Top' }, { id: 103, nombre: 'Camiseta' }],
+            2: [{ id: 201, nombre: 'Jean' }, { id: 202, nombre: 'Pantalón de Vestir' }, { id: 203, nombre: 'Legging' }],
+            3: [{ id: 301, nombre: 'Vestido Casual' }, { id: 302, nombre: 'Vestido de Fiesta' }],
+            4: [{ id: 401, nombre: 'Falda Mini' }, { id: 402, nombre: 'Falda Midi' }]
+        };
+        
+        const tipos = tiposPorCategoria[categoriaId] || [];
+        populateSelect('tipo-prenda', tipos, 'Selecciona tipo de prenda');
+    }
+
+    function loadFallbackCategories() {
+        console.log('📦 Cargando categorías de respaldo...');
+        
+        const fallbackData = {
+            categorias: [
+                { id: 1, nombre: 'Tops', descripcion: 'Prendas superiores' },
+                { id: 2, nombre: 'Pantalones', descripcion: 'Todo tipo de pantalones' },
+                { id: 3, nombre: 'Vestidos', descripcion: 'Vestidos casuales y elegantes' },
+                { id: 4, nombre: 'Faldas', descripcion: 'Faldas de diferentes estilos' },
+                { id: 5, nombre: 'Conjuntos', descripcion: 'Sets coordinados' },
+                { id: 6, nombre: 'Abrigos', descripcion: 'Chaquetas y abrigos' }
+            ],
+            estilos: [
+                { id: 1, nombre: 'Oversize', descripcion: 'Corte holgado' }, 
+                { id: 2, nombre: 'Slim', descripcion: 'Corte ajustado' }, 
+                { id: 3, nombre: 'Skinny', descripcion: 'Muy ajustado' },
+                { id: 4, nombre: 'Cargo', descripcion: 'Con bolsillos laterales' }, 
+                { id: 5, nombre: 'High Waist', descripcion: 'Talle alto' }, 
+                { id: 6, nombre: 'Crop', descripcion: 'Cortado' },
+                { id: 7, nombre: 'Straight', descripcion: 'Corte recto' },
+                { id: 8, nombre: 'Flare', descripcion: 'Acampanado' },
+                { id: 9, nombre: 'Wrap', descripcion: 'Cruzado' },
+                { id: 10, nombre: 'Off Shoulder', descripcion: 'Hombros descubiertos' }
+            ],
+            colores: [
+                { id: 1, nombre: 'Negro', codigo_hex: '#000000' },
+                { id: 2, nombre: 'Blanco', codigo_hex: '#FFFFFF' },
+                { id: 3, nombre: 'Azul', codigo_hex: '#0066CC' },
+                { id: 4, nombre: 'Azul Marino', codigo_hex: '#000080' },
+                { id: 5, nombre: 'Rojo', codigo_hex: '#FF0000' },
+                { id: 6, nombre: 'Rosa', codigo_hex: '#FFC0CB' },
+                { id: 7, nombre: 'Verde', codigo_hex: '#008000' },
+                { id: 8, nombre: 'Amarillo', codigo_hex: '#FFFF00' },
+                { id: 9, nombre: 'Morado', codigo_hex: '#800080' },
+                { id: 10, nombre: 'Marrón', codigo_hex: '#A52A2A' },
+                { id: 11, nombre: 'Beige', codigo_hex: '#F5F5DC' },
+                { id: 12, nombre: 'Gris', codigo_hex: '#808080' },
+                { id: 13, nombre: 'Denim', codigo_hex: '#1560BD' },
+                { id: 14, nombre: 'Fucsia', codigo_hex: '#FF1493' },
+                { id: 15, nombre: 'Coral', codigo_hex: '#FF7F50' }
+            ]
+        };
+        
+        // Solo llenar si los selects están vacíos
+        const categoriaSelect = document.getElementById('categoria');
+        if (categoriaSelect && categoriaSelect.children.length <= 1) {
+            populateSelect('categoria', fallbackData.categorias, 'Selecciona categoría');
+        }
+        
+        const estiloSelect = document.getElementById('estilo');
+        if (estiloSelect && estiloSelect.children.length <= 1) {
+            populateSelect('estilo', fallbackData.estilos, 'Selecciona estilo');
+        }
+        
+        const colorSelect = document.getElementById('color'); 
+        if (colorSelect && colorSelect.children.length <= 1) {
+            populateColorsSelect('color', fallbackData.colores);
+        }
+    }
+
     async function loadInitialData() {
         try {
-            console.log('🚀 Cargando datos iniciales con sistema renovado...');
+            console.log('🚀 Cargando datos iniciales...');
             
             // Cargar estadísticas usando la nueva función RPC
             try {
@@ -90,56 +291,69 @@ document.addEventListener('DOMContentLoaded', async () => {
                         updateElement('total-users', stats.total_users || 0);
                         updateElement('total-products', stats.total_products || 0);
                         updateElement('total-categories', stats.total_categories || 0);
-                        updateElement('recent-registrations', stats.recent_registrations || 0);
-                        updateElement('active-sessions', stats.active_sessions || 0);
-                        updateElement('pending-orders', stats.pending_orders || 0);
                     }, 200);
                 }
             } catch (e) {
                 console.log('Estadísticas no disponibles, usando fallback');
             }
             
-            // Cargar productos
-            const { data: products, error: productsError } = await supabase
-                .from('productos')
-                .select('*')
-                .order('id', { ascending: true });
+            // Cargar productos - primero intentar vista completa, luego tabla básica
+            let products = [];
+            try {
+                const { data: fullProducts, error: fullError } = await supabase
+                    .from('vista_productos_completa')
+                    .select('*')
+                    .order('id', { ascending: false });
+                
+                if (!fullError && fullProducts) {
+                    products = fullProducts;
+                    console.log('✅ Productos cargados desde vista completa');
+                }
+            } catch (e) {
+                console.log('Vista completa no disponible, usando tabla básica');
+            }
             
-            if (productsError) throw productsError;
+            // Fallback a tabla básica si la vista no funciona
+            if (products.length === 0) {
+                const { data: basicProducts, error: basicError } = await supabase
+                    .from('productos')
+                    .select('*')
+                    .order('id', { ascending: false });
+                
+                if (basicError) throw basicError;
+                products = basicProducts || [];
+                console.log('✅ Productos cargados desde tabla básica');
+            }
 
-            // Cargar usuarios desde la nueva tabla
+            // Cargar usuarios
             const users = await loadUsers();
             
-            console.log(`✅ Datos iniciales cargados: ${products?.length || 0} productos, ${users?.length || 0} usuarios`);
+            console.log(`✅ Datos cargados: ${products.length} productos, ${users.length} usuarios`);
             return { products, users };
         } catch (error) {
             console.error('❌ Error al cargar datos:', error.message);
-            alert('Error al cargar datos: ' + error.message);
-            return null;
+            return { products: [], users: [] };
         }
     }
 
     async function loadUsers() {
         try {
-            console.log('🔄 Cargando usuarios desde la nueva tabla...');
+            console.log('🔄 Cargando usuarios...');
             
-            // Usar la función que detecta usuarios REALES desde auth.users
-            const { data: usuarios, error: usuariosError } = await supabase.rpc('obtener_usuarios_reales');
-            
-            if (!usuariosError && usuarios && usuarios.length > 0) {
-                console.log(`✅ Usuarios cargados desde tabla: ${usuarios.length}`);
+            // Intentar usar la función RPC si está disponible
+            try {
+                const { data: usuarios, error: usuariosError } = await supabase.rpc('obtener_usuarios_reales');
                 
-                // Ocultar notificación ya que tenemos datos reales
-                const notification = document.getElementById('users-notification');
-                if (notification) notification.style.display = 'none';
-                
-                return usuarios;
-            } else {
-                console.log('⚠️ Error al cargar usuarios o tabla vacía:', usuariosError);
+                if (!usuariosError && usuarios && usuarios.length > 0) {
+                    console.log(`✅ Usuarios cargados desde RPC: ${usuarios.length}`);
+                    return usuarios;
+                }
+            } catch (e) {
+                console.log('RPC de usuarios no disponible');
             }
 
-            // Fallback si no funciona la RPC
-            console.log('🎭 Usando datos de respaldo');
+            // Fallback con datos realistas
+            console.log('🎭 Usando datos de usuarios de respaldo');
             return generateRealisticUsers();
 
         } catch (error) {
@@ -160,7 +374,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
 
         return empresasReales.map((empresa, index) => ({
-            id: `real-demo-${index + 1}`,
+            id: `demo-${index + 1}`,
             email: empresa.email,
             nombre_empresa: empresa.nombre,
             created_at: new Date(Date.now() - empresa.dias * 24 * 60 * 60 * 1000).toISOString(),
@@ -175,21 +389,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateDashboardStats(products, users);
         renderProductsTable(products);
         renderUsersTable(users);
-        renderRecentActivity(products, users);
     }
 
     // --- EVENT LISTENERS ---
     function setupEventListeners(products, users) {
+        // Navegación
         DOMElements.navItems.forEach(item => {
             item.addEventListener('click', (e) => {
-                if (DOMElements.sidebar.classList.contains('active')) toggleMobileMenu();
+                if (DOMElements.sidebar && DOMElements.sidebar.classList.contains('active')) {
+                    toggleMobileMenu();
+                }
                 const section = e.currentTarget.dataset.section;
                 if (section) switchSection(section);
             });
         });
 
-        DOMElements.menuToggle.addEventListener('click', toggleMobileMenu);
-        DOMElements.sidebarOverlay.addEventListener('click', toggleMobileMenu);
+        if (DOMElements.menuToggle) {
+            DOMElements.menuToggle.addEventListener('click', toggleMobileMenu);
+        }
+        
+        if (DOMElements.sidebarOverlay) {
+            DOMElements.sidebarOverlay.addEventListener('click', toggleMobileMenu);
+        }
 
         // Búsqueda de productos
         if (DOMElements.searchInput) {
@@ -197,55 +418,101 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const query = DOMElements.searchInput.value.toLowerCase();
                 const filteredProducts = products.filter(p => 
                     p.nombre.toLowerCase().includes(query) || 
-                    p.categoria.toLowerCase().includes(query)
+                    (p.categoria && p.categoria.toLowerCase().includes(query)) ||
+                    (p.categoria_nombre && p.categoria_nombre.toLowerCase().includes(query))
                 );
                 renderProductsTable(filteredProducts);
             }, 300));
         }
 
         // Búsqueda de usuarios
-        if (DOMElements.searchUsersInput && users) {
+        if (DOMElements.searchUsersInput) {
             DOMElements.searchUsersInput.addEventListener('input', debounce(() => {
                 const query = DOMElements.searchUsersInput.value.toLowerCase();
                 const filteredUsers = users.filter(u => 
-                    u.nombre_empresa.toLowerCase().includes(query) || 
-                    u.email.toLowerCase().includes(query)
+                    u.email.toLowerCase().includes(query) || 
+                    (u.nombre_empresa && u.nombre_empresa.toLowerCase().includes(query))
                 );
                 renderUsersTable(filteredUsers);
             }, 300));
         }
 
-        DOMElements.logoutButton.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
-        });
-        
-        DOMElements.productForm.addEventListener('submit', (e) => handleProductFormSubmit(e, products));
-        DOMElements.productForm.addEventListener('reset', resetProductForm);
-        
-        DOMElements.productsTableBody.addEventListener('click', (e) => handleTableActions(e, products));
-        
-        setupImageUploadListeners();
+        // Formulario de productos
+        if (DOMElements.productForm) {
+            DOMElements.productForm.addEventListener('submit', (e) => handleProductFormSubmit(e, products));
+        }
 
-        DOMElements.confirmNoBtn.addEventListener('click', () => DOMElements.confirmModal.style.display = 'none');
+        // Upload de imagen
+        if (DOMElements.imageUploadArea && DOMElements.imageInput) {
+            DOMElements.imageUploadArea.addEventListener('click', () => DOMElements.imageInput.click());
+            DOMElements.imageInput.addEventListener('change', handleImagePreview);
+        }
+
+        // Logout
+        if (DOMElements.logoutButton) {
+            DOMElements.logoutButton.addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            });
+        }
+
+        // Event delegation para botones de la tabla
+        document.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('[data-action="edit"]');
+            if (editBtn) {
+                const productId = parseInt(editBtn.closest('tr').dataset.id);
+                openEditForm(productId, products);
+                return;
+            }
+            
+            const deleteBtn = e.target.closest('[data-action="delete"]');
+            if (deleteBtn) {
+                const productId = parseInt(deleteBtn.closest('tr').dataset.id);
+                showDeleteModal(productId, products);
+                return;
+            }
+        });
     }
 
-    // --- LÓGICA DEL FORMULARIO ---
+    // --- MANEJO DE FORMULARIOS ---
     async function handleProductFormSubmit(e, products) {
         e.preventDefault();
+        
+        if (!DOMElements.submitButton) return;
+        
         DOMElements.submitButton.disabled = true;
-        DOMElements.submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Guardando...`;
+        DOMElements.submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
         try {
-            const formData = new FormData(DOMElements.productForm);
+            const formData = new FormData(e.target);
+            
+            // Validar campos requeridos
+            const nombre = formData.get('nombre')?.trim();
+            const descripcion = formData.get('descripcion')?.trim();
+            const precio = parseFloat(formData.get('precio'));
+            const stock = parseInt(formData.get('stock'));
+            
+            if (!nombre || !descripcion || isNaN(precio) || isNaN(stock)) {
+                throw new Error('Por favor completa todos los campos requeridos');
+            }
+            
             const productData = {
-                nombre: formData.get('nombre'),
-                descripcion: formData.get('descripcion'),
-                precio: parseFloat(formData.get('precio')),
-                stock: parseInt(formData.get('stock')),
-                categoria: formData.get('categoria')
+                nombre: nombre,
+                descripcion: descripcion,
+                precio: precio,
+                stock: stock,
+                // Campos de categorización avanzada (con fallback a null si no están disponibles)
+                categoria_id: parseInt(formData.get('categoria')) || null,
+                tipo_prenda_id: parseInt(formData.get('tipo-prenda')) || null,
+                estilo_id: parseInt(formData.get('estilo')) || null,
+                color_id: parseInt(formData.get('color')) || null,
+                genero: formData.get('genero') || 'mujer',
+                temporada: formData.get('temporada') || 'todo_año',
+                // Campo legacy para compatibilidad
+                categoria: formData.get('linea') || 'Todo el Mundo'
             };
 
+            // Manejo de imagen
             const file = DOMElements.imageInput.files[0];
             let imageUrl;
 
@@ -256,13 +523,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filePath);
                 imageUrl = urlData.publicUrl;
             } else if (editingProductId) {
-                imageUrl = products.find(p => p.id === editingProductId).imagen_url;
+                const existingProduct = products.find(p => p.id === editingProductId);
+                imageUrl = existingProduct?.imagen_url;
             } else {
                 throw new Error('Debes seleccionar una imagen para un nuevo producto.');
             }
 
             productData.imagen_url = imageUrl;
 
+            // Guardar en base de datos
             const { error } = editingProductId
                 ? await supabase.from('productos').update(productData).eq('id', editingProductId)
                 : await supabase.from('productos').insert([productData]);
@@ -273,10 +542,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.reload(); // Recarga para ver todos los cambios
 
         } catch (error) {
+            console.error('Error al guardar producto:', error);
             alert('Error al guardar el producto: ' + error.message);
         } finally {
-            DOMElements.submitButton.disabled = false;
-            resetProductForm();
+            if (DOMElements.submitButton) {
+                DOMElements.submitButton.disabled = false;
+                DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
+            }
         }
     }
     
@@ -286,258 +558,183 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         editingProductId = productId;
 
-        // Cambiar a la sección sin resetear el formulario
-        DOMElements.sections.forEach(s => s.classList.toggle('active', s.id === 'new-product'));
-        DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.section === 'new-product'));
+        // Cambiar a la sección de nuevo producto
+        switchSection('new-product');
 
         // Llenar el formulario con los datos del producto
-        DOMElements.formTitle.textContent = 'Editar Producto';
-        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-        DOMElements.productForm.nombre.value = product.nombre;
-        DOMElements.productForm.descripcion.value = product.descripcion;
-        DOMElements.productForm.precio.value = product.precio;
-        DOMElements.productForm.stock.value = product.stock;
-        DOMElements.productForm.categoria.value = product.categoria;
-        DOMElements.imagePreview.src = product.imagen_url;
-        DOMElements.imagePreview.style.display = 'block';
+        if (DOMElements.formTitle) DOMElements.formTitle.textContent = 'Editar Producto';
+        if (DOMElements.submitButton) DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+        
+        if (DOMElements.productForm) {
+            const form = DOMElements.productForm;
+            if (form.nombre) form.nombre.value = product.nombre || '';
+            if (form.descripcion) form.descripcion.value = product.descripcion || '';
+            if (form.precio) form.precio.value = product.precio || '';
+            if (form.stock) form.stock.value = product.stock || '';
+            
+            // Campos nuevos de categorización
+            if (form.categoria && product.categoria_id) form.categoria.value = product.categoria_id;
+            if (form['tipo-prenda'] && product.tipo_prenda_id) form['tipo-prenda'].value = product.tipo_prenda_id;
+            if (form.estilo && product.estilo_id) form.estilo.value = product.estilo_id;
+            if (form.color && product.color_id) form.color.value = product.color_id;
+            if (form.genero) form.genero.value = product.genero || 'mujer';
+            if (form.temporada) form.temporada.value = product.temporada || 'todo_año';
+            
+            // Campo legacy
+            if (form.linea) form.linea.value = product.categoria || 'Todo el Mundo';
+        }
+        
+        if (DOMElements.imagePreview && product.imagen_url) {
+            DOMElements.imagePreview.src = product.imagen_url;
+            DOMElements.imagePreview.style.display = 'block';
+        }
     }
 
     function resetProductForm() {
         editingProductId = null;
-        DOMElements.productForm.reset();
-        DOMElements.imagePreview.src = '';
-        DOMElements.imagePreview.style.display = 'none';
-        DOMElements.formTitle.textContent = 'Añadir Nuevo Producto';
-        DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
+        if (DOMElements.productForm) DOMElements.productForm.reset();
+        if (DOMElements.imagePreview) {
+            DOMElements.imagePreview.src = '';
+            DOMElements.imagePreview.style.display = 'none';
+        }
+        if (DOMElements.formTitle) DOMElements.formTitle.textContent = 'Añadir Nuevo Producto';
+        if (DOMElements.submitButton) DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
     }
 
     // --- FUNCIONES AUXILIARES ---
     function renderProductsTable(products) {
-        DOMElements.productsTableBody.innerHTML = products.map(product => `
-            <tr data-id="${product.id}">
-                <td><img src="${product.imagen_url}" alt="${product.nombre}" class="product-table-img"></td>
-                <td>${product.nombre}</td>
-                <td>${product.categoria}</td>
-                <td>$${product.precio ? product.precio.toFixed(2) : '0.00'}</td>
-                <td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock}</td>
-                <td>
-                    <button class="btn-icon edit" data-action="edit" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon danger" data-action="delete" title="Eliminar"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`).join('');
-    }
-
-    function updateDashboardStats(products, users) {
-        console.log('📊 Actualizando estadísticas del dashboard con datos:', { 
-            productos: products?.length, 
-            usuarios: users?.length 
-        });
-
-        // Estadísticas de usuarios
-        const totalUsersElement = document.getElementById('total-users');
-        if (totalUsersElement) {
-            totalUsersElement.textContent = users?.length || 7;
-        }
-
-        // Estadísticas de productos
-        const totalProductsElement = document.getElementById('total-products');
-        if (totalProductsElement) {
-            totalProductsElement.textContent = products?.length || 143;
-        }
-
-        // Stock bajo (productos con poco inventario)
-        const lowStockElement = document.getElementById('low-stock');
-        if (lowStockElement) {
-            const lowStock = products?.filter(p => p.stock > 0 && p.stock < 5).length || Math.ceil((products?.length || 143) * 0.05);
-            lowStockElement.textContent = lowStock;
-        }
-
-        // Total de categorías
-        const totalCategoriesElement = document.getElementById('total-categories');
-        if (totalCategoriesElement) {
-            const categories = products ? new Set(products.map(p => p.categoria)).size : 9;
-            totalCategoriesElement.textContent = Math.max(categories, 6);
-        }
-
-        // Valor total del stock
-        const totalStockValueElement = document.getElementById('total-stock-value');
-        if (totalStockValueElement) {
-            if (products && products.length > 0) {
-                const totalValue = products.reduce((sum, product) => sum + (product.precio * product.stock), 0);
-                totalStockValueElement.textContent = `$${totalValue.toLocaleString()}`;
-            } else {
-                // Valor estimado realista
-                const estimatedValue = (products?.length || 143) * 2500; // Promedio $2500 por producto
-                totalStockValueElement.textContent = `$${estimatedValue.toLocaleString()}`;
-            }
-        }
-
-        // Registros recientes (última semana)
-        const recentRegistrationsElement = document.getElementById('recent-registrations');
-        if (recentRegistrationsElement) {
-            if (users && users.length > 0) {
-                const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                const recentUsers = users.filter(user => new Date(user.created_at) > oneWeekAgo);
-                recentRegistrationsElement.textContent = recentUsers.length;
-            } else {
-                recentRegistrationsElement.textContent = Math.max(1, Math.ceil((users?.length || 7) * 0.3));
-            }
-        }
-
-        // Sesiones activas estimadas
-        const activeSessionsElement = document.getElementById('active-sessions');
-        if (activeSessionsElement) {
-            const activeSessions = Math.ceil((users?.length || 7) * 0.4);
-            activeSessionsElement.textContent = activeSessions;
-        }
-
-        // Pedidos pendientes estimados
-        const pendingOrdersElement = document.getElementById('pending-orders');
-        if (pendingOrdersElement) {
-            const pendingOrders = Math.max(2, Math.ceil((products?.length || 143) * 0.05));
-            pendingOrdersElement.textContent = pendingOrders;
-        }
-
-        console.log('✅ Estadísticas actualizadas correctamente');
-    }
-    
-    function renderUsersTable(users) {
-        const usersTableBody = document.getElementById('users-table-body');
-        const usersCount = document.getElementById('users-count');
-        const usersNotification = document.getElementById('users-notification');
+        if (!DOMElements.productsTableBody || !products) return;
         
-        if (!usersTableBody || !users) return;
-
-        usersCount.textContent = users.length;
-        
-        // Mostrar notificación si son datos de demostración
-        const isDemoData = users.some(user => user.id && user.id.startsWith('demo-'));
-        if (isDemoData && usersNotification) {
-            usersNotification.style.display = 'block';
-        }
-        
-        usersTableBody.innerHTML = users.map(user => {
-            const createdDate = new Date(user.created_at).toLocaleDateString();
-            const status = user.status === 'confirmed' ? 
-                '<span class="user-status confirmed">Confirmado</span>' : 
-                '<span class="user-status pending">Pendiente</span>';
+        DOMElements.productsTableBody.innerHTML = products.map(product => {
+            const categoria = product.categoria_nombre || product.categoria || 'Sin categoría';
+            const tipoPrenda = product.tipo_prenda_nombre ? ` - ${product.tipo_prenda_nombre}` : '';
+            const estilo = product.estilo_nombre ? ` (${product.estilo_nombre})` : '';
+            const color = product.color_nombre ? ` - ${product.color_nombre}` : '';
             
             return `
-                <tr data-id="${user.id}">
-                    <td>${user.email}</td>
-                    <td><strong>${user.nombre_empresa}</strong></td>
-                    <td>${createdDate}</td>
-                    <td>${status}</td>
-                    <td>-</td>
+                <tr data-id="${product.id}">
+                    <td><img src="${product.imagen_url || '/placeholder.jpg'}" alt="${product.nombre}" class="product-table-img" onerror="this.src='/placeholder.jpg'"></td>
+                    <td>
+                        <div class="product-info">
+                            <strong>${product.nombre}</strong>
+                            <small class="text-muted">${categoria}${tipoPrenda}${estilo}${color}</small>
+                        </div>
+                    </td>
+                    <td>${categoria}</td>
+                    <td>$${product.precio ? product.precio.toFixed(2) : '0.00'}</td>
+                    <td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock || 0}</td>
+                    <td class="table-actions">
+                        <button class="btn-icon edit" data-action="edit" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete" data-action="delete" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
                 </tr>
             `;
         }).join('');
     }
 
-    function renderRecentActivity(products, users) {
-        // Productos recientes
-        const recentProductsContainer = document.getElementById('recent-products');
-        if (recentProductsContainer && products) {
-            const recentProducts = products
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                .slice(0, 5);
-            
-            recentProductsContainer.innerHTML = recentProducts.map(product => `
-                <div class="recent-item">
-                    <div class="recent-item-info">
-                        <strong>${product.nombre}</strong>
-                        <small>${product.categoria} - Stock: ${product.stock}</small>
-                    </div>
-                    <div class="recent-item-date">
-                        ${new Date(product.created_at).toLocaleDateString()}
-                    </div>
-                </div>
-            `).join('');
-        }
+    function renderUsersTable(users) {
+        if (!DOMElements.usersTableBody || !users) return;
+        
+        DOMElements.usersTableBody.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.nombre_empresa || user.email.split('@')[0]}</td>
+                <td>${user.email}</td>
+                <td><span class="status ${user.status || 'confirmed'}">${user.status === 'confirmed' ? 'Activo' : 'Pendiente'}</span></td>
+                <td>${new Date(user.created_at).toLocaleDateString()}</td>
+            </tr>
+        `).join('');
+    }
 
-        // Usuarios recientes
-        const recentUsersContainer = document.getElementById('recent-users');
-        if (recentUsersContainer && users) {
-            const recentUsers = users.slice(0, 5);
-            
-            recentUsersContainer.innerHTML = recentUsers.map(user => `
-                <div class="recent-item">
-                    <div class="recent-item-info">
-                        <strong>${user.nombre_empresa}</strong>
-                        <small>${user.email}</small>
-                    </div>
-                    <div class="recent-item-date">
-                        ${new Date(user.created_at).toLocaleDateString()}
-                    </div>
-                </div>
-            `).join('');
+    function updateDashboardStats(products, users) {
+        if (!products || !users) return;
+        
+        const lowStockCount = products.filter(p => p.stock < 5).length;
+        const totalStockValue = products.reduce((sum, p) => sum + ((p.precio || 0) * (p.stock || 0)), 0);
+        
+        if (DOMElements.totalUsers) DOMElements.totalUsers.textContent = users.length;
+        if (DOMElements.totalProducts) DOMElements.totalProducts.textContent = products.length;
+        if (DOMElements.lowStock) DOMElements.lowStock.textContent = lowStockCount;
+        if (DOMElements.totalStockValue) DOMElements.totalStockValue.textContent = `$${totalStockValue.toFixed(2)}`;
+    }
+
+    function handleImagePreview(e) {
+        const file = e.target.files[0];
+        if (file && DOMElements.imagePreview) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                DOMElements.imagePreview.src = e.target.result;
+                DOMElements.imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
         }
     }
 
-    function handleTableActions(e, products) {
-        const button = e.target.closest('button[data-action]');
-        if (!button) return;
-        const action = button.dataset.action;
-        const productId = parseInt(button.closest('tr').dataset.id);
-        if (action === 'edit') openEditForm(productId, products);
-        else if (action === 'delete') confirmDelete(productId, products);
-    }
-
-    function confirmDelete(productId, products) {
-        const product = products.find(p => p.id === productId);
-        document.getElementById('confirm-message').textContent = `¿Seguro que quieres eliminar "${product.nombre}"?`;
-        DOMElements.confirmModal.style.display = 'flex';
-        DOMElements.confirmYesBtn.onclick = async () => {
-            try {
-                const { error } = await supabase.from('productos').delete().eq('id', productId);
-                if (error) throw error;
-                alert('Producto eliminado.');
-                window.location.reload();
-            } catch (error) {
-                alert('Error al eliminar: ' + error.message);
-            }
-        };
-    }
-
-    function setupImageUploadListeners() {
-        DOMElements.imageUploadArea.addEventListener('click', () => DOMElements.imageInput.click());
-        DOMElements.imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    DOMElements.imagePreview.src = event.target.result;
-                    DOMElements.imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
+    function switchSection(sectionId) {
+        DOMElements.sections.forEach(section => {
+            section.classList.toggle('active', section.id === sectionId);
         });
+        DOMElements.navItems.forEach(item => {
+            item.classList.toggle('active', item.dataset.section === sectionId);
+        });
+        
+        if (sectionId === 'new-product') resetProductForm();
     }
 
     function toggleMobileMenu() {
-        DOMElements.sidebar.classList.toggle('active');
-        DOMElements.sidebarOverlay.classList.toggle('active');
+        if (DOMElements.sidebar) DOMElements.sidebar.classList.toggle('active');
+        if (DOMElements.sidebarOverlay) DOMElements.sidebarOverlay.classList.toggle('active');
     }
 
-    function switchSection(sectionName) {
-        // Solo resetear el formulario si se hace click en "Añadir Producto" desde el menú
-        if (sectionName === 'new-product' && !editingProductId) {
-            resetProductForm();
+    function showDeleteModal(productId, products) {
+        const product = products.find(p => p.id === productId);
+        if (!product || !DOMElements.confirmModal) return;
+
+        const confirmMessage = document.getElementById('confirm-message');
+        if (confirmMessage) {
+            confirmMessage.textContent = `¿Estás seguro de que quieres eliminar "${product.nombre}"?`;
         }
-        DOMElements.sections.forEach(s => s.classList.toggle('active', s.id === sectionName));
-        DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.section === sectionName));
+        
+        DOMElements.confirmModal.style.display = 'block';
+
+        if (DOMElements.confirmYesBtn) {
+            DOMElements.confirmYesBtn.onclick = () => deleteProduct(productId);
+        }
+        
+        if (DOMElements.confirmNoBtn) {
+            DOMElements.confirmNoBtn.onclick = () => DOMElements.confirmModal.style.display = 'none';
+        }
     }
 
-    function debounce(func, delay) {
+    async function deleteProduct(productId) {
+        try {
+            const { error } = await supabase.from('productos').delete().eq('id', productId);
+            if (error) throw error;
+            
+            alert('Producto eliminado con éxito.');
+            window.location.reload();
+        } catch (error) {
+            console.error('Error al eliminar producto:', error);
+            alert('Error al eliminar el producto: ' + error.message);
+        }
+        
+        if (DOMElements.confirmModal) {
+            DOMElements.confirmModal.style.display = 'none';
+        }
+    }
+
+    function debounce(func, wait) {
         let timeout;
-        return (...args) => {
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
             clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
+            timeout = setTimeout(later, wait);
         };
     }
-
-    // ===================================================================
-    // IA manejada por ia-script-independiente.js
-    // ===================================================================
-    
 });

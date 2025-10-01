@@ -175,11 +175,60 @@
                                 <img id="image-preview" src="" alt="Vista previa">
                             </div>
                         </div>
-                        <div class="form-group"><label for="nombre">Nombre</label><input type="text" id="nombre" name="nombre" required></div>
+                        <div class="form-group"><label for="nombre">Nombre del Producto</label><input type="text" id="nombre" name="nombre" required placeholder="Ej: Blusa elegante con encaje"></div>
+                        
+                        <!-- Categorización Avanzada -->
                         <div class="form-group">
-                            <label for="categoria">Categoría</label>
+                            <label for="categoria">Categoría Principal</label>
                             <select id="categoria" name="categoria" required>
-                                <option value="" disabled selected>Selecciona una colección</option>
+                                <option value="" disabled selected>Selecciona categoría</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tipo-prenda">Tipo de Prenda</label>
+                            <select id="tipo-prenda" name="tipo-prenda" required>
+                                <option value="" disabled selected>Primero selecciona una categoría</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="estilo">Estilo</label>
+                            <select id="estilo" name="estilo" required>
+                                <option value="" disabled selected>Selecciona estilo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="color">Color Principal</label>
+                            <select id="color" name="color" required>
+                                <option value="" disabled selected>Selecciona color</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="genero">Género</label>
+                            <select id="genero" name="genero" required>
+                                <option value="mujer">Mujer</option>
+                                <option value="hombre">Hombre</option>
+                                <option value="unisex">Unisex</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="temporada">Temporada</label>
+                            <select id="temporada" name="temporada" required>
+                                <option value="todo_año">Todo el Año</option>
+                                <option value="primavera_verano">Primavera/Verano</option>
+                                <option value="otoño_invierno">Otoño/Invierno</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Línea de productos (anterior categoría) -->
+                        <div class="form-group">
+                            <label for="linea">Línea de Productos</label>
+                            <select id="linea" name="linea" required>
+                                <option value="" disabled selected>Selecciona línea</option>
                                 <option value="Outlet">Outlet</option>
                                 <option value="Todo el Mundo">Todo el Mundo</option>
                                 <option value="Argentina">Argentina</option>
@@ -187,8 +236,9 @@
                                 <option value="Turquía">Turquía</option>
                             </select>
                         </div>
-                        <div class="form-group"><label for="precio">Precio</label><input type="number" id="precio" name="precio" step="0.01" min="0" required></div>
-                        <div class="form-group"><label for="stock">Stock</label><input type="number" id="stock" name="stock" min="0" required></div>
+                        
+                        <div class="form-group"><label for="precio">Precio (USD)</label><input type="number" id="precio" name="precio" step="0.01" min="0" required placeholder="0.00"></div>
+                        <div class="form-group"><label for="stock">Stock Disponible</label><input type="number" id="stock" name="stock" min="0" required placeholder="0"></div>
                         <div class="form-group span-2">
                             <div class="description-header">
                                 <label for="descripcion">Descripción del Producto</label>

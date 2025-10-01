@@ -35,14 +35,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Obtener datos del formulario
+            // Obtener datos avanzados del formulario
             const nombre = document.getElementById('nombre')?.value.trim() || '';
-            const categoria = document.getElementById('categoria')?.value || '';
+            const categoria = document.getElementById('categoria')?.selectedOptions[0]?.text || '';
+            const tipoPrenda = document.getElementById('tipo-prenda')?.selectedOptions[0]?.text || '';
+            const estilo = document.getElementById('estilo')?.selectedOptions[0]?.text || '';
+            const color = document.getElementById('color')?.selectedOptions[0]?.text || '';
+            const genero = document.getElementById('genero')?.value || 'mujer';
+            const temporada = document.getElementById('temporada')?.value || 'todo_año';
+            const linea = document.getElementById('linea')?.selectedOptions[0]?.text || '';
             const precio = document.getElementById('precio')?.value || '';
-            const talla = document.getElementById('talla')?.value || '';
-            const color = document.getElementById('color')?.value || '';
             
-            console.log('📝 Datos del formulario:', { nombre, categoria, precio, talla, color });
+            console.log('📝 Datos avanzados del formulario:', { 
+                nombre, categoria, tipoPrenda, estilo, color, genero, temporada, linea, precio 
+            });
             
             if (!nombre || !categoria) {
                 // Mostrar error
@@ -78,27 +84,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Simular delay realista (2.5 segundos)
                 await new Promise(resolve => setTimeout(resolve, 2500));
                 
-                // GENERADOR INTELIGENTE CON TEMPLATES MEJORADOS
+                // GENERADOR INTELIGENTE CON TEMPLATES ULTRA ESPECÍFICOS
                 const templates = {
-                    'Remeras': [
-                        `${nombre} fabricada con materiales de primera calidad, diseñada específicamente para el mercado mayorista. Su corte versátil y acabado profesional la posicionan como una opción estratégica para revendedores. ${color ? `El color ${color} añade versatilidad comercial, ` : ''}perfecta para boutiques, tiendas de moda casual y locales urbanos que buscan productos con alta rotación.`,
-                        `${nombre} con diseño contemporáneo y confección superior. Combina comodidad, durabilidad y estilo en una prenda ideal para mayoristas exigentes. Su tejido de calidad premium garantiza satisfacción del cliente final, mientras que su precio competitivo asegura márgenes atractivos para tu negocio.`,
-                        `${nombre} de línea comercial premium, especialmente desarrollada para el canal de reventa. ${talla ? `Disponible en talla ${talla}, ` : ''}esta prenda destaca por su versatilidad estacional y amplia aceptación en diferentes segmentos de mercado. Una inversión segura para inventarios de alto movimiento.`
+                    'Tops': [
+                        `${tipoPrenda ? `${tipoPrenda} ` : ''}${nombre} ${estilo ? `de estilo ${estilo.toLowerCase()}` : ''} fabricada con materiales premium especialmente para el mercado mayorista de moda femenina. ${color ? `Su elegante color ${color.toLowerCase()} la convierte en una pieza versátil` : 'Su diseño versátil'} ideal para ${genero === 'mujer' ? 'clientela femenina exigente' : 'todo tipo de clientela'}. ${temporada !== 'todo_año' ? `Perfecta para la temporada ${temporada.replace('_', '/')}, ` : ''}garantiza alta rotación en boutiques y tiendas especializadas. Línea ${linea} con acabado profesional y márgenes competitivos.`,
+                        
+                        `${nombre}: ${tipoPrenda ? `${tipoPrenda.toLowerCase()} ` : 'prenda '}de construcción superior con corte ${estilo ? estilo.toLowerCase() : 'moderno'} y confección impecable. ${color ? `El color ${color.toLowerCase()} añade sofisticación` : 'Su diseño sofisticado'} y amplía las posibilidades comerciales para mayoristas del sector indumentaria. Desarrollada específicamente para el mercado ${genero}, combina tendencias actuales con la durabilidad que demandan los revendedores profesionales.`,
+                        
+                        `${tipoPrenda ? `${tipoPrenda} ` : ''}${nombre} ${estilo ? `estilo ${estilo.toLowerCase()}` : ''} de línea ${linea} - la inversión perfecta para tu inventario mayorista. ${color ? `Su vibrante color ${color.toLowerCase()} garantiza` : 'Su diseño garantiza'} excelente aceptación en el mercado objetivo. ${temporada !== 'todo_año' ? `Ideal para ${temporada.replace('_', '/')}, ` : ''}combina calidad premium con precio estratégico para maximizar tus márgenes de ganancia.`
                     ],
+                    
                     'Pantalones': [
-                        `${nombre} con ingeniería textil avanzada y corte anatómico, desarrollado para mayoristas del sector indumentaria. Su diseño ergonómico y materiales de alta resistencia ofrecen comodidad duradera y estilo contemporáneo. ${talla ? `En talla ${talla}, ` : ''}ideal para retailers que priorizan la satisfacción del cliente y márgenes competitivos.`,
-                        `${nombre} de construcción premium y acabado impecable, especialmente creado para el mercado de reventa profesional. Su versatilidad de uso y resistencia al desgaste lo convierten en una pieza fundamental para inventarios estratégicos. Perfecto para tiendas multisegmento que buscan productos de rotación garantizada.`,
-                        `${nombre} con tecnología textil superior y diseño comercial inteligente. ${color ? `Su color ${color} se adapta a múltiples combinaciones, ` : ''}maximizando las posibilidades de venta. Representa una inversión sólida para mayoristas que atienden clientela diversificada y exigente en calidad-precio.`
+                        `${tipoPrenda ? `${tipoPrenda} ` : ''}${nombre} ${estilo ? `de corte ${estilo.toLowerCase()}` : ''} con ingeniería textil avanzada para mayoristas especializados. ${color ? `Su color ${color.toLowerCase()} versátil se adapta a múltiples combinaciones, ` : ''}maximizando las oportunidades de venta. ${genero === 'mujer' ? 'Diseñado para la silueta femenina moderna' : 'Corte universal'}, este producto de línea ${linea} representa una inversión segura con alta rotación garantizada.`,
+                        
+                        `${nombre}: ${tipoPrenda ? `${tipoPrenda.toLowerCase()} ` : 'pantalón '}${estilo ? `estilo ${estilo.toLowerCase()}` : ''} de construcción premium y acabado impecable. ${temporada !== 'todo_año' ? `Perfecto para ${temporada.replace('_', '/')}, ` : ''}combina comodidad, durabilidad y diseño contemporáneo en una prenda ideal para revendedores exigentes. ${color ? `El color ${color.toLowerCase()} aporta versatilidad comercial` : 'Su versatilidad comercial'} y asegura márgenes atractivos.`,
+                        
+                        `${tipoPrenda ? `${tipoPrenda} ` : ''}${nombre} ${estilo ? `corte ${estilo.toLowerCase()}` : ''} - tecnología textil superior para el mercado mayorista. Especialmente desarrollado para ${genero === 'mujer' ? 'moda femenina' : 'clientela diversa'}, este producto de línea ${linea} destaca por su resistencia al desgaste y estilo atemporal. ${color ? `Su elegante color ${color.toLowerCase()} complementa` : 'Su diseño complementa'} perfectamente cualquier colección comercial.`
                     ],
+                    
                     'Vestidos': [
-                        `${nombre} elegante y versátil, perfecto para mayoristas del rubro moda femenina. Su diseño sofisticado y confección impecable lo posicionan como una pieza clave en cualquier colección. ${color ? `El color ${color} aporta distinción y modernidad, ` : ''}garantizando alta aceptación en el mercado objetivo.`,
-                        `${nombre} de línea moderna y acabado profesional, ideal para revendedores que priorizan la calidad. Su versatilidad permite adaptarse a diferentes ocasiones, desde eventos casuales hasta compromisos más formales. Una inversión inteligente para tu catálogo de productos.`,
-                        `${nombre} con diseño atemporal y confección de primera. Especialmente creado para el canal mayorista, combina elegancia y funcionalidad en una prenda que garantiza excelente rotación. Perfecto para boutiques y tiendas especializadas en moda femenina.`
+                        `${tipoPrenda ? `${tipoPrenda} ` : ''}${nombre} ${estilo ? `estilo ${estilo.toLowerCase()}` : ''} de confección excepcional, diseñado exclusivamente para mayoristas del sector moda femenina. ${color ? `Su deslumbrante color ${color.toLowerCase()} aporta elegancia` : 'Su elegancia'} y distinción, posicionándolo como pieza clave en cualquier inventario estratégico. ${temporada !== 'todo_año' ? `Ideal para ${temporada.replace('_', '/')}, ` : ''}línea ${linea} con garantía de alta rotación.`,
+                        
+                        `${nombre}: ${tipoPrenda ? `${tipoPrenda.toLowerCase()} ` : 'vestido '}${estilo ? `de diseño ${estilo.toLowerCase()}` : ''} con acabado profesional premium. Combina sofisticación y funcionalidad en una prenda perfecta para boutiques especializadas. ${color ? `El color ${color.toLowerCase()} maximiza` : 'Su diseño maximiza'} las posibilidades de venta, mientras que su versatilidad de uso garantiza satisfacción del cliente final y márgenes competitivos.`,
+                        
+                        `${tipoPrenda ? `${tipoPrenda} ` : ''}${nombre} ${estilo ? `estilo ${estilo.toLowerCase()}` : ''} - inversión inteligente para mayoristas del rubro moda. Su diseño atemporal y calidad superior lo convierten en una pieza fundamental para inventarios de alta rotación. ${color ? `Su color ${color.toLowerCase()} versátil` : 'Su versatilidad'} permite adaptarse a diferentes ocasiones, desde eventos casuales hasta compromisos formales.`
                     ],
+                    
+                    'Faldas': [
+                        `${tipoPrenda ? `${tipoPrenda} ` : ''}${nombre} ${estilo ? `de corte ${estilo.toLowerCase()}` : ''} fabricada con precisión para el mercado mayorista especializado. ${color ? `Su sofisticado color ${color.toLowerCase()} la convierte` : 'Su diseño la convierte'} en una pieza versátil perfecta para clientela femenina moderna. ${temporada !== 'todo_año' ? `Especial para ${temporada.replace('_', '/')}, ` : ''}línea ${linea} con calidad premium y márgenes atractivos.`,
+                        
+                        `${nombre}: ${tipoPrenda ? `${tipoPrenda.toLowerCase()} ` : 'falda '}${estilo ? `estilo ${estilo.toLowerCase()}` : ''} de construcción superior y acabado impecable. Diseñada específicamente para revendedores que priorizan la calidad y el estilo. ${color ? `El color ${color.toLowerCase()} añade` : 'Su diseño añade'} distinción y modernidad, garantizando excelente aceptación en el mercado objetivo.`
+                    ],
+                    
+                    'Conjuntos': [
+                        `${nombre}: conjunto ${estilo ? `estilo ${estilo.toLowerCase()}` : ''} de coordinación perfecta para mayoristas del sector moda. ${color ? `Su armonioso color ${color.toLowerCase()} crea` : 'Su diseño crea'} un look completo y sofisticado ideal para ${genero === 'mujer' ? 'clientela femenina' : 'todo tipo de clientela'}. ${temporada !== 'todo_año' ? `Perfecto para ${temporada.replace('_', '/')}, ` : ''}línea ${linea} con garantía de alta rotación y márgenes competitivos.`,
+                        
+                        `${nombre} ${estilo ? `de diseño ${estilo.toLowerCase()}` : ''} - set completo de calidad premium para mayoristas exigentes. Combina elegancia y funcionalidad en un producto estratégico para tu inventario. ${color ? `Su color ${color.toLowerCase()} versátil maximiza` : 'Su versatilidad maximiza'} las oportunidades comerciales y asegura satisfacción del cliente final.`
+                    ],
+                    
                     'default': [
-                        `${nombre} de excelente calidad, especialmente diseñado para el mercado mayorista. Este producto de ${categoria} combina durabilidad, estilo y funcionalidad, ofreciendo una excelente oportunidad de negocio para revendedores. Su versatilidad y acabado profesional garantizan alta rotación.`,
-                        `${nombre} premium con características ideales para mayoristas exigentes. Fabricado con materiales de primera calidad y atención al detalle, este producto de ${categoria} representa una inversión segura para tu negocio. Perfecto para clientela que busca productos confiables.`,
-                        `${nombre} de línea comercial superior, diseñado específicamente para el canal mayorista. Su combinación de estilo moderno y resistencia comprobada lo convierte en una opción estratégica para tu inventario. ${color ? `El color ${color} complementa perfectamente su diseño versátil.` : ''}`
+                        `${nombre} de línea ${linea} - ${tipoPrenda ? `${tipoPrenda.toLowerCase()} ` : 'prenda '}${estilo ? `estilo ${estilo.toLowerCase()}` : ''} especialmente diseñada para el mercado mayorista. ${color ? `Su elegante color ${color.toLowerCase()} la posiciona` : 'Su diseño la posiciona'} como una opción estratégica para revendedores de ${genero === 'mujer' ? 'moda femenina' : 'indumentaria'}. ${temporada !== 'todo_año' ? `Ideal para ${temporada.replace('_', '/')}, ` : ''}combina calidad superior con precio competitivo.`,
+                        
+                        `${tipoPrenda ? `${tipoPrenda} ` : ''}${nombre} ${estilo ? `de corte ${estilo.toLowerCase()}` : ''} fabricado con materiales premium y atención al detalle. Este producto de ${categoria} ${color ? `en color ${color.toLowerCase()}` : ''} representa una inversión segura para mayoristas que atienden clientela exigente. Línea ${linea} con garantía de rotación y márgenes atractivos.`,
+                        
+                        `${nombre}: ${categoria.toLowerCase()} ${estilo ? `estilo ${estilo.toLowerCase()}` : ''} de construcción superior para mayoristas especializados. ${color ? `Su color ${color.toLowerCase()} añade` : 'Su diseño añade'} versatilidad comercial y amplía las posibilidades de venta. ${temporada !== 'todo_año' ? `Perfecto para ${temporada.replace('_', '/')}, ` : ''}ideal para inventarios de alta rotación con márgenes competitivos.`
                     ]
                 };
                 
