@@ -172,6 +172,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         editingProductId = productId;
 
+        // Cambiar a la sección sin resetear el formulario
+        DOMElements.sections.forEach(s => s.classList.toggle('active', s.id === 'new-product'));
+        DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.section === 'new-product'));
+
+        // Llenar el formulario con los datos del producto
         DOMElements.formTitle.textContent = 'Editar Producto';
         DOMElements.submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
         DOMElements.productForm.nombre.value = product.nombre;
@@ -181,8 +186,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         DOMElements.productForm.categoria.value = product.categoria;
         DOMElements.imagePreview.src = product.imagen_url;
         DOMElements.imagePreview.style.display = 'block';
-
-        switchSection('new-product');
     }
 
     function resetProductForm() {
@@ -262,7 +265,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function switchSection(sectionName) {
-        if (sectionName === 'new-product') resetProductForm();
+        // Solo resetear el formulario si se hace click en "Añadir Producto" desde el menú
+        if (sectionName === 'new-product' && !editingProductId) {
+            resetProductForm();
+        }
         DOMElements.sections.forEach(s => s.classList.toggle('active', s.id === sectionName));
         DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.section === sectionName));
     }
