@@ -1288,6 +1288,14 @@ body {
     margin-bottom: 0.25rem;
 }
 
+.cart-item__color,
+.cart-item__fabric {
+    font-size: 0.85rem;
+    color: #666;
+    margin: 0.25rem 0;
+    font-style: italic;
+}
+
 .cart-item__price, .cart-item__quantity {
     color: var(--text-light);
     font-size: 0.9rem;

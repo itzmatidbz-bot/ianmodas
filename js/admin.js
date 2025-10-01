@@ -388,13 +388,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setupCategoryDependencies() {
         const categoriaSelect = document.getElementById('categoria');
         const tipoPrendaSelect = document.getElementById('tipo-prenda');
+        const estiloSelect = document.getElementById('estilo');
         
         if (categoriaSelect && tipoPrendaSelect) {
             categoriaSelect.addEventListener('change', async (e) => {
                 const categoriaId = e.target.value;
                 if (!categoriaId) return;
                 
-                // Mostrar loading
+                // Mostrar loading para tipos de prenda
                 tipoPrendaSelect.classList.add('loading');
                 tipoPrendaSelect.innerHTML = '<option value="">Cargando tipos de prenda...</option>';
                 
@@ -404,7 +405,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (!error && tiposPrenda && tiposPrenda.length > 0) {
                         populateSelect('tipo-prenda', tiposPrenda, 'Selecciona tipo de prenda');
                     } else {
-                        // Fallback con tipos básicos según categoría
                         loadFallbackTiposPrenda(categoriaId);
                     }
                 } catch (error) {
@@ -413,6 +413,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 tipoPrendaSelect.classList.remove('loading');
+                
+                // Cargar estilos dependientes de la categoría
+                if (estiloSelect) {
+                    estiloSelect.classList.add('loading');
+                    estiloSelect.innerHTML = '<option value="">Cargando estilos...</option>';
+                    
+                    try {
+                        const { data: estilos, error: estiloError } = await supabase.rpc('get_estilos_por_categoria', { cat_id: parseInt(categoriaId) });
+                        
+                        if (!estiloError && estilos && estilos.length > 0) {
+                            populateSelect('estilo', estilos, 'Selecciona estilo');
+                        } else {
+                            // Fallback a todos los estilos
+                            const { data: todosEstilos } = await supabase.rpc('get_estilos_activos');
+                            if (todosEstilos) {
+                                populateSelect('estilo', todosEstilos, 'Selecciona estilo');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error al cargar estilos:', error);
+                        loadFallbackEstilos();
+                    }
+                    
+                    estiloSelect.classList.remove('loading');
+                }
             });
         }
     }

@@ -447,16 +447,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         cartItemsContainer.innerHTML = cart.map(item => `
-            <div class="cart-item" data-id="${item.id}">
+            <div class="cart-item" data-id="${item.id}" data-color="${item.color_id || 'sin-color'}">
                 <img src="${item.imagen_url}" alt="${item.nombre}" class="cart-item__image">
                 <div class="cart-item__info">
                     <p class="cart-item__title">${item.nombre}</p>
+                    ${item.color_nombre ? `<p class="cart-item__color">Color: ${item.color_nombre}</p>` : ''}
+                    ${item.tipo_tela_nombre ? `<p class="cart-item__fabric">Tela: ${item.tipo_tela_nombre}</p>` : ''}
                     <p class="cart-item__price">$${item.precio.toFixed(2)}</p>
                     <div class="cart-item__quantity">
                         <span>Cantidad: ${item.quantity}</span>
                     </div>
                 </div>
-                <button class="cart-item__remove" data-id="${item.id}">&times;</button>
+                <button class="cart-item__remove" data-id="${item.id}" data-color="${item.color_id || 'sin-color'}">&times;</button>
             </div>
         `).join('');
     }
@@ -489,7 +491,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (e.target.classList.contains('cart-item__remove')) {
             const itemId = parseInt(e.target.dataset.id);
-            cart = cart.filter(item => item.id !== itemId);
+            const colorId = e.target.dataset.color;
+            
+            // Remover considerando ID del producto y color
+            cart = cart.filter(item => !(item.id === itemId && (item.color_id || 'sin-color') === colorId));
             saveCart();
             updateCartUI();
         }
@@ -503,8 +508,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let message = "¡Hola Ian Modas! 👋 Quisiera hacer el siguiente pedido:\n\n";
         cart.forEach(item => {
             message += `▪️ *${item.nombre}*\n`;
+            if (item.color_nombre) message += `  - Color: ${item.color_nombre}\n`;
+            if (item.tipo_tela_nombre) message += `  - Tela: ${item.tipo_tela_nombre}\n`;
             message += `  - Cantidad: ${item.quantity}\n`;
-            message += `  - Precio unitario: $${item.precio.toFixed(2)}\n\n`;
+            message += `  - Precio unitario: $${item.precio.toFixed(2)}\n`;
+            message += `  - Subtotal: $${(item.precio * item.quantity).toFixed(2)}\n\n`;
         });
         const total = cart.reduce((sum, item) => sum + item.precio * item.quantity, 0);
         message += `*Total del Pedido: $${total.toFixed(2)}*\n\n`;
