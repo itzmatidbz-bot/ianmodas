@@ -56,13 +56,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Intentar crear el registro de mayorista
                     await createMayoristaRecord(data.user);
 
-                    const nombreEmpresa = data.user.user_metadata?.nombre_empresa || 
-                                         data.user.email?.split('@')[0] || 'Mayorista';
+                    const nombreEmpresa = data.user.user_metadata?.nombre_empresa || 'Mi Empresa';
+                    const nombreUsuario = data.user.email?.split('@')[0] || 'Usuario';
 
                     // Mostrar mensaje de bienvenida y redirigir
                     successMessage.innerHTML = `
                         <strong>¡Cuenta confirmada exitosamente!</strong><br>
-                        Bienvenido/a a Ian Modas, ${nombreEmpresa}<br>
+                        Bienvenido/a ${nombreUsuario} de ${nombreEmpresa}<br>
                         Redirigiendo al catálogo...
                     `;
                     successMessage.style.display = 'block';
@@ -184,7 +184,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                               authData.user.email?.split('@')[0] || 'Mayorista';
             }
 
-            successMessage.textContent = `¡Bienvenido/a ${nombreEmpresa}!`;
+            // Obtener nombre del email para mostrar junto con la empresa
+            const nombreUsuario = authData.user.email?.split('@')[0] || 'Usuario';
+            
+            successMessage.textContent = `¡Bienvenido/a ${nombreUsuario} de ${nombreEmpresa}!`;
             successMessage.style.display = 'block';
             setTimeout(() => {
                 window.location.href = 'index.html#productos'; // Redirigir al catálogo

@@ -35,12 +35,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function protectPage() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return window.location.href = 'login.html';
-        const { data: isAdmin, error } = await supabase.rpc('is_admin');
-        if (error || !isAdmin) {
-            await supabase.auth.signOut();
-            return window.location.href = 'login.html?error=auth';
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const { data: isAdmin, error } = await supabase.rpc('is_admin');
+            if (error || !isAdmin) {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html?error=auth';
+                return;
+            }
+            
+            // Mostrar contenido del admin y ocultar pantalla de carga
+            document.getElementById('loading-screen').style.display = 'none';
+            document.querySelector('.admin-layout').style.display = 'block';
+            
+            // Mostrar nombre del usuario en la esquina
+            const adminUserSpan = document.querySelector('.admin-user span');
+            if (adminUserSpan) {
+                const userName = session.user.email?.split('@')[0] || 'Admin';
+                adminUserSpan.textContent = `Admin: ${userName}`;
+            }
+            
+        } catch (error) {
+            console.error('Error al verificar permisos:', error);
+            window.location.href = 'login.html';
         }
     }
 

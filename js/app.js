@@ -112,8 +112,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupMobileMenu() {
-        if (navToggle) navToggle.addEventListener('click', () => navMenu.classList.add('active'));
-        if (navClose) navClose.addEventListener('click', () => navMenu.classList.remove('active'));
+        if (navToggle && navMenu) {
+            navToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                navMenu.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevenir scroll
+            });
+        }
+        
+        if (navClose && navMenu) {
+            navClose.addEventListener('click', (e) => {
+                e.preventDefault();
+                navMenu.classList.remove('active');
+                document.body.style.overflow = ''; // Restaurar scroll
+            });
+        }
+
+        // Cerrar menú al hacer click en un enlace
+        if (navMenu) {
+            const navLinks = navMenu.querySelectorAll('.nav__link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+
+        // Cerrar menú al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (navMenu && navMenu.classList.contains('active')) {
+                if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
     }
     
     function setupAuthForms() {
