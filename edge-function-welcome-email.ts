@@ -5,9 +5,14 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+// @ts-ignore: Deno global is provided by the edge runtime environment
+declare const Deno: any;
 
-Deno.serve(async (req) => {
+const RESEND_API_KEY = typeof Deno !== "undefined" && Deno.env ? Deno.env.get('RESEND_API_KEY') : undefined;
+
+// Explicitly type req as Request
+// @ts-ignore: Deno global is provided by the edge runtime environment
+Deno.serve(async (req: Request) => {
   try {
     const { email, nombreEmpresa } = await req.json();
     
@@ -84,11 +89,17 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error:', error);
+    let errorMessage = 'Unknown error';
+    if (error && typeof error === 'object' && 'message' in error) {
+      errorMessage = (error as { message: string }).message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: errorMessage
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
