@@ -279,8 +279,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Cargar estadísticas usando la nueva función RPC
             try {
                 const { data: stats, error: statsError } = await supabase.rpc('obtener_estadisticas_dashboard');
-                if (!statsError && stats) {
-                    console.log('✅ Estadísticas cargadas:', stats);
+                if (!statsError && stats && stats.length > 0) {
+                    const stat = stats[0];
+                    console.log('✅ Estadísticas completas cargadas:', stat);
+                    
                     // Actualizar estadísticas de manera segura
                     setTimeout(() => {
                         const updateElement = (id, value) => {
@@ -288,9 +290,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                             if (element) element.textContent = value;
                         };
                         
-                        updateElement('total-users', stats.total_users || 0);
-                        updateElement('total-products', stats.total_products || 0);
-                        updateElement('total-categories', stats.total_categories || 0);
+                        updateElement('total-users', stat.total_users || 0);
+                        updateElement('total-products', stat.total_products || 0);
+                        updateElement('total-categories', stat.total_categories || 0);
+                        updateElement('recent-registrations', stat.recent_registrations || 0);
+                        updateElement('active-sessions', stat.active_sessions || 0);
+                        updateElement('pending-orders', stat.pending_orders || 0);
+                        
+                        // Mostrar actividad reciente en el dashboard
+                        renderDashboardActivity(stat);
                     }, 200);
                 }
             } catch (e) {
@@ -389,6 +397,85 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateDashboardStats(products, users);
         renderProductsTable(products);
         renderUsersTable(users);
+        renderRecentActivityFromData(products, users);
+    }
+    
+    // Nueva función para mostrar actividad reciente en dashboard
+    function renderDashboardActivity(stats) {
+        try {
+            // Productos recientes en dashboard
+            if (stats.productos_recientes) {
+                const recentProductsContainer = document.querySelector('.recent-products-dashboard');
+                if (recentProductsContainer) {
+                    recentProductsContainer.innerHTML = stats.productos_recientes.slice(0, 3).map(product => `
+                        <div class="recent-item">
+                            <strong>${product.nombre}</strong>
+                            <span class="price">$${product.precio} UYU</span>
+                            <small>${product.categoria || 'Sin categoría'}</small>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            // Usuarios recientes en dashboard
+            if (stats.usuarios_recientes) {
+                const recentUsersContainer = document.querySelector('.recent-users-dashboard');
+                if (recentUsersContainer) {
+                    recentUsersContainer.innerHTML = stats.usuarios_recientes.slice(0, 3).map(user => `
+                        <div class="recent-item">
+                            <strong>${user.email.split('@')[0]}</strong>
+                            <small>${new Date(user.created_at).toLocaleDateString()}</small>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            // Productos bajo stock
+            if (stats.bajo_stock) {
+                const lowStockContainer = document.querySelector('.low-stock-dashboard');
+                if (lowStockContainer) {
+                    lowStockContainer.innerHTML = stats.bajo_stock.slice(0, 3).map(product => `
+                        <div class="recent-item low-stock-item">
+                            <strong>${product.nombre}</strong>
+                            <span class="stock-alert">Stock: ${product.stock}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (error) {
+            console.log('Error al renderizar actividad del dashboard:', error);
+        }
+    }
+    
+    function renderRecentActivityFromData(products, users) {
+        try {
+            // Si no hay estadísticas avanzadas, usar datos básicos
+            const recentProducts = products.slice(0, 3);
+            const recentUsers = users.slice(0, 3);
+            
+            const recentProductsContainer = document.querySelector('.recent-products-dashboard');
+            if (recentProductsContainer && recentProducts.length > 0) {
+                recentProductsContainer.innerHTML = recentProducts.map(product => `
+                    <div class="recent-item">
+                        <strong>${product.nombre}</strong>
+                        <span class="price">$${product.precio || 0} UYU</span>
+                        <small>${product.categoria_nombre || product.categoria || 'Sin categoría'}</small>
+                    </div>
+                `).join('');
+            }
+            
+            const recentUsersContainer = document.querySelector('.recent-users-dashboard');
+            if (recentUsersContainer && recentUsers.length > 0) {
+                recentUsersContainer.innerHTML = recentUsers.map(user => `
+                    <div class="recent-item">
+                        <strong>${user.nombre_empresa || user.email.split('@')[0]}</strong>
+                        <small>${new Date(user.created_at).toLocaleDateString()}</small>
+                    </div>
+                `).join('');
+            }
+        } catch (error) {
+            console.log('Error al renderizar actividad básica:', error);
+        }
     }
 
     // --- EVENT LISTENERS ---
@@ -621,7 +708,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </td>
                     <td>${categoria}</td>
-                    <td>$${product.precio ? product.precio.toFixed(2) : '0.00'}</td>
+                    <td>$${product.precio ? Math.round(product.precio) : '0'} UYU</td>
                     <td class="${product.stock < 5 ? 'low-stock' : ''}">${product.stock || 0}</td>
                     <td class="table-actions">
                         <button class="btn-icon edit" data-action="edit" title="Editar">
@@ -658,7 +745,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (DOMElements.totalUsers) DOMElements.totalUsers.textContent = users.length;
         if (DOMElements.totalProducts) DOMElements.totalProducts.textContent = products.length;
         if (DOMElements.lowStock) DOMElements.lowStock.textContent = lowStockCount;
-        if (DOMElements.totalStockValue) DOMElements.totalStockValue.textContent = `$${totalStockValue.toFixed(2)}`;
+        if (DOMElements.totalStockValue) DOMElements.totalStockValue.textContent = `$${Math.round(totalStockValue)} UYU`;
     }
 
     function handleImagePreview(e) {

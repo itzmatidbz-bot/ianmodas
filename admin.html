@@ -89,14 +89,20 @@
                 <div class="dashboard-recent">
                     <div class="recent-section">
                         <h3><i class="fas fa-clock"></i> Productos Agregados Recientemente</h3>
-                        <div id="recent-products" class="recent-list">
-                            <!-- Se llenará con JavaScript -->
+                        <div id="recent-products" class="recent-list recent-products-dashboard">
+                            <div class="loading-placeholder">Cargando productos recientes...</div>
                         </div>
                     </div>
                     <div class="recent-section">
                         <h3><i class="fas fa-user-plus"></i> Últimos Usuarios Registrados</h3>
-                        <div id="recent-users" class="recent-list">
-                            <!-- Se llenará con JavaScript -->
+                        <div id="recent-users" class="recent-list recent-users-dashboard">
+                            <div class="loading-placeholder">Cargando usuarios recientes...</div>
+                        </div>
+                    </div>
+                    <div class="recent-section">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Productos Bajo Stock</h3>
+                        <div id="low-stock-items" class="recent-list low-stock-dashboard">
+                            <div class="loading-placeholder">Verificando stock...</div>
                         </div>
                     </div>
                 </div>
@@ -237,7 +243,7 @@
                             </select>
                         </div>
                         
-                        <div class="form-group"><label for="precio">Precio (USD)</label><input type="number" id="precio" name="precio" step="0.01" min="0" required placeholder="0.00"></div>
+                        <div class="form-group"><label for="precio">Precio (UYU)</label><input type="number" id="precio" name="precio" step="1" min="0" required placeholder="0"></div>
                         <div class="form-group"><label for="stock">Stock Disponible</label><input type="number" id="stock" name="stock" min="0" required placeholder="0"></div>
                         <div class="form-group span-2">
                             <div class="description-header">
