@@ -154,11 +154,16 @@
                     <table class="users-table">
                         <thead>
                             <tr>
+                                <th>Nombre Completo</th>
                                 <th>Email</th>
-                                <th>Nombre de Empresa</th>
-                                <th>Fecha de Registro</th>
+                                <th>RUT</th>
+                                <th>Celular</th>
+                                <th>Empresa</th>
+                                <th>Dirección</th>
+                                <th>Departamento</th>
+                                <th>Agencia Envío</th>
+                                <th>Registro</th>
                                 <th>Estado</th>
-                                <th>Último Acceso</th>
                             </tr>
                         </thead>
                         <tbody id="users-table-body">
@@ -173,12 +178,19 @@
                 <form id="product-form" class="product-form" novalidate>
                     <div class="form-grid">
                         <div class="form-group span-2">
-                            <label for="imagen">Imagen del Producto</label>
-                            <div id="image-upload-area" class="image-upload-area">
-                                <p><i class="fas fa-cloud-upload-alt"></i></p>
-                                <p>Arrastra y suelta o haz clic para seleccionar</p>
-                                <input type="file" id="imagen" name="imagen" accept="image/*" style="display: none;">
-                                <img id="image-preview" src="" alt="Vista previa">
+                            <label for="imagenes">Imágenes del Producto</label>
+                            <div id="images-upload-area" class="images-upload-area">
+                                <div class="upload-zone">
+                                    <p><i class="fas fa-images"></i></p>
+                                    <p>Arrastra y suelta múltiples imágenes o haz clic para seleccionar</p>
+                                    <input type="file" id="imagenes" name="imagenes" accept="image/*" multiple style="display: none;">
+                                    <button type="button" class="btn-secondary" onclick="document.getElementById('imagenes').click()">
+                                        <i class="fas fa-plus"></i> Seleccionar Imágenes
+                                    </button>
+                                </div>
+                                <div id="images-preview" class="images-preview">
+                                    <!-- Las vistas previas aparecerán aquí -->
+                                </div>
                             </div>
                         </div>
                         <div class="form-group"><label for="nombre">Nombre del Producto</label><input type="text" id="nombre" name="nombre" required placeholder="Ej: Blusa elegante con encaje"></div>
@@ -205,11 +217,15 @@
                             </select>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="color">Color Principal</label>
-                            <select id="color" name="color" required>
-                                <option value="" disabled selected>Selecciona color</option>
-                            </select>
+                        <div class="form-group span-2">
+                            <label for="colores-disponibles">Colores Disponibles</label>
+                            <div id="colores-disponibles" class="colores-selector">
+                                <p class="help-text">Selecciona todos los colores en los que está disponible este producto</p>
+                                <div id="colores-grid" class="colores-grid">
+                                    <!-- Los colores se cargarán aquí dinámicamente -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="colores-selected" name="colores-selected">
                         </div>
                         
                         <div class="form-group">

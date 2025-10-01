@@ -106,10 +106,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const { data: colores, error: colError } = await supabase.rpc('get_colores_activos');
                 if (!colError && colores) {
-                    populateColorsSelect('color', colores);
+                    populateMultiColorSelect(colores);
                 }
             } catch (e) {
                 console.log('Función RPC de colores no disponible');
+                loadFallbackColores();
             }
             
             // Cargar tipos de tela
@@ -128,6 +129,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Si las funciones RPC no están disponibles, usar fallback
             loadFallbackCategories();
+            
+            // Configurar múltiples imágenes
+            setupMultipleImages();
             
             console.log('✅ Sistema de categorización cargado');
             
@@ -207,10 +211,170 @@ document.addEventListener('DOMContentLoaded', async () => {
             { id: 7, nombre: 'Ecocuero', descripcion: 'Material sintético ecológico' },
             { id: 8, nombre: 'Paño de Lana', descripcion: 'Tejido de lana compacto y abrigado' },
             { id: 9, nombre: 'Mohair', descripcion: 'Fibra de cabra angora, suave y cálida' },
-            { id: 10, nombre: 'Lana', descripcion: 'Fibra natural térmica' }
+            { id: 10, nombre: 'Lana', descripcion: 'Fibra natural térmica' },
+            { id: 11, nombre: 'Algodón', descripcion: 'Fibra natural suave y cómoda' },
+            { id: 12, nombre: 'Hilo', descripcion: 'Tejido fino y delicado' }
         ];
         
         populateTelaSelect('tipo-tela', fallbackTiposTela);
+    }
+
+    // --- FUNCIONES PARA MÚLTIPLES IMÁGENES ---
+    let selectedImages = [];
+    let imageCounter = 0;
+
+    function setupMultipleImages() {
+        const imageInput = document.getElementById('imagenes');
+        const uploadZone = document.querySelector('.upload-zone');
+        const previewContainer = document.getElementById('images-preview');
+
+        if (!imageInput || !uploadZone || !previewContainer) return;
+
+        // Drag & Drop
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.background = '#e3f2fd';
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.style.background = '#f8f9fa';
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.style.background = '#f8f9fa';
+            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+            handleImageFiles(files);
+        });
+
+        // Click to select
+        uploadZone.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleImageFiles(files);
+        });
+    }
+
+    function handleImageFiles(files) {
+        files.forEach(file => {
+            if (selectedImages.length >= 10) {
+                alert('Máximo 10 imágenes permitidas');
+                return;
+            }
+
+            const imageId = ++imageCounter;
+            const imageData = {
+                id: imageId,
+                file: file,
+                url: URL.createObjectURL(file),
+                isMain: selectedImages.length === 0
+            };
+
+            selectedImages.push(imageData);
+            renderImagePreview(imageData);
+        });
+    }
+
+    function renderImagePreview(imageData) {
+        const previewContainer = document.getElementById('images-preview');
+        const previewItem = document.createElement('div');
+        previewItem.className = 'image-preview-item';
+        previewItem.dataset.imageId = imageData.id;
+
+        previewItem.innerHTML = `
+            <img src="${imageData.url}" alt="Preview">
+            <div class="image-controls">
+                <button type="button" onclick="setMainImage(${imageData.id})" title="Marcar como principal">
+                    <i class="fas fa-star"></i>
+                </button>
+                <button type="button" onclick="removeImage(${imageData.id})" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            ${imageData.isMain ? '<div class="main-badge">Principal</div>' : ''}
+        `;
+
+        previewContainer.appendChild(previewItem);
+    }
+
+    window.setMainImage = function(imageId) {
+        selectedImages.forEach(img => img.isMain = false);
+        const selectedImage = selectedImages.find(img => img.id === imageId);
+        if (selectedImage) selectedImage.isMain = true;
+        
+        // Actualizar UI
+        document.querySelectorAll('.main-badge').forEach(badge => badge.remove());
+        const imageItem = document.querySelector(`[data-image-id="${imageId}"]`);
+        if (imageItem) {
+            const badge = document.createElement('div');
+            badge.className = 'main-badge';
+            badge.textContent = 'Principal';
+            imageItem.appendChild(badge);
+        }
+    }
+
+    window.removeImage = function(imageId) {
+        selectedImages = selectedImages.filter(img => img.id !== imageId);
+        const imageItem = document.querySelector(`[data-image-id="${imageId}"]`);
+        if (imageItem) imageItem.remove();
+
+        // Si se eliminó la imagen principal, marcar la primera como principal
+        if (selectedImages.length > 0 && !selectedImages.some(img => img.isMain)) {
+            setMainImage(selectedImages[0].id);
+        }
+    }
+
+    // --- FUNCIONES PARA SELECTOR DE COLORES MÚLTIPLES ---
+    function populateMultiColorSelect(colores) {
+        const coloresGrid = document.getElementById('colores-grid');
+        if (!coloresGrid || !colores) return;
+
+        coloresGrid.innerHTML = '';
+        
+        colores.forEach(color => {
+            const colorOption = document.createElement('div');
+            colorOption.className = 'color-option';
+            colorOption.innerHTML = `
+                <input type="checkbox" id="color-${color.id}" value="${color.id}">
+                <div class="color-swatch" style="background-color: ${color.codigo_hex || '#ddd'}"></div>
+                <span class="color-name">${color.nombre}</span>
+            `;
+
+            colorOption.addEventListener('click', () => {
+                const checkbox = colorOption.querySelector('input');
+                checkbox.checked = !checkbox.checked;
+                colorOption.classList.toggle('selected', checkbox.checked);
+                updateSelectedColors();
+            });
+
+            coloresGrid.appendChild(colorOption);
+        });
+    }
+
+    function updateSelectedColors() {
+        const selectedColorIds = Array.from(document.querySelectorAll('#colores-grid input:checked'))
+            .map(input => input.value);
+        document.getElementById('colores-selected').value = selectedColorIds.join(',');
+    }
+
+    function loadFallbackColores() {
+        const fallbackColores = [
+            { id: 1, nombre: 'Negro', codigo_hex: '#000000' },
+            { id: 2, nombre: 'Blanco', codigo_hex: '#FFFFFF' },
+            { id: 3, nombre: 'Azul', codigo_hex: '#0066CC' },
+            { id: 4, nombre: 'Rojo', codigo_hex: '#FF0000' },
+            { id: 5, nombre: 'Rosa', codigo_hex: '#FFC0CB' },
+            { id: 6, nombre: 'Verde', codigo_hex: '#008000' },
+            { id: 7, nombre: 'Gris', codigo_hex: '#808080' },
+            { id: 8, nombre: 'Marrón', codigo_hex: '#A52A2A' },
+            { id: 9, nombre: 'Amarillo', codigo_hex: '#FFD700' },
+            { id: 10, nombre: 'Violeta', codigo_hex: '#8A2BE2' }
+        ];
+        
+        populateMultiColorSelect(fallbackColores);
     }
 
     function setupCategoryDependencies() {
@@ -316,7 +480,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const colorSelect = document.getElementById('color'); 
         if (colorSelect && colorSelect.children.length <= 1) {
-            populateColorsSelect('color', fallbackData.colores);
+            populateMultiColorSelect(fallbackData.colores);
         }
     }
 
@@ -396,6 +560,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             console.log('🔄 Cargando usuarios...');
             
+            // Intentar obtener usuarios reales de auth.users mediante función admin
+            try {
+                const { data: { users }, error } = await supabase.auth.admin.listUsers();
+                
+                if (!error && users && users.length > 0) {
+                    console.log(`✅ Usuarios reales cargados: ${users.length}`);
+                    return users.filter(user => user.user_metadata?.tipo_usuario === 'mayorista');
+                }
+            } catch (e) {
+                console.log('No se puede acceder a auth.users (permisos admin requeridos)');
+            }
+
             // Intentar usar la función RPC si está disponible
             try {
                 const { data: usuarios, error: usuariosError } = await supabase.rpc('obtener_usuarios_reales');
@@ -420,21 +596,84 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function generateRealisticUsers() {
         const empresasReales = [
-            { nombre: 'Boutique Elegancia', email: 'contacto@boutiqueelegancia.com', dias: 5 },
-            { nombre: 'Moda Total Distribuidora', email: 'ventas@modatotal.com.uy', dias: 12 },
-            { nombre: 'Comercial Vestimenta', email: 'info@comercialvestimenta.com', dias: 8 },
-            { nombre: 'Almacén de Modas', email: 'pedidos@almacenmodas.com.uy', dias: 15 },
-            { nombre: 'Fashion Center', email: 'mayorista@fashioncenter.com', dias: 3 },
-            { nombre: 'Textiles del Uruguay', email: 'contacto@textilesuruguay.com', dias: 20 },
-            { nombre: 'Distribuidora Premium', email: 'info@distributorpremium.com', dias: 7 }
+            { 
+                nombre: 'María', 
+                apellido: 'González',
+                empresa: 'Boutique Elegancia', 
+                email: 'contacto@boutiqueelegancia.com', 
+                rut: '12345678-9',
+                celular: '099123456',
+                direccion: 'Rivera 1234',
+                departamento: 'Montevideo',
+                agencia: 'DAC',
+                dias: 5 
+            },
+            { 
+                nombre: 'Carlos', 
+                apellido: 'Rodríguez',
+                empresa: 'Moda Total Distribuidora', 
+                email: 'ventas@modatotal.com.uy', 
+                rut: '23456789-0',
+                celular: '098987654',
+                direccion: '18 de Julio 2000',
+                departamento: 'Montevideo',
+                agencia: 'UES',
+                dias: 12 
+            },
+            { 
+                nombre: 'Ana', 
+                apellido: 'Martínez',
+                empresa: 'Comercial Vestimenta', 
+                email: 'info@comercialvestimenta.com', 
+                rut: '34567890-1',
+                celular: '097765432',
+                direccion: 'Av. Italia 3000',
+                departamento: 'Canelones',
+                agencia: 'Mirtrans',
+                dias: 8 
+            },
+            { 
+                nombre: 'Luis', 
+                apellido: 'Fernández',
+                empresa: 'Almacén de Modas', 
+                email: 'pedidos@almacenmodas.com.uy', 
+                rut: '45678901-2',
+                celular: '096543210',
+                direccion: 'Sarandi 500',
+                departamento: 'Maldonado',
+                agencia: 'Nordeste',
+                dias: 15 
+            },
+            { 
+                nombre: 'Patricia', 
+                apellido: 'Silva',
+                empresa: 'Fashion Center', 
+                email: 'mayorista@fashioncenter.com', 
+                rut: '56789012-3',
+                celular: '095432109',
+                direccion: 'Bulevar Artigas 1500',
+                departamento: 'Montevideo',
+                agencia: 'DAC',
+                dias: 3 
+            }
         ];
 
         return empresasReales.map((empresa, index) => ({
             id: `demo-${index + 1}`,
             email: empresa.email,
-            nombre_empresa: empresa.nombre,
             created_at: new Date(Date.now() - empresa.dias * 24 * 60 * 60 * 1000).toISOString(),
-            status: index < 5 ? 'confirmed' : 'pending'
+            email_confirmed_at: index < 4 ? new Date().toISOString() : null,
+            user_metadata: {
+                nombre: empresa.nombre,
+                apellido: empresa.apellido,
+                rut: empresa.rut,
+                celular: empresa.celular,
+                nombre_empresa: empresa.empresa,
+                direccion: empresa.direccion,
+                departamento: empresa.departamento,
+                agencia_envio: empresa.agencia,
+                tipo_usuario: 'mayorista'
+            }
         }));
     }
 
@@ -648,33 +887,106 @@ document.addEventListener('DOMContentLoaded', async () => {
                 categoria: formData.get('linea') || 'Todo el Mundo'
             };
 
-            // Manejo de imagen
-            const file = DOMElements.imageInput.files[0];
-            let imageUrl;
-
-            if (file) {
-                const filePath = `public/${Date.now()}-${file.name}`;
-                const { error: uploadError } = await supabase.storage.from('productos').upload(filePath, file);
-                if (uploadError) throw uploadError;
-                const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filePath);
-                imageUrl = urlData.publicUrl;
-            } else if (editingProductId) {
-                const existingProduct = products.find(p => p.id === editingProductId);
-                imageUrl = existingProduct?.imagen_url;
-            } else {
-                throw new Error('Debes seleccionar una imagen para un nuevo producto.');
+            // Validar colores seleccionados
+            const selectedColorIds = formData.get('colores-selected');
+            if (!selectedColorIds || selectedColorIds.trim() === '') {
+                throw new Error('Debes seleccionar al menos un color disponible');
             }
 
-            productData.imagen_url = imageUrl;
+            // Validar imágenes
+            if (selectedImages.length === 0 && !editingProductId) {
+                throw new Error('Debes seleccionar al menos una imagen');
+            }
+
+            // Manejar imagen principal (para compatibilidad con el campo legacy)
+            let mainImageUrl = null;
+            if (selectedImages.length > 0) {
+                const mainImage = selectedImages.find(img => img.isMain) || selectedImages[0];
+                
+                // Subir imagen principal a Supabase Storage
+                const filePath = `public/${Date.now()}-${mainImage.file.name}`;
+                const { error: uploadError } = await supabase.storage.from('productos').upload(filePath, mainImage.file);
+                if (uploadError) throw uploadError;
+                const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filePath);
+                mainImageUrl = urlData.publicUrl;
+            }
+
+            productData.imagen_url = mainImageUrl;
 
             // Guardar en base de datos
-            const { error } = editingProductId
-                ? await supabase.from('productos').update(productData).eq('id', editingProductId)
-                : await supabase.from('productos').insert([productData]);
+            let savedProduct;
+            if (editingProductId) {
+                const { error, data } = await supabase.from('productos').update(productData).eq('id', editingProductId).select();
+                if (error) throw error;
+                savedProduct = data[0];
+            } else {
+                const { error, data } = await supabase.from('productos').insert([productData]).select();
+                if (error) throw error;
+                savedProduct = data[0];
+            }
 
-            if (error) throw error;
+            const productId = savedProduct.id;
+
+            // Guardar múltiples imágenes
+            if (selectedImages.length > 0) {
+                // Eliminar imágenes existentes si es edición
+                if (editingProductId) {
+                    await supabase.from('producto_imagenes').delete().eq('producto_id', productId);
+                }
+
+                // Subir y guardar nuevas imágenes
+                for (let i = 0; i < selectedImages.length; i++) {
+                    const image = selectedImages[i];
+                    try {
+                        const filePath = `public/${productId}-${Date.now()}-${i}-${image.file.name}`;
+                        const { error: uploadError } = await supabase.storage.from('productos').upload(filePath, image.file);
+                        if (uploadError) {
+                            console.warn('Error subiendo imagen:', uploadError);
+                            continue;
+                        }
+
+                        const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filePath);
+                        
+                        await supabase.from('producto_imagenes').insert({
+                            producto_id: productId,
+                            imagen_url: urlData.publicUrl,
+                            orden: i + 1,
+                            es_principal: image.isMain
+                        });
+                    } catch (imgError) {
+                        console.warn('Error procesando imagen:', imgError);
+                    }
+                }
+            }
+
+            // Guardar colores seleccionados
+            const colorIds = selectedColorIds.split(',').filter(id => id.trim() !== '');
+            if (colorIds.length > 0) {
+                // Eliminar colores existentes si es edición
+                if (editingProductId) {
+                    await supabase.from('producto_colores').delete().eq('producto_id', productId);
+                }
+
+                // Insertar nuevos colores
+                const colorInserts = colorIds.map(colorId => ({
+                    producto_id: productId,
+                    color_id: parseInt(colorId),
+                    disponible: true
+                }));
+
+                await supabase.from('producto_colores').insert(colorInserts);
+            }
 
             alert(`Producto ${editingProductId ? 'actualizado' : 'creado'} con éxito.`);
+            
+            // Limpiar formulario
+            selectedImages = [];
+            document.getElementById('images-preview').innerHTML = '';
+            document.querySelectorAll('#colores-grid input:checked').forEach(input => {
+                input.checked = false;
+                input.closest('.color-option').classList.remove('selected');
+            });
+            
             window.location.reload(); // Recarga para ver todos los cambios
 
         } catch (error) {
@@ -775,14 +1087,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderUsersTable(users) {
         if (!DOMElements.usersTableBody || !users) return;
         
-        DOMElements.usersTableBody.innerHTML = users.map(user => `
-            <tr>
-                <td>${user.nombre_empresa || user.email.split('@')[0]}</td>
-                <td>${user.email}</td>
-                <td><span class="status ${user.status || 'confirmed'}">${user.status === 'confirmed' ? 'Activo' : 'Pendiente'}</span></td>
-                <td>${new Date(user.created_at).toLocaleDateString()}</td>
-            </tr>
-        `).join('');
+        DOMElements.usersTableBody.innerHTML = users.map(user => {
+            // Obtener datos del user_metadata si están disponibles
+            const metadata = user.user_metadata || {};
+            const nombreCompleto = metadata.nombre && metadata.apellido 
+                ? `${metadata.nombre} ${metadata.apellido}` 
+                : (metadata.nombre || user.email.split('@')[0]);
+            
+            return `
+                <tr>
+                    <td><strong>${nombreCompleto}</strong></td>
+                    <td>${user.email}</td>
+                    <td>${metadata.rut || 'No disponible'}</td>
+                    <td>${metadata.celular || 'No disponible'}</td>
+                    <td>${metadata.nombre_empresa || user.nombre_empresa || 'No especificada'}</td>
+                    <td>${metadata.direccion || 'No disponible'}</td>
+                    <td>${metadata.departamento || 'No especificado'}</td>
+                    <td>${metadata.agencia_envio || 'No especificada'}</td>
+                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                    <td><span class="user-status ${user.email_confirmed_at ? 'confirmed' : 'pending'}">
+                        ${user.email_confirmed_at ? 'Confirmado' : 'Pendiente'}
+                    </span></td>
+                </tr>
+            `;
+        }).join('');
     }
 
     function updateDashboardStats(products, users) {
