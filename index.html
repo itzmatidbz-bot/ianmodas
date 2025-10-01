@@ -66,24 +66,139 @@
         <section class="products" id="productos">
             <div class="container">
                 <h2 class="section-title">Catálogo</h2>
-                <div class="filter-controls">
-                    <div class="filter-group">
-                        <label for="category-filter">Filtrar por Colección:</label>
-                        <select id="category-filter">
-                            <option value="all">Todas</option>
-                            <option value="Outlet">Outlet</option>
-                            <option value="Todo el Mundo">Todo el Mundo</option>
-                            <option value="Argentina">Argentina</option>
-                            <option value="Italia">Italia</option>
-                            <option value="Turquía">Turquía</option>
-                        </select>
+                
+                <!-- Filtros Avanzados -->
+                <div class="advanced-filters">
+                    <div class="filters-header">
+                        <h3 class="filters-title">
+                            <i class="fas fa-filter"></i>
+                            Filtrar Productos
+                        </h3>
+                        <button id="toggle-filters" class="toggle-filters-btn">
+                            <span id="toggle-text">Mostrar Filtros</span>
+                            <i class="fas fa-chevron-down" id="toggle-icon"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="filters-content" id="filters-content">
+                        <div class="filters-grid">
+                            <!-- Categoría Principal -->
+                            <div class="filter-group">
+                                <label for="categoria-filter">
+                                    <i class="fas fa-tags"></i>
+                                    Categoría:
+                                </label>
+                                <select id="categoria-filter" class="filter-select">
+                                    <option value="">Todas las categorías</option>
+                                </select>
+                            </div>
+
+                            <!-- Tipo de Prenda -->
+                            <div class="filter-group">
+                                <label for="tipo-filter">
+                                    <i class="fas fa-tshirt"></i>
+                                    Tipo de Prenda:
+                                </label>
+                                <select id="tipo-filter" class="filter-select" disabled>
+                                    <option value="">Todos los tipos</option>
+                                </select>
+                            </div>
+
+                            <!-- Estilo -->
+                            <div class="filter-group">
+                                <label for="estilo-filter">
+                                    <i class="fas fa-palette"></i>
+                                    Estilo:
+                                </label>
+                                <select id="estilo-filter" class="filter-select">
+                                    <option value="">Todos los estilos</option>
+                                </select>
+                            </div>
+
+                            <!-- Color -->
+                            <div class="filter-group">
+                                <label for="color-filter">
+                                    <i class="fas fa-paint-brush"></i>
+                                    Color:
+                                </label>
+                                <select id="color-filter" class="filter-select">
+                                    <option value="">Todos los colores</option>
+                                </select>
+                            </div>
+
+                            <!-- Tipo de Tela -->
+                            <div class="filter-group">
+                                <label for="tipo-tela-filter">
+                                    <i class="fas fa-cut"></i>
+                                    Tipo de Tela:
+                                </label>
+                                <select id="tipo-tela-filter" class="filter-select">
+                                    <option value="">Todas las telas</option>
+                                </select>
+                            </div>
+
+                            <!-- Género -->
+                            <div class="filter-group">
+                                <label for="genero-filter">
+                                    <i class="fas fa-venus-mars"></i>
+                                    Género:
+                                </label>
+                                <select id="genero-filter" class="filter-select">
+                                    <option value="">Todos</option>
+                                    <option value="Hombre">Hombre</option>
+                                    <option value="Mujer">Mujer</option>
+                                    <option value="Unisex">Unisex</option>
+                                    <option value="Niño">Niño</option>
+                                    <option value="Niña">Niña</option>
+                                </select>
+                            </div>
+
+                            <!-- Temporada -->
+                            <div class="filter-group">
+                                <label for="temporada-filter">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    Temporada:
+                                </label>
+                                <select id="temporada-filter" class="filter-select">
+                                    <option value="">Todas las temporadas</option>
+                                    <option value="Primavera">Primavera</option>
+                                    <option value="Verano">Verano</option>
+                                    <option value="Otoño">Otoño</option>
+                                    <option value="Invierno">Invierno</option>
+                                    <option value="Todo el año">Todo el año</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Botones de Acción -->
+                        <div class="filters-actions">
+                            <button id="apply-filters" class="btn btn--primary">
+                                <i class="fas fa-search"></i>
+                                Aplicar Filtros
+                            </button>
+                            <button id="clear-filters" class="btn btn--secondary">
+                                <i class="fas fa-times"></i>
+                                Limpiar Filtros
+                            </button>
+                            <div class="results-counter">
+                                <span id="results-count">0 productos encontrados</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Grid de Productos -->
                 <div id="product-grid" class="product-grid">
-                    <!-- Los productos se cargarán aquí -->
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando productos...</p>
+                    </div>
                 </div>
+                
                 <p id="no-results-message" class="no-results-message" style="display: none;">
-                    No se encontraron productos en esta colección.
+                    <i class="fas fa-search"></i>
+                    No se encontraron productos con los filtros seleccionados.
+                    <button id="show-all-products" class="btn btn--outline">Ver todos los productos</button>
                 </p>
             </div>
         </section>

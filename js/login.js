@@ -287,16 +287,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Función de validación del formulario
-    const validateRegisterForm = (email, password, nombreEmpresa) => {
+    const validateRegisterForm = (formData) => {
+        const { email, password, nombre, apellido, rut, celular, nombreEmpresa, direccion, depto } = formData;
+        
         if (password.length < 6) {
             throw new Error('La contraseña debe tener al menos 6 caracteres');
         }
         if (!email.includes('@')) {
             throw new Error('Por favor ingresa un email válido');
         }
+        if (!nombre.trim()) {
+            throw new Error('El nombre es requerido');
+        }
+        if (!apellido.trim()) {
+            throw new Error('El apellido es requerido');
+        }
+        if (!rut.trim()) {
+            throw new Error('El RUT es requerido');
+        }
+        if (!validateRUT(rut)) {
+            throw new Error('El RUT ingresado no es válido (formato: 12345678-9)');
+        }
+        if (!celular.trim()) {
+            throw new Error('El celular es requerido');
+        }
+        if (!validateCelular(celular)) {
+            throw new Error('El celular debe tener formato uruguayo (ej: 099123456)');
+        }
         if (!nombreEmpresa.trim()) {
             throw new Error('El nombre de la empresa es requerido');
         }
+        if (!direccion.trim()) {
+            throw new Error('La dirección es requerida');
+        }
+        if (!depto.trim()) {
+            throw new Error('Debe seleccionar un departamento');
+        }
+    };
+
+    // Función para validar RUT uruguayo
+    const validateRUT = (rut) => {
+        const rutPattern = /^\d{8}-\d$/;
+        return rutPattern.test(rut);
+    };
+
+    // Función para validar celular uruguayo
+    const validateCelular = (celular) => {
+        const celularPattern = /^09[0-9]{7}$/;
+        return celularPattern.test(celular.replace(/\s/g, ''));
     };
 
     // Manejar el registro de mayoristas
@@ -306,24 +344,50 @@ document.addEventListener('DOMContentLoaded', async () => {
             const submitButton = document.getElementById('register-submit-btn');
             if (submitButton.disabled) return;
 
+            // Verificar términos y condiciones
+            const termsCheckbox = document.getElementById('register-terms');
+            if (!termsCheckbox.checked) {
+                registerErrorMessage.textContent = 'Debes aceptar los términos y condiciones';
+                registerErrorMessage.style.display = 'block';
+                return;
+            }
+
             registerErrorMessage.style.display = 'none';
             registerSuccessMessage.style.display = 'none';
 
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const nombreEmpresa = document.getElementById('register-empresa').value;
+            // Recopilar todos los datos del formulario
+            const formData = {
+                nombre: document.getElementById('register-nombre').value.trim(),
+                apellido: document.getElementById('register-apellido').value.trim(),
+                rut: document.getElementById('register-rut').value.trim(),
+                celular: document.getElementById('register-celular').value.trim(),
+                nombreEmpresa: document.getElementById('register-empresa').value.trim(),
+                email: document.getElementById('register-email').value.trim(),
+                password: document.getElementById('register-password').value,
+                direccion: document.getElementById('register-direccion').value.trim(),
+                depto: document.getElementById('register-depto').value,
+                agenciaEnvio: document.getElementById('register-agencia').value || null
+            };
 
             try {
-                // Validar el formulario primero
-                validateRegisterForm(email, password, nombreEmpresa);
+                // Validar el formulario
+                validateRegisterForm(formData);
 
-                // 1. Crear el usuario en auth (con confirmación por email)
+                // Crear el usuario en auth con todos los metadatos
                 const { data, error: signUpError } = await supabase.auth.signUp({
-                    email,
-                    password,
+                    email: formData.email,
+                    password: formData.password,
                     options: {
                         data: {
-                            nombre_empresa: nombreEmpresa
+                            nombre: formData.nombre,
+                            apellido: formData.apellido,
+                            rut: formData.rut,
+                            celular: formData.celular,
+                            nombre_empresa: formData.nombreEmpresa,
+                            direccion: formData.direccion,
+                            departamento: formData.depto,
+                            agencia_envio: formData.agenciaEnvio,
+                            tipo_usuario: 'mayorista'
                         }
                     }
                 });
@@ -340,12 +404,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     throw new Error('No se pudo crear el usuario');
                 }
 
-                // 2. Mostrar mensaje de confirmación (siempre necesario)
+                // Mostrar mensaje de confirmación
                 registerSuccessMessage.innerHTML = `
-                    <strong>¡Registro exitoso!</strong><br>
-                    📧 Te hemos enviado un correo de confirmación a <strong>${email}</strong><br>
+                    <strong>¡Registro exitoso, ${formData.nombre}!</strong><br>
+                    📧 Te hemos enviado un correo de confirmación a <strong>${formData.email}</strong><br>
                     🔗 Haz clic en el enlace del correo para activar tu cuenta de mayorista<br>
-                    ✅ Una vez confirmado, podrás iniciar sesión y acceder al catálogo exclusivo
+                    ✅ Una vez confirmado, podrás acceder al catálogo exclusivo de <strong>${formData.nombreEmpresa}</strong><br>
+                    📦 Los pedidos se enviarán a: <strong>${formData.direccion}, ${formData.depto}</strong>
                 `;
                 registerSuccessMessage.style.display = 'block';
                 registerForm.reset();
@@ -354,16 +419,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error('Error en registro:', error);
                 let errorMsg = 'Error al crear la cuenta. Por favor, intenta nuevamente.';
                 
-                // Manejar errores específicos primero
-                if (error.message === 'La contraseña debe tener al menos 6 caracteres' ||
-                    error.message === 'Por favor ingresa un email válido' ||
-                    error.message === 'El nombre de la empresa es requerido') {
+                // Manejar errores de validación personalizada
+                if (error.message.includes('contraseña') || 
+                    error.message.includes('email') || 
+                    error.message.includes('nombre') ||
+                    error.message.includes('apellido') ||
+                    error.message.includes('RUT') ||
+                    error.message.includes('celular') ||
+                    error.message.includes('empresa') ||
+                    error.message.includes('dirección') ||
+                    error.message.includes('departamento')) {
                     errorMsg = error.message;
                 }
                 // Manejar errores de Supabase
                 else if (error.message && typeof error.message === 'string') {
                     if (error.message.includes('after')) {
-                        // Extraer el número de segundos del mensaje de error
                         const seconds = parseInt(error.message.match(/after (\d+) seconds/)?.[1] || '60');
                         disableFormTemporarily(seconds, 'Has realizado demasiados intentos. Por favor espera.');
                         return;

@@ -112,6 +112,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log('Función RPC de colores no disponible');
             }
             
+            // Cargar tipos de tela
+            try {
+                const { data: tiposTela, error: telaError } = await supabase.rpc('get_tipos_tela_activos');
+                if (!telaError && tiposTela) {
+                    populateTelaSelect('tipo-tela', tiposTela);
+                }
+            } catch (e) {
+                console.log('Función RPC de tipos de tela no disponible');
+                loadFallbackTiposTela();
+            }
+            
             // Configurar eventos de dependencia entre selects
             setupCategoryDependencies();
             
@@ -163,6 +174,43 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             select.appendChild(optionElement);
         });
+    }
+
+    function populateTelaSelect(selectId, tiposTela) {
+        const select = document.getElementById(selectId);
+        if (!select || !tiposTela || tiposTela.length === 0) return;
+        
+        select.innerHTML = `<option value="" disabled selected>Selecciona tipo de tela</option>`;
+        
+        tiposTela.forEach(tela => {
+            const optionElement = document.createElement('option');
+            optionElement.value = tela.id;
+            optionElement.textContent = tela.nombre;
+            
+            // Agregar tooltip con descripción si está disponible
+            if (tela.descripcion && tela.descripcion.trim()) {
+                optionElement.title = tela.descripcion;
+            }
+            
+            select.appendChild(optionElement);
+        });
+    }
+
+    function loadFallbackTiposTela() {
+        const fallbackTiposTela = [
+            { id: 1, nombre: 'Lino', descripcion: 'Fibra natural resistente y transpirable' },
+            { id: 2, nombre: 'Tencel', descripcion: 'Fibra de origen vegetal, suave y antibacteriana' },
+            { id: 3, nombre: 'Viscosa', descripcion: 'Fibra semisintética con tacto sedoso' },
+            { id: 4, nombre: 'Bengalina', descripcion: 'Tejido elástico con cuerpo firme' },
+            { id: 5, nombre: 'Satén', descripcion: 'Tejido brillante y suave' },
+            { id: 6, nombre: 'Jean', descripcion: 'Tejido de algodón resistente' },
+            { id: 7, nombre: 'Ecocuero', descripcion: 'Material sintético ecológico' },
+            { id: 8, nombre: 'Paño de Lana', descripcion: 'Tejido de lana compacto y abrigado' },
+            { id: 9, nombre: 'Mohair', descripcion: 'Fibra de cabra angora, suave y cálida' },
+            { id: 10, nombre: 'Lana', descripcion: 'Fibra natural térmica' }
+        ];
+        
+        populateTelaSelect('tipo-tela', fallbackTiposTela);
     }
 
     function setupCategoryDependencies() {
@@ -593,6 +641,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tipo_prenda_id: parseInt(formData.get('tipo-prenda')) || null,
                 estilo_id: parseInt(formData.get('estilo')) || null,
                 color_id: parseInt(formData.get('color')) || null,
+                tipo_tela_id: parseInt(formData.get('tipo-tela')) || null,
                 genero: formData.get('genero') || 'mujer',
                 temporada: formData.get('temporada') || 'todo_año',
                 // Campo legacy para compatibilidad

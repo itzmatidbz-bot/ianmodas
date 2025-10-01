@@ -1,325 +1,347 @@
 -- ============================================
--- FUNCIONES AVANZADAS PARA IA Y BÚSQUEDAS
--- Mejora la especificidad de la IA y las búsquedas
+-- SISTEMA DE CATEGORIZACIÓN AVANZADA PARA IAN MODAS
+-- Mejora la organización y especificidad de la IA
 -- ============================================
 
--- Función para obtener información completa de un producto por ID
-CREATE OR REPLACE FUNCTION get_producto_completo(producto_id INTEGER)
+-- Tabla de categorías principales
+CREATE TABLE IF NOT EXISTS categorias (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT,
+    activa BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabla de tipos de prenda
+CREATE TABLE IF NOT EXISTS tipos_prenda (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    categoria_id INTEGER REFERENCES categorias(id),
+    descripcion TEXT,
+    activa BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabla de estilos
+CREATE TABLE IF NOT EXISTS estilos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT,
+    activa BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabla de colores
+CREATE TABLE IF NOT EXISTS colores (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    codigo_hex VARCHAR(7),
+    descripcion TEXT,
+    activa BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Suponiendo que la tabla 'productos' ya existe
+-- Actualizar tabla de productos con las nuevas relaciones
+ALTER TABLE productos
+ADD COLUMN IF NOT EXISTS categoria_id INTEGER REFERENCES categorias(id),
+ADD COLUMN IF NOT EXISTS tipo_prenda_id INTEGER REFERENCES tipos_prenda(id),
+ADD COLUMN IF NOT EXISTS estilo_id INTEGER REFERENCES estilos(id),
+ADD COLUMN IF NOT EXISTS color_id INTEGER REFERENCES colores(id),
+ADD COLUMN IF NOT EXISTS genero VARCHAR(20) DEFAULT 'mujer',
+ADD COLUMN IF NOT EXISTS temporada VARCHAR(20) DEFAULT 'todo_año',
+ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT true; -- COLUMNA 'activo' AÑADIDA PARA RESOLVER EL ERROR DE BÚSQUEDA
+
+-- ============================================
+-- DATOS INICIALES - CATEGORÍAS
+-- ============================================
+
+INSERT INTO categorias (nombre, descripcion) VALUES
+('Tops', 'Prendas superiores: blusas, camisetas, tops'),
+('Pantalones', 'Todo tipo de pantalones y jeans'),
+('Vestidos', 'Vestidos casuales y elegantes'),
+('Faldas', 'Faldas de diferentes estilos y largos'),
+('Conjuntos', 'Sets y conjuntos coordinados'),
+('Abrigos', 'Chaquetas, blazers y abrigos'),
+('Ropa Interior', 'Lencería y ropa interior'),
+('Accesorios', 'Complementos y accesorios')
+ON CONFLICT (nombre) DO NOTHING;
+
+-- ============================================
+-- DATOS INICIALES - TIPOS DE PRENDA
+-- ============================================
+
+-- Inserta Tipos de Prenda usando la función SELECT para obtener el ID de la Categoría
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Blusa', id, 'Blusa elegante o casual' FROM categorias WHERE nombre = 'Tops'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Top', id, 'Top ajustado o crop top' FROM categorias WHERE nombre = 'Tops'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Camiseta', id, 'Camiseta básica o estampada' FROM categorias WHERE nombre = 'Tops'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Body', id, 'Body ajustado' FROM categorias WHERE nombre = 'Tops'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Camisa', id, 'Camisa formal o casual' FROM categorias WHERE nombre = 'Tops'
+ON CONFLICT (nombre) DO NOTHING;
+
+-- Pantalones
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Jean', id, 'Pantalón de mezclilla' FROM categorias WHERE nombre = 'Pantalones'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Pantalón de Vestir', id, 'Pantalón elegante' FROM categorias WHERE nombre = 'Pantalones'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Legging', id, 'Malla ajustada' FROM categorias WHERE nombre = 'Pantalones'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Short', id, 'Pantalón corto' FROM categorias WHERE nombre = 'Pantalones'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Jogger', id, 'Pantalón deportivo' FROM categorias WHERE nombre = 'Pantalones'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Palazzo', id, 'Pantalón palazzo ancho' FROM categorias WHERE nombre = 'Pantalones'
+ON CONFLICT (nombre) DO NOTHING;
+
+-- Vestidos
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Vestido Casual', id, 'Vestido de uso diario' FROM categorias WHERE nombre = 'Vestidos'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Vestido de Fiesta', id, 'Vestido para ocasiones especiales' FROM categorias WHERE nombre = 'Vestidos'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Maxi Vestido', id, 'Vestido largo' FROM categorias WHERE nombre = 'Vestidos'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Mini Vestido', id, 'Vestido corto' FROM categorias WHERE nombre = 'Vestidos'
+ON CONFLICT (nombre) DO NOTHING;
+
+-- Faldas
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Falda Mini', id, 'Falda corta' FROM categorias WHERE nombre = 'Faldas'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Falda Midi', id, 'Falda hasta la rodilla' FROM categorias WHERE nombre = 'Faldas'
+ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO tipos_prenda (nombre, categoria_id, descripcion)
+SELECT 'Falda Maxi', id, 'Falda larga' FROM categorias WHERE nombre = 'Faldas'
+ON CONFLICT (nombre) DO NOTHING;
+
+-- ============================================
+-- DATOS INICIALES - ESTILOS
+-- ============================================
+
+INSERT INTO estilos (nombre, descripcion) VALUES
+('Oversize', 'Corte holgado y relajado'),
+('Slim', 'Corte ajustado al cuerpo'),
+('Skinny', 'Muy ajustado, segunda piel'),
+('Cargo', 'Con bolsillos laterales grandes'),
+('Straight', 'Corte recto clásico'),
+('Bootcut', 'Ligeramente acampanado abajo'),
+('High Waist', 'Talle alto'),
+('Low Waist', 'Talle bajo'),
+('Crop', 'Cortado, más corto de lo normal'),
+('Flare', 'Acampanado'),
+('A-Line', 'Corte en forma de A'),
+('Wrap', 'Cruzado o envolvente'),
+('Off Shoulder', 'Hombros descubiertos'),
+('Strapless', 'Sin tirantes'),
+('Halter', 'Cuello halter'),
+('V-Neck', 'Escote en V'),
+('Scoop Neck', 'Escote redondo'),
+('Turtle Neck', 'Cuello tortuga')
+ON CONFLICT (nombre) DO NOTHING;
+
+-- ============================================
+-- DATOS INICIALES - COLORES
+-- ============================================
+
+INSERT INTO colores (nombre, codigo_hex, descripcion) VALUES
+('Negro', '#000000', 'Color negro clásico'),
+('Blanco', '#FFFFFF', 'Color blanco puro'),
+('Gris', '#808080', 'Color gris neutro'),
+('Azul', '#0066CC', 'Color azul clásico'),
+('Azul Marino', '#000080', 'Azul oscuro elegante'),
+('Azul Claro', '#87CEEB', 'Azul suave y fresco'),
+('Rojo', '#FF0000', 'Color rojo vibrante'),
+('Rosa', '#FFC0CB', 'Color rosa suave'),
+('Fucsia', '#FF1493', 'Rosa intenso'),
+('Verde', '#008000', 'Color verde natural'),
+('Verde Oliva', '#808000', 'Verde apagado'),
+('Amarillo', '#FFFF00', 'Color amarillo brillante'),
+('Naranja', '#FFA500', 'Color naranja vibrante'),
+('Morado', '#800080', 'Color púrpura'),
+('Violeta', '#8A2BE2', 'Violeta intenso'),
+('Marrón', '#A52A2A', 'Color café'),
+('Beige', '#F5F5DC', 'Color crema neutro'),
+('Camel', '#C19A6B', 'Marrón claro elegante'),
+('Nude', '#E8B796', 'Color piel'),
+('Dorado', '#FFD700', 'Color oro'),
+('Plateado', '#C0C0C0', 'Color plata'),
+('Denim', '#1560BD', 'Azul mezclilla'),
+('Vino', '#722F37', 'Rojo oscuro elegante'),
+('Mostaza', '#FFDB58', 'Amarillo mostaza'),
+('Coral', '#FF7F50', 'Naranja rosado'),
+('Mint', '#98FB98', 'Verde menta'),
+('Lavanda', '#E6E6FA', 'Púrpura suave'),
+('Multicolor', '#000000', 'Múltiples colores'),
+('Estampado', '#000000', 'Con diseños o patrones')
+ON CONFLICT (nombre) DO NOTHING;
+
+-- ============================================
+-- VISTA PARA CONSULTAS COMPLETAS
+-- ============================================
+
+CREATE OR REPLACE VIEW vista_productos_completa AS
+SELECT
+    p.*,
+    c.nombre as categoria_nombre,
+    tp.nombre as tipo_prenda_nombre,
+    e.nombre as estilo_nombre,
+    col.nombre as color_nombre,
+    col.codigo_hex as color_hex
+FROM productos p
+LEFT JOIN categorias c ON p.categoria_id = c.id
+LEFT JOIN tipos_prenda tp ON p.tipo_prenda_id = tp.id
+LEFT JOIN estilos e ON p.estilo_id = e.id
+LEFT JOIN colores col ON p.color_id = col.id;
+
+-- ============================================
+-- FUNCIÓN PARA BUSCAR PRODUCTOS AVANZADA
+-- ============================================
+
+CREATE OR REPLACE FUNCTION buscar_productos_avanzado(
+    p_categoria TEXT DEFAULT NULL,
+    p_tipo_prenda TEXT DEFAULT NULL,
+    p_estilo TEXT DEFAULT NULL,
+    p_color TEXT DEFAULT NULL,
+    p_genero TEXT DEFAULT NULL,
+    p_precio_min DECIMAL DEFAULT NULL,
+    p_precio_max DECIMAL DEFAULT NULL,
+    p_busqueda TEXT DEFAULT NULL
+)
 RETURNS TABLE (
     id INTEGER,
     nombre TEXT,
     descripcion TEXT,
     precio DECIMAL,
-    stock INTEGER,
     imagen_url TEXT,
     categoria_nombre TEXT,
     tipo_prenda_nombre TEXT,
     estilo_nombre TEXT,
     color_nombre TEXT,
-    color_hex TEXT,
     genero TEXT,
-    temporada TEXT,
-    linea TEXT,
-    activo BOOLEAN
+    stock INTEGER
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
-        p.id,
-        p.nombre,
-        p.descripcion,
-        p.precio,
-        p.stock,
-        p.imagen_url,
-        c.nombre as categoria_nombre,
-        tp.nombre as tipo_prenda_nombre,
-        e.nombre as estilo_nombre,
-        col.nombre as color_nombre,
-        col.codigo_hex as color_hex,
-        p.genero,
-        p.temporada,
-        p.categoria as linea,
-        p.activo
-    FROM productos p
-    LEFT JOIN categorias c ON p.categoria_id = c.id
-    LEFT JOIN tipos_prenda tp ON p.tipo_prenda_id = tp.id
-    LEFT JOIN estilos e ON p.estilo_id = e.id
-    LEFT JOIN colores col ON p.color_id = col.id
-    WHERE p.id = producto_id;
+    SELECT
+        vpc.id,
+        vpc.nombre,
+        vpc.descripcion,
+        vpc.precio,
+        vpc.imagen_url,
+        vpc.categoria_nombre,
+        vpc.tipo_prenda_nombre,
+        vpc.estilo_nombre,
+        vpc.color_nombre,
+        vpc.genero,
+        vpc.stock
+    FROM vista_productos_completa vpc
+    WHERE
+        (p_categoria IS NULL OR vpc.categoria_nombre ILIKE '%' || p_categoria || '%')
+        AND (p_tipo_prenda IS NULL OR vpc.tipo_prenda_nombre ILIKE '%' || p_tipo_prenda || '%')
+        AND (p_estilo IS NULL OR vpc.estilo_nombre ILIKE '%' || p_estilo || '%')
+        AND (p_color IS NULL OR vpc.color_nombre ILIKE '%' || p_color || '%')
+        AND (p_genero IS NULL OR vpc.genero = p_genero)
+        AND (p_precio_min IS NULL OR vpc.precio >= p_precio_min)
+        AND (p_precio_max IS NULL OR vpc.precio <= p_precio_max)
+        AND (p_busqueda IS NULL OR vpc.nombre ILIKE '%' || p_busqueda || '%'
+             OR vpc.descripcion ILIKE '%' || p_busqueda || '%')
+        AND vpc.activo = true
+    ORDER BY vpc.id DESC;
 END;
 $$ LANGUAGE plpgsql;
 
--- Función para generar contexto de IA basado en las categorías
-CREATE OR REPLACE FUNCTION generar_contexto_ia(
-    p_categoria_id INTEGER DEFAULT NULL,
-    p_tipo_prenda_id INTEGER DEFAULT NULL,
-    p_estilo_id INTEGER DEFAULT NULL,
-    p_color_id INTEGER DEFAULT NULL,
-    p_genero TEXT DEFAULT 'mujer'
-)
-RETURNS TABLE (
-    contexto_categoria TEXT,
-    contexto_tipo TEXT,
-    contexto_estilo TEXT,
-    contexto_color TEXT,
-    sugerencias TEXT[]
-) AS $$
-DECLARE
-    cat_info TEXT;
-    tipo_info TEXT;
-    estilo_info TEXT;
-    color_info TEXT;
-    suggestions TEXT[];
-BEGIN
-    -- Obtener información de categoría
-    SELECT 
-        CASE 
-            WHEN c.nombre = 'Tops' THEN 'prendas superiores elegantes y versátiles'
-            WHEN c.nombre = 'Pantalones' THEN 'pantalones de alta calidad y diseño moderno'
-            WHEN c.nombre = 'Vestidos' THEN 'vestidos sofisticados para toda ocasión'
-            WHEN c.nombre = 'Faldas' THEN 'faldas de corte perfecto y estilo contemporáneo'
-            WHEN c.nombre = 'Conjuntos' THEN 'sets coordinados de diseño exclusivo'
-            ELSE 'prendas de alta calidad'
-        END
-    INTO cat_info
-    FROM categorias c WHERE c.id = p_categoria_id;
-    
-    -- Obtener información de tipo de prenda
-    SELECT 
-        CASE 
-            WHEN tp.nombre ILIKE '%blusa%' THEN 'con caída elegante y tejido premium'
-            WHEN tp.nombre ILIKE '%top%' THEN 'de corte moderno y ajuste perfecto'
-            WHEN tp.nombre ILIKE '%jean%' THEN 'de mezclilla superior con acabado impecable'
-            WHEN tp.nombre ILIKE '%vestido%' THEN 'de diseño exclusivo y confección artesanal'
-            WHEN tp.nombre ILIKE '%pantalón%' THEN 'con corte anatómico y materiales premium'
-            ELSE 'de construcción superior'
-        END
-    INTO tipo_info
-    FROM tipos_prenda tp WHERE tp.id = p_tipo_prenda_id;
-    
-    -- Obtener información de estilo
-    SELECT 
-        CASE 
-            WHEN e.nombre = 'Oversize' THEN 'con silueta relajada y tendencia urban'
-            WHEN e.nombre = 'Slim' THEN 'de corte ajustado que realza la figura'
-            WHEN e.nombre = 'Skinny' THEN 'de ajuste ceñido y líneas estilizadas'
-            WHEN e.nombre = 'High Waist' THEN 'de talle alto que estiliza la silueta'
-            WHEN e.nombre = 'Crop' THEN 'de largo cortado y diseño juvenil'
-            WHEN e.nombre = 'Cargo' THEN 'con detalles funcionales y estilo urbano'
-            ELSE 'de diseño contemporáneo'
-        END
-    INTO estilo_info
-    FROM estilos e WHERE e.id = p_estilo_id;
-    
-    -- Obtener información de color
-    SELECT 
-        CASE 
-            WHEN col.nombre = 'Negro' THEN 'elegante y atemporal que combina con todo'
-            WHEN col.nombre = 'Blanco' THEN 'clásico y versátil para cualquier ocasión'
-            WHEN col.nombre ILIKE '%azul%' THEN 'sofisticado que aporta frescura y estilo'
-            WHEN col.nombre ILIKE '%rojo%' THEN 'vibrante que añade personalidad y fuerza'
-            WHEN col.nombre ILIKE '%rosa%' THEN 'femenino que aporta dulzura y modernidad'
-            WHEN col.nombre ILIKE '%verde%' THEN 'natural que transmite armonía y frescura'
-            ELSE 'distintivo que aporta personalidad'
-        END
-    INTO color_info
-    FROM colores col WHERE col.id = p_color_id;
-    
-    -- Generar sugerencias específicas
-    suggestions := ARRAY[
-        'Ideal para mayoristas especializados en moda femenina',
-        'Garantiza alta rotación por su versatilidad',
-        'Márgenes competitivos y calidad premium',
-        'Perfecto para boutiques y tiendas urbanas',
-        'Combina tendencia actual con atemporalidad',
-        'Satisfacción garantizada del cliente final'
-    ];
-    
-    -- Si es para hombre, ajustar sugerencias
-    IF p_genero = 'hombre' THEN
-        suggestions := ARRAY[
-            'Especializado para el mercado masculino exigente',
-            'Calidad premium con diseño contemporary',
-            'Ideal para tiendas de moda masculina',
-            'Combina comodidad y estilo urbano',
-            'Márgenes atractivos y rotación garantizada'
-        ];
-    END IF;
-    
-    RETURN QUERY SELECT 
-        COALESCE(cat_info, 'prendas de alta calidad'),
-        COALESCE(tipo_info, 'de construcción superior'),
-        COALESCE(estilo_info, 'de diseño moderno'),
-        COALESCE(color_info, 'que aporta estilo'),
-        suggestions;
-END;
-$$ LANGUAGE plpgsql;
+-- ============================================
+-- FUNCIONES RPC PARA EL FRONTEND
+-- ============================================
 
--- Función para obtener productos similares (para recomendaciones)
-CREATE OR REPLACE FUNCTION get_productos_similares(
-    producto_id INTEGER,
-    limite INTEGER DEFAULT 5
-)
-RETURNS TABLE (
-    id INTEGER,
-    nombre TEXT,
-    precio DECIMAL,
-    imagen_url TEXT,
-    similitud_score INTEGER
-) AS $$
+-- Obtener todas las categorías activas
+CREATE OR REPLACE FUNCTION get_categorias_activas()
+RETURNS TABLE (id INTEGER, nombre TEXT, descripcion TEXT) AS $$
 BEGIN
     RETURN QUERY
-    WITH producto_base AS (
-        SELECT categoria_id, tipo_prenda_id, estilo_id, color_id, genero
-        FROM productos 
-        WHERE productos.id = producto_id
-    )
-    SELECT 
-        p.id,
-        p.nombre,
-        p.precio,
-        p.imagen_url,
-        (
-            CASE WHEN p.categoria_id = pb.categoria_id THEN 3 ELSE 0 END +
-            CASE WHEN p.tipo_prenda_id = pb.tipo_prenda_id THEN 2 ELSE 0 END +
-            CASE WHEN p.estilo_id = pb.estilo_id THEN 1 ELSE 0 END +
-            CASE WHEN p.genero = pb.genero THEN 1 ELSE 0 END
-        ) as similitud_score
-    FROM productos p, producto_base pb
-    WHERE p.id != producto_id 
-        AND p.activo = true
-        AND (
-            p.categoria_id = pb.categoria_id OR
-            p.tipo_prenda_id = pb.tipo_prenda_id OR
-            p.estilo_id = pb.estilo_id
-        )
-    ORDER BY similitud_score DESC, p.id DESC
-    LIMIT limite;
+    SELECT c.id, c.nombre, c.descripcion
+    FROM categorias c
+    WHERE c.activa = true
+    ORDER BY c.nombre;
 END;
 $$ LANGUAGE plpgsql;
 
--- Función para estadísticas avanzadas del catálogo
-CREATE OR REPLACE FUNCTION get_estadisticas_catalogo()
-RETURNS TABLE (
-    total_productos INTEGER,
-    por_categoria JSON,
-    por_genero JSON,
-    por_temporada JSON,
-    colores_populares JSON,
-    estilos_tendencia JSON,
-    valor_inventario DECIMAL,
-    productos_bajo_stock INTEGER
-) AS $$
+-- Obtener tipos de prenda por categoría (FUNCIÓN CORREGIDA)
+CREATE OR REPLACE FUNCTION get_tipos_prenda_por_categoria(p_categoria_id INTEGER DEFAULT NULL)
+RETURNS TABLE (id INTEGER, nombre TEXT, descripcion TEXT, categoria_id INTEGER) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
-        (SELECT COUNT(*)::INTEGER FROM productos WHERE activo = true),
-        
-        (SELECT JSON_OBJECT_AGG(c.nombre, count)
-         FROM (
-             SELECT c.nombre, COUNT(p.id) as count
-             FROM categorias c
-             LEFT JOIN productos p ON c.id = p.categoria_id AND p.activo = true
-             GROUP BY c.nombre
-         ) c),
-         
-        (SELECT JSON_OBJECT_AGG(genero, count)
-         FROM (
-             SELECT genero, COUNT(*) as count
-             FROM productos 
-             WHERE activo = true
-             GROUP BY genero
-         ) g),
-         
-        (SELECT JSON_OBJECT_AGG(temporada, count)
-         FROM (
-             SELECT temporada, COUNT(*) as count
-             FROM productos 
-             WHERE activo = true
-             GROUP BY temporada
-         ) t),
-         
-        (SELECT JSON_OBJECT_AGG(col.nombre, count)
-         FROM (
-             SELECT col.nombre, COUNT(p.id) as count
-             FROM colores col
-             LEFT JOIN productos p ON col.id = p.color_id AND p.activo = true
-             GROUP BY col.nombre
-             ORDER BY count DESC
-             LIMIT 10
-         ) col),
-         
-        (SELECT JSON_OBJECT_AGG(e.nombre, count)
-         FROM (
-             SELECT e.nombre, COUNT(p.id) as count
-             FROM estilos e
-             LEFT JOIN productos p ON e.id = p.estilo_id AND p.activo = true
-             GROUP BY e.nombre
-             ORDER BY count DESC
-             LIMIT 10
-         ) e),
-         
-        (SELECT COALESCE(SUM(precio * stock), 0) FROM productos WHERE activo = true),
-        (SELECT COUNT(*)::INTEGER FROM productos WHERE activo = true AND stock < 5);
+    SELECT tp.id, tp.nombre, tp.descripcion, tp.categoria_id
+    FROM tipos_prenda tp
+    WHERE tp.activa = true
+    -- Se usa el nuevo nombre del parámetro: p_categoria_id
+    AND (p_categoria_id IS NULL OR tp.categoria_id = p_categoria_id)
+    ORDER BY tp.nombre;
 END;
 $$ LANGUAGE plpgsql;
 
--- Índices adicionales para mejorar el rendimiento
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_productos_search_text 
-ON productos USING gin(to_tsvector('spanish', nombre || ' ' || COALESCE(descripcion, '')));
-
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_productos_categoria_tipo 
-ON productos(categoria_id, tipo_prenda_id) WHERE activo = true;
-
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_productos_precio_stock 
-ON productos(precio, stock) WHERE activo = true;
-
--- Función para búsqueda full-text avanzada
-CREATE OR REPLACE FUNCTION buscar_productos_fulltext(
-    query_text TEXT,
-    limite INTEGER DEFAULT 20
-)
-RETURNS TABLE (
-    id INTEGER,
-    nombre TEXT,
-    descripcion TEXT,
-    precio DECIMAL,
-    imagen_url TEXT,
-    categoria_nombre TEXT,
-    tipo_prenda_nombre TEXT,
-    relevancia REAL
-) AS $$
+-- Obtener todos los estilos activos
+CREATE OR REPLACE FUNCTION get_estilos_activos()
+RETURNS TABLE (id INTEGER, nombre TEXT, descripcion TEXT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
-        p.id,
-        p.nombre,
-        p.descripcion,
-        p.precio,
-        p.imagen_url,
-        c.nombre as categoria_nombre,
-        tp.nombre as tipo_prenda_nombre,
-        ts_rank(
-            to_tsvector('spanish', p.nombre || ' ' || COALESCE(p.descripcion, '') || ' ' || COALESCE(c.nombre, '') || ' ' || COALESCE(tp.nombre, '')),
-            plainto_tsquery('spanish', query_text)
-        ) as relevancia
-    FROM productos p
-    LEFT JOIN categorias c ON p.categoria_id = c.id
-    LEFT JOIN tipos_prenda tp ON p.tipo_prenda_id = tp.id
-    WHERE 
-        p.activo = true
-        AND (
-            to_tsvector('spanish', p.nombre || ' ' || COALESCE(p.descripcion, '') || ' ' || COALESCE(c.nombre, '') || ' ' || COALESCE(tp.nombre, ''))
-            @@ plainto_tsquery('spanish', query_text)
-        )
-    ORDER BY relevancia DESC, p.id DESC
-    LIMIT limite;
+    SELECT e.id, e.nombre, e.descripcion
+    FROM estilos e
+    WHERE e.activa = true
+    ORDER BY e.nombre;
 END;
 $$ LANGUAGE plpgsql;
 
--- Comentarios finales
-COMMENT ON FUNCTION get_producto_completo IS 'Obtiene información completa de un producto con todas sus relaciones';
-COMMENT ON FUNCTION generar_contexto_ia IS 'Genera contexto específico para la IA basado en categorización';
-COMMENT ON FUNCTION get_productos_similares IS 'Encuentra productos similares para recomendaciones';
-COMMENT ON FUNCTION get_estadisticas_catalogo IS 'Estadísticas completas del catálogo con JSON';
-COMMENT ON FUNCTION buscar_productos_fulltext IS 'Búsqueda full-text avanzada con ranking de relevancia';
+-- Obtener todos los colores activos
+CREATE OR REPLACE FUNCTION get_colores_activos()
+RETURNS TABLE (id INTEGER, nombre TEXT, codigo_hex TEXT, descripcion TEXT) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT c.id, c.nombre, c.codigo_hex, c.descripcion
+    FROM colores c
+    WHERE c.activa = true
+    ORDER BY c.nombre;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================
+-- ÍNDICES PARA MEJOR RENDIMIENTO
+-- ============================================
+
+CREATE INDEX IF NOT EXISTS idx_productos_categoria ON productos(categoria_id);
+CREATE INDEX IF NOT EXISTS idx_productos_tipo_prenda ON productos(tipo_prenda_id);
+CREATE INDEX IF NOT EXISTS idx_productos_estilo ON productos(estilo_id);
+CREATE INDEX IF NOT EXISTS idx_productos_color ON productos(color_id);
+CREATE INDEX IF NOT EXISTS idx_productos_genero ON productos(genero);
+CREATE INDEX IF NOT EXISTS idx_productos_activo ON productos(activo);
+
+-- ============================================
+-- COMENTARIOS FINALES
+-- ============================================
+
+COMMENT ON TABLE categorias IS 'Categorías principales de productos (Tops, Pantalones, etc.)';
+COMMENT ON TABLE tipos_prenda IS 'Tipos específicos de prendas dentro de cada categoría';
+COMMENT ON TABLE estilos IS 'Estilos de corte y diseño (Oversize, Slim, etc.)';
+COMMENT ON TABLE colores IS 'Colores disponibles con códigos hex opcionales';
+COMMENT ON VIEW vista_productos_completa IS 'Vista completa de productos con todas las relaciones';
+COMMENT ON FUNCTION buscar_productos_avanzado IS 'Búsqueda avanzada con múltiples filtros';
+COMMENT ON FUNCTION get_tipos_prenda_por_categoria IS 'Obtiene tipos de prenda filtrados opcionalmente por ID de categoría';

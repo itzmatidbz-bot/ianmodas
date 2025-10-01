@@ -50,66 +50,301 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadProducts() {
         try {
-            const { data, error } = await supabase.from('productos').select('*').order('nombre', { ascending: true });
+            // Cargar productos usando la vista completa con categorización
+            const { data, error } = await supabase
+                .from('vista_productos_completa')
+                .select('*')
+                .order('nombre', { ascending: true });
+            
             if (error) throw error;
-            allProducts = data;
+            allProducts = data || [];
+            
+            // Cargar datos de filtros
+            await loadFilterData();
+            
+            // Renderizar productos
             renderProducts(allProducts);
+            updateResultsCounter(allProducts.length);
+            
         } catch (error) {
-            if(productGrid) productGrid.innerHTML = '<p>Error al cargar el catálogo. Intente más tarde.</p>';
             console.error('Error fetching products:', error);
+            if(productGrid) {
+                productGrid.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error al cargar el catálogo. Intente más tarde.</p>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // --- Funciones de Filtros Avanzados ---
+    async function loadFilterData() {
+        try {
+            // Cargar categorías
+            const { data: categorias } = await supabase.rpc('get_categorias_activas');
+            populateSelect('categoria-filter', categorias, 'id', 'nombre');
+
+            // Cargar estilos
+            const { data: estilos } = await supabase.rpc('get_estilos_activos');
+            populateSelect('estilo-filter', estilos, 'id', 'nombre');
+
+            // Cargar colores
+            const { data: colores } = await supabase.rpc('get_colores_activos');
+            populateSelect('color-filter', colores, 'id', 'nombre');
+
+            // Cargar tipos de tela
+            const { data: tiposTela } = await supabase.rpc('get_tipos_tela_activos');
+            populateSelect('tipo-tela-filter', tiposTela, 'id', 'nombre');
+
+        } catch (error) {
+            console.error('Error loading filter data:', error);
+        }
+    }
+
+    function populateSelect(selectId, data, valueField, textField) {
+        const select = document.getElementById(selectId);
+        if (!select || !data) return;
+
+        // Mantener la opción por defecto
+        const defaultOption = select.querySelector('option[value=""]');
+        select.innerHTML = '';
+        if (defaultOption) select.appendChild(defaultOption);
+
+        // Agregar opciones
+        data.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item[valueField];
+            option.textContent = item[textField];
+            select.appendChild(option);
+        });
+    }
+
+    async function handleCategoryChange(categoriaId) {
+        const tipoSelect = document.getElementById('tipo-filter');
+        
+        if (!categoriaId) {
+            tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
+            tipoSelect.disabled = true;
+            return;
+        }
+
+        try {
+            const { data: tipos } = await supabase.rpc('get_tipos_prenda_por_categoria', {
+                categoria_id: parseInt(categoriaId)
+            });
+
+            tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
+            
+            if (tipos && tipos.length > 0) {
+                tipos.forEach(tipo => {
+                    const option = document.createElement('option');
+                    option.value = tipo.id;
+                    option.textContent = tipo.nombre;
+                    tipoSelect.appendChild(option);
+                });
+                tipoSelect.disabled = false;
+            } else {
+                tipoSelect.disabled = true;
+            }
+        } catch (error) {
+            console.error('Error loading tipos de prenda:', error);
+            tipoSelect.disabled = true;
         }
     }
 
     function renderProducts(products) {
         if (!productGrid) return;
+
+        // Limpiar el grid
         productGrid.innerHTML = '';
+        
+        // Mostrar/ocultar mensaje de no resultados
         noResultsMessage.style.display = products.length === 0 ? 'block' : 'none';
+
+        if (products.length === 0) return;
 
         products.forEach(product => {
             const card = document.createElement('div');
             card.className = 'product-card';
             card.dataset.id = product.id;
             
+            // Formatear precio
+            const precio = product.precio ? parseFloat(product.precio) : 0;
             const priceHTML = currentUser
-                ? `<p class="product-card__price">$${product.precio.toFixed(2)}</p>`
+                ? `<p class="product-card__price">$UYU ${precio.toLocaleString('es-UY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>`
                 : `<p class="product-card__price hidden">Inicia sesión para ver precios</p>`;
+
+            // Mostrar información de categorización
+            const categoryInfo = [];
+            if (product.categoria_nombre) categoryInfo.push(product.categoria_nombre);
+            if (product.tipo_prenda_nombre) categoryInfo.push(product.tipo_prenda_nombre);
+            
+            const categoryText = categoryInfo.length > 0 ? categoryInfo.join(' • ') : 'Sin categoría';
 
             card.innerHTML = `
                 <img src="${product.imagen_url || 'https://placehold.co/600x400/eee/ccc?text=IanModas'}" alt="${product.nombre}" class="product-card__image">
                 <div class="product-card__content">
-                    <p class="product-card__category">${product.categoria}</p>
+                    <p class="product-card__category">${categoryText}</p>
                     <h3 class="product-card__title">${product.nombre}</h3>
                     ${priceHTML}
                 </div>
             `;
-            // Hacer la tarjeta clickeable para ir al detalle
+            
+            // Hacer la tarjeta clickeable
             card.addEventListener('click', () => {
                 window.location.href = `producto.html?id=${product.id}`;
             });
+            
             productGrid.appendChild(card);
         });
     }
+
+    function applyFilters() {
+        const filters = {
+            categoria: document.getElementById('categoria-filter')?.value || '',
+            tipo: document.getElementById('tipo-filter')?.value || '',
+            estilo: document.getElementById('estilo-filter')?.value || '',
+            color: document.getElementById('color-filter')?.value || '',
+            tipoTela: document.getElementById('tipo-tela-filter')?.value || '',
+            genero: document.getElementById('genero-filter')?.value || '',
+            temporada: document.getElementById('temporada-filter')?.value || ''
+        };
+
+        let filteredProducts = allProducts.filter(product => {
+            // Filtro por categoría
+            if (filters.categoria && product.categoria_id != filters.categoria) return false;
+            
+            // Filtro por tipo de prenda
+            if (filters.tipo && product.tipo_prenda_id != filters.tipo) return false;
+            
+            // Filtro por estilo
+            if (filters.estilo && product.estilo_id != filters.estilo) return false;
+            
+            // Filtro por color
+            if (filters.color && product.color_id != filters.color) return false;
+            
+            // Filtro por tipo de tela
+            if (filters.tipoTela && product.tipo_tela_id != filters.tipoTela) return false;
+            
+            // Filtro por género
+            if (filters.genero && product.genero && product.genero !== filters.genero) return false;
+            
+            // Filtro por temporada
+            if (filters.temporada && product.temporada && product.temporada !== filters.temporada) return false;
+
+            return true;
+        });
+
+        renderProducts(filteredProducts);
+        updateResultsCounter(filteredProducts.length);
+    }
+
+    function clearFilters() {
+        // Resetear todos los selects
+        document.getElementById('categoria-filter').value = '';
+        document.getElementById('tipo-filter').value = '';
+        document.getElementById('estilo-filter').value = '';
+        document.getElementById('color-filter').value = '';
+        document.getElementById('tipo-tela-filter').value = '';
+        document.getElementById('genero-filter').value = '';
+        document.getElementById('temporada-filter').value = '';
+        
+        // Deshabilitar tipo de prenda
+        document.getElementById('tipo-filter').disabled = true;
+        
+        // Mostrar todos los productos
+        renderProducts(allProducts);
+        updateResultsCounter(allProducts.length);
+    }
+
+    function updateResultsCounter(count) {
+        const counter = document.getElementById('results-count');
+        if (counter) {
+            counter.textContent = `${count} producto${count !== 1 ? 's' : ''} encontrado${count !== 1 ? 's' : ''}`;
+        }
+    }
     
     function setupEventListeners() {
-        if (categoryFilter) {
-            categoryFilter.addEventListener('change', () => {
-                const selectedCategory = categoryFilter.value;
-                const filtered = selectedCategory === 'all'
-                    ? allProducts
-                    : allProducts.filter(p => p.categoria === selectedCategory);
-                renderProducts(filtered);
+        // --- Filtros Avanzados ---
+        const toggleFiltersBtn = document.getElementById('toggle-filters');
+        const filtersContent = document.getElementById('filters-content');
+        const toggleText = document.getElementById('toggle-text');
+        const toggleIcon = document.getElementById('toggle-icon');
+
+        if (toggleFiltersBtn) {
+            toggleFiltersBtn.addEventListener('click', () => {
+                const isActive = filtersContent.classList.contains('active');
+                
+                if (isActive) {
+                    filtersContent.classList.remove('active');
+                    toggleText.textContent = 'Mostrar Filtros';
+                    toggleIcon.style.transform = 'rotate(0deg)';
+                } else {
+                    filtersContent.classList.add('active');
+                    toggleText.textContent = 'Ocultar Filtros';
+                    toggleIcon.style.transform = 'rotate(180deg)';
+                }
+            });
+        }
+
+        // Eventos de filtros
+        const categoriaSelect = document.getElementById('categoria-filter');
+        if (categoriaSelect) {
+            categoriaSelect.addEventListener('change', (e) => {
+                handleCategoryChange(e.target.value);
+            });
+        }
+
+        const applyFiltersBtn = document.getElementById('apply-filters');
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', applyFilters);
+        }
+
+        const clearFiltersBtn = document.getElementById('clear-filters');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', clearFilters);
+        }
+
+        const showAllBtn = document.getElementById('show-all-products');
+        if (showAllBtn) {
+            showAllBtn.addEventListener('click', () => {
+                clearFilters();
+                // Abrir filtros si están cerrados
+                if (!filtersContent.classList.contains('active')) {
+                    toggleFiltersBtn.click();
+                }
             });
         }
         
+        // Aplicar filtros automáticamente cuando cambian los valores
+        const autoFilterSelects = [
+            'categoria-filter', 'tipo-filter', 'estilo-filter', 
+            'color-filter', 'tipo-tela-filter', 'genero-filter', 'temporada-filter'
+        ];
+        
+        autoFilterSelects.forEach(selectId => {
+            const select = document.getElementById(selectId);
+            if (select) {
+                select.addEventListener('change', () => {
+                    setTimeout(applyFilters, 100); // Pequeño delay para mejor UX
+                });
+            }
+        });
+        
+        // Formularios de auth
         if(document.getElementById('login-form')) {
             setupAuthForms();
         }
         
         // Listeners del Carrito
-        cartToggle.addEventListener('click', () => cartModal.classList.add('active'));
-        closeCartBtn.addEventListener('click', () => cartModal.classList.remove('active'));
-        document.querySelector('.cart-modal__footer').addEventListener('click', handleCartActions);
-        cartItemsContainer.addEventListener('click', handleCartActions);
+        if (cartToggle) cartToggle.addEventListener('click', () => cartModal.classList.add('active'));
+        if (closeCartBtn) closeCartBtn.addEventListener('click', () => cartModal.classList.remove('active'));
+        
+        const cartFooter = document.querySelector('.cart-modal__footer');
+        if (cartFooter) cartFooter.addEventListener('click', handleCartActions);
+        if (cartItemsContainer) cartItemsContainer.addEventListener('click', handleCartActions);
     }
 
     function setupMobileMenu() {
