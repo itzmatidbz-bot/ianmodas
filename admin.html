@@ -2,22 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <me                    <div class="stat-card">
-                        <i class="fas fa-palette"></i><div><h3>Colores Disponibles</h3><p id="total-colors">0</p></div>
-                    </div>name="viewport" content=                    <div class="dashboard-card">
-                        <h3><i class="fas fa-tags"></i> Categorías Activas</h3>
-                        <div id="active-categories" class="recent-list categories-dashboard">
-                            <div class="loading-placeholder">Cargando categorías...</div>
-                        </div>
-                    </div>=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Ian Modas</title>
     <link rel="stylesheet" href="css/admin.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Ocultar todo el contenido hasta que se autentique */
-        .admin-layout {
-            display: none;
-        }
+        /* Ocultar todo hasta autenticar */
+        .admin-layout { display: none; }
         .loading-screen {
             display: flex;
             justify-content: center;
@@ -42,93 +33,142 @@
     </style>
 </head>
 <body>
-    <!-- Pantalla de carga mientras se verifica autenticación -->
+    <!-- Pantalla de carga -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-spinner"></div>
         <p>Verificando permisos de administrador...</p>
     </div>
+
+    <!-- Menú móvil -->
     <button id="menu-toggle" class="menu-toggle"><i class="fas fa-bars"></i></button>
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
     <div class="admin-layout">
+        <!-- SIDEBAR -->
         <aside class="admin-sidebar">
-            <div class="admin-logo"><h2>Ian Modas Admin</h2></div>
+            <div class="admin-logo">
+                <h2>Ian Modas Admin</h2>
+            </div>
             <nav class="admin-nav">
-                <button class="nav-item active" data-section="dashboard"><i class="fas fa-home"></i> Dashboard</button>
-                <button class="nav-item" data-section="products"><i class="fas fa-box"></i> Productos</button>
-                <button class="nav-item" data-section="new-product"><i class="fas fa-plus"></i> Añadir Producto</button>
-                <button class="nav-item" data-section="users"><i class="fas fa-users"></i> Usuarios Registrados</button>
-                <button id="logout-button" class="nav-item"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+                <button class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-home"></i> Dashboard
+                </button>
+                <button class="nav-item" data-section="products">
+                    <i class="fas fa-box"></i> Productos
+                </button>
+                <button class="nav-item" data-section="new-product">
+                    <i class="fas fa-plus"></i> Añadir Producto
+                </button>
+                <button class="nav-item" data-section="users">
+                    <i class="fas fa-users"></i> Usuarios Registrados
+                </button>
+                <button id="logout-button" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
             </nav>
         </aside>
 
+        <!-- CONTENIDO PRINCIPAL -->
         <main class="admin-main">
             <header class="admin-header">
                 <div class="admin-title">
                     <h1>Panel de Administración</h1>
                 </div>
-                <div class="admin-user"><span>Admin</span><i class="fas fa-user-circle"></i></div>
+                <div class="admin-user">
+                    <span>Admin</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
             </header>
 
+            <!-- DASHBOARD -->
             <section id="dashboard" class="admin-section active">
                 <h2>Dashboard</h2>
                 <div class="dashboard-stats">
                     <div class="stat-card">
-                        <i class="fas fa-users"></i><div><h3>Usuarios Registrados</h3><p id="total-users">0</p></div>
+                        <i class="fas fa-users"></i>
+                        <div class="card-content">
+                            <h3>Usuarios Registrados</h3>
+                            <p id="total-users">0</p>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-box"></i><div><h3>Total Productos</h3><p id="total-products">0</p></div>
+                        <i class="fas fa-box"></i>
+                        <div class="card-content">
+                            <h3>Total Productos</h3>
+                            <p id="total-products">0</p>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-exclamation-triangle"></i><div><h3>Stock Bajo (&lt;5)</h3><p id="low-stock">0</p></div>
+                        <i class="fas fa-tag"></i>
+                        <div class="card-content">
+                            <h3>Categorías</h3>
+                            <p id="total-categories">15</p>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-tag"></i><div><h3>Categorías</h3><p id="total-categories">0</p></div>
+                        <i class="fas fa-palette"></i>
+                        <div class="card-content">
+                            <h3>Colores Disponibles</h3>
+                            <p id="total-colors">30+</p>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-dollar-sign"></i><div><h3>Valor Catálogo</h3><p id="total-catalog-value">$0</p></div>
+                        <i class="fas fa-dollar-sign"></i>
+                        <div class="card-content">
+                            <h3>Valor Catálogo</h3>
+                            <p id="total-catalog-value">$0 UYU</p>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-calendar"></i><div><h3>Último Registro</h3><p id="last-registration">-</p></div>
+                        <i class="fas fa-calendar"></i>
+                        <div class="card-content">
+                            <h3>Último Registro</h3>
+                            <p id="last-registration">-</p>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="dashboard-recent">
                     <div class="recent-section">
-                        <h3><i class="fas fa-clock"></i> Productos Agregados Recientemente</h3>
+                        <h3><i class="fas fa-clock"></i> Productos Recientes</h3>
                         <div id="recent-products" class="recent-list recent-products-dashboard">
                             <div class="loading-placeholder">Cargando productos recientes...</div>
                         </div>
                     </div>
                     <div class="recent-section">
-                        <h3><i class="fas fa-user-plus"></i> Últimos Usuarios Registrados</h3>
+                        <h3><i class="fas fa-user-plus"></i> Usuarios Recientes</h3>
                         <div id="recent-users" class="recent-list recent-users-dashboard">
                             <div class="loading-placeholder">Cargando usuarios recientes...</div>
-                        </div>
-                    </div>
-                    <div class="recent-section">
-                        <h3><i class="fas fa-exclamation-triangle"></i> Productos Bajo Stock</h3>
-                        <div id="low-stock-items" class="recent-list low-stock-dashboard">
-                            <div class="loading-placeholder">Verificando stock...</div>
                         </div>
                     </div>
                 </div>
             </section>
 
+            <!-- PRODUCTOS -->
             <section id="products" class="admin-section">
-                <h2>Gestión de Productos</h2>
                 <div class="section-header">
+                    <h2>Gestión de Productos</h2>
                     <div class="admin-search">
                         <i class="fas fa-search"></i>
                         <input type="text" id="search-products" placeholder="Buscar productos...">
                     </div>
                 </div>
+                
                 <div class="products-table-container">
                     <table class="products-table">
                         <thead>
-                            <tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
                         </thead>
-                        <tbody id="products-table-body"></tbody>
+                        <tbody id="products-table-body">
+                            <tr><td colspan="6">Cargando productos...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </section>
@@ -180,70 +220,146 @@
                 </div>
             </section>
 
+            <!-- NUEVO PRODUCTO -->
             <section id="new-product" class="admin-section">
                 <h2>Añadir Nuevo Producto</h2>
-                <form id="product-form" class="product-form" novalidate>
+                
+                <form id="product-form" class="product-form">
                     <div class="form-grid">
-                        <div class="form-group span-2">
-                            <label for="imagenes">Imágenes del Producto</label>
-                            <div id="images-upload-area" class="images-upload-area">
-                                <div class="upload-zone">
-                                    <p><i class="fas fa-images"></i></p>
-                                    <p>Arrastra y suelta múltiples imágenes o haz clic para seleccionar</p>
-                                    <input type="file" id="imagenes" name="imagenes" accept="image/*" multiple style="display: none;">
-                                    <button type="button" class="btn-secondary" onclick="document.getElementById('imagenes').click()">
-                                        <i class="fas fa-plus"></i> Seleccionar Imágenes
-                                    </button>
-                                </div>
-                                <div id="images-preview" class="images-preview">
-                                    <!-- Las vistas previas aparecerán aquí -->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group"><label for="nombre">Nombre del Producto</label><input type="text" id="nombre" name="nombre" required placeholder="Ej: Blusa elegante con encaje"></div>
-                        
-                        <!-- Categorización Avanzada -->
                         <div class="form-group">
-                            <label for="categoria">Categoría Principal</label>
+                            <label for="nombre">Nombre del Producto *</label>
+                            <input type="text" id="nombre" name="nombre" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="precio">Precio (UYU) *</label>
+                            <input type="number" id="precio" name="precio" min="0" step="0.01" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="categoria">🏷️ Categoría *</label>
                             <select id="categoria" name="categoria" required>
                                 <option value="" disabled selected>Selecciona categoría</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="tipo-prenda">Tipo de Prenda</label>
-                            <select id="tipo-prenda" name="tipo-prenda" required>
-                                <option value="" disabled selected>Primero selecciona una categoría</option>
+                            <label for="tipo-prenda">👗 Tipo de Prenda</label>
+                            <select id="tipo-prenda" name="tipo-prenda">
+                                <option value="" disabled selected>Primero selecciona categoría</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="estilo">Estilo</label>
-                            <select id="estilo" name="estilo" required>
+                            <label for="estilo">✨ Estilo</label>
+                            <select id="estilo" name="estilo">
                                 <option value="" disabled selected>Selecciona estilo</option>
                             </select>
                         </div>
                         
-                        <div class="form-group span-2">
-                            <label for="colores-disponibles">Colores Disponibles</label>
-                            <div id="colores-disponibles" class="colores-selector">
-                                <p class="help-text">Selecciona todos los colores en los que está disponible este producto</p>
-                                <div id="colores-grid" class="colores-grid">
-                                    <!-- Los colores se cargarán aquí dinámicamente -->
-                                </div>
-                            </div>
-                            <input type="hidden" id="colores-selected" name="colores-selected">
-                        </div>
-                        
                         <div class="form-group">
-                            <label for="tipo-tela">Tipo de Tela</label>
-                            <select id="tipo-tela" name="tipo-tela" required>
-                                <option value="" disabled selected>Selecciona tipo de tela</option>
+                            <label for="tipo-tela">🧵 Tipo de Tela</label>
+                            <select id="tipo-tela" name="tipo-tela">
+                                <option value="" disabled selected>Selecciona tela</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="genero">Género</label>
+                            <label for="genero">👤 Género</label>
+                            <select id="genero" name="genero">
+                                <option value="mujer" selected>Mujer</option>
+                                <option value="hombre">Hombre</option>
+                                <option value="unisex">Unisex</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="temporada">📅 Temporada</label>
+                            <select id="temporada" name="temporada">
+                                <option value="todo_año" selected>Todo el Año</option>
+                                <option value="verano">Verano</option>
+                                <option value="otoño">Otoño</option>
+                                <option value="invierno">Invierno</option>
+                                <option value="primavera">Primavera</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group span-2">
+                            <div class="description-header">
+                                <label for="descripcion">Descripción del Producto *</label>
+                                <button type="button" id="generate-description-btn" class="ai-button-modern" title="Generar descripción profesional usando Inteligencia Artificial">
+                                    <i class="ai-icon">✨</i>
+                                    <span class="ai-text">Generar con IA</span>
+                                    <span class="ai-badge">BETA</span>
+                                </button>
+                            </div>
+                            <textarea id="descripcion" name="descripcion" rows="4" placeholder="Describe las características, materiales y detalles del producto..." required></textarea>
+                            <div id="ai-feedback" class="ai-feedback"></div>
+                        </div>
+                        
+                        <!-- COLORES MÚLTIPLES -->
+                        <div class="form-group span-2">
+                            <label>🎨 Colores Disponibles *</label>
+                            <div class="colores-selector">
+                                <p class="help-text">Selecciona todos los colores en los que está disponible este producto:</p>
+                                <div id="colores-grid" class="colores-grid">
+                                    <!-- Los colores se cargan dinámicamente -->
+                                </div>
+                                <input type="hidden" id="colores-selected" name="colores-selected">
+                            </div>
+                        </div>
+                        
+                        <!-- MÚLTIPLES IMÁGENES -->
+                        <div class="form-group span-2">
+                            <label>📸 Imágenes del Producto</label>
+                            <div class="images-upload-area">
+                                <div class="upload-zone">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Arrastra y suelta imágenes aquí o</p>
+                                    <button type="button" class="btn-secondary">
+                                        <i class="fas fa-folder-open"></i> Seleccionar Archivos
+                                    </button>
+                                    <p><small>Máximo 10 imágenes. Formatos: JPG, PNG, WEBP</small></p>
+                                </div>
+                                <div id="images-preview" class="images-preview">
+                                    <!-- Preview de imágenes aquí -->
+                                </div>
+                            </div>
+                            <input type="file" id="imagenes" name="imagenes" multiple accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn secondary" onclick="resetProductForm()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" id="submit-button" class="btn primary">
+                            <i class="fas fa-save"></i> Guardar Producto
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <h3>Confirmar Eliminación</h3>
+            <p id="confirm-message">¿Estás seguro de que quieres eliminar este elemento?</p>
+            <div class="modal-actions">
+                <button id="confirm-yes" class="btn danger">Sí, eliminar</button>
+                <button id="confirm-no" class="btn secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
                             <select id="genero" name="genero" required>
                                 <option value="mujer">Mujer</option>
                                 <option value="hombre">Hombre</option>
