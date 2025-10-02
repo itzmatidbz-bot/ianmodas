@@ -744,6 +744,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const targetSection = document.getElementById(sectionId);
         if (targetSection) {
             targetSection.classList.add('active');
+            
+            // Scroll suave a la sección
+            setTimeout(() => {
+                targetSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
         }
         
         // Actualizar navegación activa

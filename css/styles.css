@@ -1356,14 +1356,15 @@ body {
         position: fixed;
         top: 0;
         right: -100%;
-        width: 300px;
+        width: 320px;
         height: 100vh;
         background: var(--bg-color);
         box-shadow: var(--shadow-lg);
         padding: var(--space-8) var(--space-6);
         transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1001;
-        border-left: 1px solid var(--bg-gray-100);
+        border-left: 2px solid var(--primary-color);
+        backdrop-filter: blur(20px);
     }
     
     .nav__menu.show-menu {
@@ -1372,16 +1373,30 @@ body {
     
     .nav__list {
         flex-direction: column;
-        gap: var(--space-4);
-        margin-top: var(--space-8);
+        gap: var(--space-3);
+        margin-top: var(--space-10);
+        list-style: none;
     }
     
     .nav__link {
-        padding: var(--space-4);
+        padding: var(--space-4) var(--space-5);
         border-radius: var(--radius-md);
         display: block;
         font-size: var(--font-size-lg);
+        font-weight: 600;
+        color: var(--text-color);
+        text-decoration: none;
         transition: var(--transition);
+        background: var(--bg-gray-50);
+        border: 1px solid var(--bg-gray-200);
+        text-align: center;
+    }
+    
+    .nav__link:hover {
+        background: var(--primary-color);
+        color: var(--text-white);
+        transform: translateX(-5px);
+        box-shadow: var(--shadow);
     }
     
     .nav__close { 
