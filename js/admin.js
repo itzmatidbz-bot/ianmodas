@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const { data: productos, error } = await supabase
                     .from('vista_productos_completa')
                     .select('*')
-                    .order('nombre', { ascending: true });
+                    .order('created_at', { ascending: false });
                 
                 if (!error && productos) {
                     products = productos;
