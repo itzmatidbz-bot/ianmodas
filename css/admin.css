@@ -2063,7 +2063,7 @@ body {
 }
 
 #advanced-metrics h3 {
-    color: #fff;
+    color: #ff0000;
     margin-bottom: 20px;
     font-size: 1.4rem;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -2115,7 +2115,7 @@ body {
     display: block;
     font-size: 1.3rem;
     font-weight: 700;
-    color: #fff;
+    color: #b41a1a;
     margin-bottom: 5px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
