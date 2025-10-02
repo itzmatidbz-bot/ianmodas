@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Estado de la App ---
     let allProducts = [];
+    let filteredProducts = [];
+    let currentPage = 1;
+    const productsPerPage = 12;
     let currentUser = null;
     let cart = JSON.parse(localStorage.getItem('ianModasCart')) || [];
 
@@ -237,18 +240,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderProducts(products) {
+    function showFilterLoading(show) {
+        const loadingIndicator = document.querySelector('.filter-loading');
+        if (!loadingIndicator) {
+            if (show) {
+                const loader = document.createElement('div');
+                loader.className = 'filter-loading';
+                loader.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <span>Filtrando productos...</span>
+                `;
+                document.querySelector('.filter-section')?.appendChild(loader);
+            }
+            return;
+        }
+        
+        loadingIndicator.style.display = show ? 'flex' : 'none';
+    }
+
+    function renderProducts(products, page = 1) {
         if (!productGrid) return;
 
-        // Limpiar el grid
-        productGrid.innerHTML = '';
+        // Mostrar indicador de carga
+        showFilterLoading(true);
         
-        // Mostrar/ocultar mensaje de no resultados
-        noResultsMessage.style.display = products.length === 0 ? 'block' : 'none';
+        // Simulamos un pequeño delay para mostrar el loading
+        setTimeout(() => {
+            // Limpiar el grid
+            productGrid.innerHTML = '';
+            
+            // Mostrar/ocultar mensaje de no resultados
+            noResultsMessage.style.display = products.length === 0 ? 'block' : 'none';
 
-        if (products.length === 0) return;
+            if (products.length === 0) {
+                showFilterLoading(false);
+                return;
+            }
 
-        products.forEach(product => {
+            // Calcular paginación
+            const startIndex = (page - 1) * productsPerPage;
+            const endIndex = startIndex + productsPerPage;
+            const paginatedProducts = products.slice(startIndex, endIndex);
+            
+            // Actualizar currentPage y filteredProducts
+            currentPage = page;
+            filteredProducts = products;
+
+        paginatedProducts.forEach(product => {
             const card = document.createElement('div');
             card.className = 'product-card';
             card.dataset.id = product.id;
@@ -282,7 +320,67 @@ document.addEventListener('DOMContentLoaded', () => {
             
             productGrid.appendChild(card);
         });
+        
+        // Renderizar controles de paginación
+        renderPagination(products.length, page);
+        
+        // Ocultar indicador de carga
+        showFilterLoading(false);
+        }, 150); // Pequeño delay para mostrar el feedback visual
     }
+
+    function renderPagination(totalProducts, currentPage) {
+        const totalPages = Math.ceil(totalProducts / productsPerPage);
+        
+        if (totalPages <= 1) {
+            // No mostrar paginación si solo hay una página
+            const existingPagination = document.querySelector('.pagination-container');
+            if (existingPagination) existingPagination.remove();
+            return;
+        }
+        
+        // Buscar o crear contenedor de paginación
+        let paginationContainer = document.querySelector('.pagination-container');
+        if (!paginationContainer) {
+            paginationContainer = document.createElement('div');
+            paginationContainer.className = 'pagination-container';
+            productGrid.parentNode?.insertBefore(paginationContainer, productGrid.nextSibling);
+        }
+        
+        // Mostrar info de página actual
+        const startItem = ((currentPage - 1) * productsPerPage) + 1;
+        const endItem = Math.min(currentPage * productsPerPage, totalProducts);
+        
+        paginationContainer.innerHTML = `
+            <div class="pagination-info">
+                Mostrando ${startItem}-${endItem} de ${totalProducts} productos
+            </div>
+            <div class="pagination-controls">
+                <button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <span class="pagination-current">Página ${currentPage} de ${totalPages}</span>
+                <button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    function changePage(page) {
+        if (page < 1 || page > Math.ceil(filteredProducts.length / productsPerPage)) return;
+        
+        renderProducts(filteredProducts, page);
+        
+        // Scroll suave al top de los productos
+        document.querySelector('.products-section')?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+
+    // Exponer función globalmente
+    window.changePage = changePage;
 
     function applyFilters() {
         console.log('🔍 Aplicando filtros inteligentes...');

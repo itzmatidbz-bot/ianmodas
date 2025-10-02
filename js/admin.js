@@ -524,8 +524,99 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
+    function renderDashboardCharts(products) {
+        try {
+            // Gráfico de productos por categoría
+            const categoryData = {};
+            products.forEach(product => {
+                const cat = product.categoria_nombre || 'Sin categoría';
+                categoryData[cat] = (categoryData[cat] || 0) + 1;
+            });
+
+            createCategoryChart(categoryData);
+            renderAdvancedMetrics(products);
+            
+        } catch (error) {
+            console.log('⚠️ Error renderizando gráficos:', error);
+        }
+    }
+
+    function createCategoryChart(data) {
+        const chartContainer = document.getElementById('category-chart');
+        if (!chartContainer) return;
+        
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        if (labels.length === 0) return;
+        
+        chartContainer.innerHTML = `
+            <div class="chart-header">
+                <h4><i class="fas fa-chart-pie"></i> Productos por Categoría</h4>
+            </div>
+            <div class="simple-chart">
+                ${labels.map((label, index) => `
+                    <div class="chart-bar">
+                        <div class="bar-label">${label}</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: ${(values[index] / Math.max(...values)) * 100}%"></div>
+                            <span class="bar-value">${values[index]}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderAdvancedMetrics(products) {
+        const metricsContainer = document.getElementById('advanced-metrics');
+        if (!metricsContainer) return;
+        
+        const totalValue = products.reduce((sum, p) => sum + (p.precio || 0), 0);
+        const avgPrice = products.length > 0 ? totalValue / products.length : 0;
+        const categoriesCount = [...new Set(products.map(p => p.categoria_nombre))].filter(Boolean).length;
+        const maxPrice = Math.max(...products.map(p => p.precio || 0));
+        
+        metricsContainer.innerHTML = `
+            <h3><i class="fas fa-analytics"></i> Métricas Avanzadas</h3>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">💰</div>
+                    <div class="metric-info">
+                        <span class="metric-value">$${Math.round(avgPrice)} UYU</span>
+                        <span class="metric-label">Precio Promedio</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">💎</div>
+                    <div class="metric-info">
+                        <span class="metric-value">$${Math.round(maxPrice)} UYU</span>
+                        <span class="metric-label">Producto Más Caro</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-info">
+                        <span class="metric-value">${categoriesCount}</span>
+                        <span class="metric-label">Categorías con Productos</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🏪</div>
+                    <div class="metric-info">
+                        <span class="metric-value">$${Math.round(totalValue).toLocaleString()} UYU</span>
+                        <span class="metric-label">Valor Total Inventario</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     function renderRecentActivityFromData(products, users) {
         try {
+            // Renderizar gráficos primero
+            renderDashboardCharts(products);
+            
             const recentProducts = products.slice(0, 3);
             const recentUsers = users.slice(0, 3);
             
