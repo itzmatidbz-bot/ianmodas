@@ -1918,19 +1918,139 @@ body {
     color: #dc3545;
 }
 
+/* ========================================
+   🎴 TARJETAS MODERNAS PARA DASHBOARD
+   ======================================== */
+.recent-item-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.recent-item-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--admin-primary);
+    transition: var(--transition);
+}
+
+.recent-item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--admin-primary-solid);
+}
+
+.recent-item-card:hover::before {
+    width: 6px;
+}
+
+.item-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--admin-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-card);
+}
+
+.item-content {
+    flex: 1;
+}
+
+.item-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--admin-text);
+    line-height: 1.2;
+}
+
+.item-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.item-meta .price-badge {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.item-meta .category-badge {
+    background: linear-gradient(135deg, #70a1ff 0%, #5352ed 100%);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.item-meta .user-email {
+    color: var(--admin-text-light);
+    font-size: 0.8rem;
+}
+
+.item-meta .date-badge {
+    background: linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.item-badge {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--admin-primary-solid);
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-card);
+    flex-shrink: 0;
+}
+
 /* Responsive para dashboard reciente */
 @media (max-width: 768px) {
     .dashboard-recent {
         grid-template-columns: 1fr;
     }
     
-    .recent-item {
+    .recent-item-card {
         flex-direction: column;
-        align-items: flex-start;
+        text-align: center;
+        gap: 0.75rem;
     }
     
-    .recent-item .price,
-    .recent-item .stock-alert {
-        align-self: flex-end;
+    .item-content {
+        order: 2;
+    }
+    
+    .item-badge {
+        order: 3;
+        align-self: center;
     }
 }

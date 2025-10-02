@@ -60,6 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
             
             currentProduct = data;
             
+            // 🖼️ CARGAR TODAS LAS IMÁGENES DEL PRODUCTO
+            const { data: imagenes, error: imagenesError } = await supabase
+                .from('producto_imagenes')
+                .select('*')
+                .eq('producto_id', productId)
+                .order('orden', { ascending: true });
+            
+            if (!imagenesError && imagenes && imagenes.length > 0) {
+                currentProduct.imagenes = imagenes.map(img => ({
+                    url: img.imagen_url,
+                    es_principal: img.es_principal,
+                    orden: img.orden
+                }));
+                console.log(`🖼️ Cargadas ${imagenes.length} imágenes para el producto`);
+            } else {
+                console.log('🖼️ No se encontraron imágenes adicionales, usando imagen principal');
+            }
+            
             // Cargar colores disponibles del producto
             const { data: colores, error: colorsError } = await supabase
                 .from('producto_colores')
@@ -329,11 +347,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const quantityInput = document.getElementById('quantity-input');
         let currentValue = parseInt(quantityInput.value);
         
-        if (action === 'increase' && currentValue < currentProduct.stock) {
+        if (action === 'increase' && currentValue < 99) { // Límite máximo de 99 unidades
             quantityInput.value = currentValue + 1;
         } else if (action === 'decrease' && currentValue > 1) {
             quantityInput.value = currentValue - 1;
         }
+        
+        console.log(`🔢 Cantidad actualizada: ${quantityInput.value}`);
     }
     
     function saveCart() {

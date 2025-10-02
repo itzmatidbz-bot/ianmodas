@@ -531,21 +531,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const recentProductsContainer = document.querySelector('.recent-products-dashboard');
             if (recentProductsContainer && recentProducts.length > 0) {
-                recentProductsContainer.innerHTML = recentProducts.map(product => `
-                    <div class="recent-item">
-                        <strong>${product.nombre}</strong>
-                        <span class="price">$${product.precio || 0} UYU</span>
-                        <small>${product.categoria_nombre || product.categoria || 'Sin categoría'}</small>
+                recentProductsContainer.innerHTML = recentProducts.map((product, index) => `
+                    <div class="recent-item-card">
+                        <div class="item-icon">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <div class="item-content">
+                            <h4>${product.nombre}</h4>
+                            <div class="item-meta">
+                                <span class="price-badge">$${Math.round(product.precio || 0)} UYU</span>
+                                <span class="category-badge">${product.categoria_nombre || 'Sin categoría'}</span>
+                            </div>
+                        </div>
+                        <div class="item-badge">#${index + 1}</div>
                     </div>
                 `).join('');
             }
             
             const recentUsersContainer = document.querySelector('.recent-users-dashboard');
             if (recentUsersContainer && recentUsers.length > 0) {
-                recentUsersContainer.innerHTML = recentUsers.map(user => `
-                    <div class="recent-item">
-                        <strong>${user.nombre_empresa || user.email.split('@')[0]}</strong>
-                        <small>${new Date(user.created_at).toLocaleDateString()}</small>
+                recentUsersContainer.innerHTML = recentUsers.map((user, index) => `
+                    <div class="recent-item-card">
+                        <div class="item-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="item-content">
+                            <h4>${user.user_metadata?.nombre_empresa || user.nombre_empresa || user.email.split('@')[0]}</h4>
+                            <div class="item-meta">
+                                <span class="user-email">${user.email}</span>
+                                <span class="date-badge">${new Date(user.created_at).toLocaleDateString('es-UY')}</span>
+                            </div>
+                        </div>
+                        <div class="item-badge">👤</div>
                     </div>
                 `).join('');
             }
