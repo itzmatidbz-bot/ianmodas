@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Cerrar menú al hacer click fuera (solo en móvil)
         document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && navMenu && navMenu.classList.contains('active')) {
+            if (window.innerWidth <= 992 && navMenu && navMenu.classList.contains('show-menu')) {
                 if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
                     closeMenu();
                 }
@@ -672,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Cerrar menú al redimensionar ventana
         window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
+            if (window.innerWidth > 992) {
                 closeMenu();
             }
         });
@@ -809,6 +809,82 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hacer las funciones globales para que puedan ser llamadas desde HTML
     window.applyFilters = applyFilters;
     window.clearFilters = clearFilters;
+
+    function displayProducts(products) {
+        const productGrid = document.getElementById('product-grid');
+        const noResultsMessage = document.getElementById('no-results-message');
+        const resultsCount = document.getElementById('results-count');
+
+        productGrid.innerHTML = '';
+
+        if (products.length === 0) {
+            productGrid.innerHTML = `
+                <p id="no-results-message" class="no-results-message" style="display: flex;">
+                    <i class="fas fa-search"></i>
+                    No se encontraron productos con los filtros seleccionados.
+                    <button id="show-all-products" class="btn btn--outline">Ver todos los productos</button>
+                </p>`;
+            resultsCount.textContent = '0 productos encontrados';
+            // Asegurarse de que el botón para limpiar filtros sea funcional
+            const showAllBtn = document.getElementById('show-all-products');
+            if(showAllBtn) {
+                showAllBtn.addEventListener('click', clearFilters);
+            }
+            return;
+        }
+
+        resultsCount.textContent = `${products.length} productos encontrados`;
+
+        products.forEach(product => {
+            const isNew = product.es_nuevo;
+            const price = isAdmin ? `$${product.precio_compra}` : 'Consultar precio';
+            const priceClass = isAdmin ? '' : 'hidden';
+
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            productCard.dataset.productId = product.id;
+
+            productCard.innerHTML = `
+                <div class="product-card__image-container">
+                    <img src="${product.imagen_url || 'placeholder.jpg'}" alt="${product.nombre}" class="product-card__image" loading="lazy">
+                    ${isNew ? '<span class="product-card__badge">Nuevo</span>' : ''}
+                </div>
+                <div class="product-card__content">
+                    <span class="product-card__category">${product.categoria || 'Sin categoría'}</span>
+                    <h3 class="product-card__title">${product.nombre}</h3>
+                    <div class="product-card__footer">
+                        <span class="product-card__price ${priceClass}">${price}</span>
+                        <div class="product-card__action">
+                            <button class="btn btn--primary btn--sm add-to-cart-btn" data-product-id="${product.id}">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span class="btn-text">Agregar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            productGrid.appendChild(productCard);
+        });
+
+        // Re-vincular eventos para los nuevos botones
+        productGrid.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar que el clic se propague a la tarjeta
+                const productId = e.currentTarget.dataset.productId;
+                const product = allProducts.find(p => p.id == productId);
+                if (product) {
+                    addToCart(product);
+                }
+            });
+        });
+
+        productGrid.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const productId = card.dataset.productId;
+                window.location.href = `producto.html?id=${productId}`;
+            });
+        });
+    }
 
     init();
 });
