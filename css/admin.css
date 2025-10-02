@@ -497,56 +497,173 @@ body {
 /* ========================================
    📋 TABLAS DE PRODUCTOS Y USUARIOS
    ======================================== */
+/* ========================================
+   📊 TABLAS MODERNAS Y PROFESIONALES
+   ======================================== */
+.table-container,
 .products-table-container,
 .users-table-container {
-    background: var(--admin-bg-light);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow-x: auto;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
     margin-bottom: 2rem;
+    position: relative;
 }
 
+.table-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--admin-primary);
+    z-index: 1;
+}
+
+.admin-table,
 .products-table,
 .users-table {
     width: 100%;
     border-collapse: collapse;
+    background: transparent;
 }
 
+.admin-table th,
+.admin-table td,
 .products-table th,
 .products-table td,
 .users-table th,
 .users-table td {
-    padding: 1rem;
+    padding: 1.25rem 1rem;
     text-align: left;
-    border-bottom: 1px solid var(--admin-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     vertical-align: middle;
+    transition: var(--transition);
 }
 
+.admin-table th,
 .products-table th,
 .users-table th {
-    background: var(--admin-light);
-    font-weight: 600;
-    font-size: 0.85rem;
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--admin-primary-solid);
     position: sticky;
     top: 0;
+    z-index: 2;
+    border-bottom: 2px solid var(--admin-primary-solid);
 }
 
+.admin-table tbody tr,
+.products-table tbody tr,
+.users-table tbody tr {
+    transition: var(--transition);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.admin-table tbody tr:nth-child(even),
+.products-table tbody tr:nth-child(even),
+.users-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.admin-table tbody tr:hover,
+.products-table tbody tr:hover,
+.users-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.2);
+}
+
+/* ========================================
+   🖼️ IMÁGENES Y THUMBNAILS MODERNOS
+   ======================================== */
 .product-table-img,
 .product-thumb {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     object-fit: cover;
     border-radius: var(--radius);
-    border: 1px solid var(--admin-border);
+    border: 3px solid var(--glass-border);
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
 }
 
-.available-badge {
-    background: #e8f5e8;
-    color: #2e7d32;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
+.product-table-img:hover,
+.product-thumb:hover {
+    transform: scale(1.1);
+    border-color: var(--admin-primary-solid);
+    box-shadow: var(--shadow-hover);
+}
+
+/* ========================================
+   🏷️ BADGES MODERNOS Y ESTADOS
+   ======================================== */
+.status-badge,
+.available-badge,
+.confirmed-badge,
+.pending-badge {
+    padding: 0.4rem 1rem;
+    border-radius: 25px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+}
+
+.available-badge,
+.confirmed-badge {
+    background: linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%);
+    color: white;
+    border: none;
+}
+
+.confirmed-badge::before {
+    content: '✓';
+    font-weight: 900;
+}
+
+.pending-badge {
+    background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+    color: white;
+}
+
+.pending-badge::before {
+    content: '⏳';
+}
+
+.price-badge {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-card);
+}
+
+.category-badge {
+    background: linear-gradient(135deg, #70a1ff 0%, #5352ed 100%);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.7rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .product-info {

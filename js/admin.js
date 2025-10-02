@@ -480,9 +480,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <small class="text-muted">${descripcionCompleta}</small>
                         </div>
                     </td>
-                    <td>${categoria}</td>
-                    <td>$${product.precio ? Math.round(product.precio) : '0'} UYU</td>
-                    <td><span class="available-badge">✅ Siempre Disponible</span></td>
+                    <td><span class="category-badge">${categoria}</span></td>
+                    <td><span class="price-badge">$${product.precio ? Math.round(product.precio) : '0'} UYU</span></td>
+                    <td><span class="available-badge">Disponible</span></td>
                     <td class="table-actions">
                         <button class="btn-icon edit" onclick="editProduct(${product.id})" title="Editar">
                             <i class="fas fa-edit"></i>
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td>${metadata.departamento || 'No especificado'}</td>
                     <td>${metadata.agencia_envio || 'No especificada'}</td>
                     <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                    <td><span class="user-status ${user.email_confirmed_at ? 'confirmed' : 'pending'}">
+                    <td><span class="${user.email_confirmed_at ? 'confirmed-badge' : 'pending-badge'}">
                         ${user.email_confirmed_at ? 'Confirmado' : 'Pendiente'}
                     </span></td>
                 </tr>

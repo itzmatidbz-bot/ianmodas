@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyFilters() {
-        console.log('🔍 Aplicando filtros...');
+        console.log('🔍 Aplicando filtros inteligentes...');
         
         const filters = {
             categoria: document.getElementById('categoria-filter')?.value || '',
@@ -298,40 +298,73 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         console.log('📊 Filtros aplicados:', filters);
-        console.log('📦 Total productos:', allProducts.length);
+        console.log('📦 Total productos disponibles:', allProducts.length);
 
+        // FILTRO INTELIGENTE: Solo aplica los filtros que están seleccionados
         let filteredProducts = allProducts.filter(product => {
-            // Filtro por categoría
-            if (filters.categoria && product.categoria_id != filters.categoria) return false;
             
-            // Filtro por tipo de prenda
-            if (filters.tipo && product.tipo_prenda_id != filters.tipo) return false;
+            // Filtro por categoría (más flexible)
+            if (filters.categoria) {
+                const categoryMatch = 
+                    product.categoria_id == filters.categoria ||
+                    (product.categoria_nombre && product.categoria_nombre.toLowerCase().includes(filters.categoria.toLowerCase()));
+                if (!categoryMatch) return false;
+            }
             
-            // Filtro por estilo
-            if (filters.estilo && product.estilo_id != filters.estilo) return false;
+            // Filtro por tipo de prenda (más flexible)
+            if (filters.tipo) {
+                const typeMatch = 
+                    product.tipo_prenda_id == filters.tipo ||
+                    (product.tipo_prenda_nombre && product.tipo_prenda_nombre.toLowerCase().includes(filters.tipo.toLowerCase()));
+                if (!typeMatch) return false;
+            }
             
-            // Filtro por color - CORREGIDO: buscar en colores disponibles
-            if (filters.color) {
-                if (!product.colores_disponibles || !product.colores_disponibles.includes(filters.color)) {
+            // Filtro por estilo (opcional - no bloquea si no está definido)
+            if (filters.estilo && product.estilo_id && product.estilo_id != filters.estilo) {
+                return false;
+            }
+            
+            // Filtro por color (busca en string de colores disponibles)
+            if (filters.color && product.colores_disponibles) {
+                const colorMatch = product.colores_disponibles.toLowerCase().includes(filters.color.toLowerCase());
+                console.log(`🎨 Buscando color "${filters.color}" en "${product.colores_disponibles}": ${colorMatch}`);
+                if (!colorMatch) return false;
+            }
+            
+            // Filtro por tipo de tela (opcional)
+            if (filters.tipoTela && product.tela_id && product.tela_id != filters.tipoTela) {
+                return false;
+            }
+            
+            // Filtro por género (más permisivo)
+            if (filters.genero && filters.genero !== 'todos') {
+                if (product.genero && product.genero.toLowerCase() !== filters.genero.toLowerCase()) {
                     return false;
                 }
             }
             
-            // Filtro por tipo de tela
-            if (filters.tipoTela && product.tela_id != filters.tipoTela) return false;
-            
-            // Filtro por género
-            if (filters.genero && product.genero && product.genero !== filters.genero) return false;
-            
-            // Filtro por temporada
-            if (filters.temporada && product.temporada && product.temporada !== filters.temporada) return false;
+            // Filtro por temporada (más permisivo)
+            if (filters.temporada && filters.temporada !== 'todo_año') {
+                if (product.temporada && product.temporada !== filters.temporada) {
+                    return false;
+                }
+            }
 
             return true;
         });
 
-        console.log('✅ Productos filtrados:', filteredProducts.length);
+        console.log(`✅ Filtros aplicados: ${allProducts.length} → ${filteredProducts.length} productos`);
         renderProducts(filteredProducts);
         updateResultsCounter(filteredProducts.length);
+        
+        // Debug: Mostrar algunos productos filtrados
+        if (filteredProducts.length > 0) {
+            console.log('🔍 Ejemplo de productos filtrados:', filteredProducts.slice(0, 3).map(p => ({
+                nombre: p.nombre,
+                categoria: p.categoria_nombre,
+                colores: p.colores_disponibles
+            })));
+        }
     }
 
     function clearFilters() {
@@ -629,59 +662,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // === FUNCIONES DE FILTRADO AVANZADO ===
-    function applyFilters() {
-        console.log('🔍 Aplicando filtros...');
-        
-        const filters = {
-            categoria: document.getElementById('categoria-filter')?.value || '',
-            tipoPrenda: document.getElementById('tipo-prenda-filter')?.value || '',
-            estilo: document.getElementById('estilo-filter')?.value || '',
-            color: document.getElementById('color-filter')?.value || '',
-            tipoTela: document.getElementById('tipo-tela-filter')?.value || '',
-            genero: document.getElementById('genero-filter')?.value || '',
-            temporada: document.getElementById('temporada-filter')?.value || ''
-        };
-
-        let filteredProducts = allProducts.filter(product => {
-            // Filtro por categoría
-            if (filters.categoria && !matchesFilter(product.categoria_nombre || product.categoria, filters.categoria)) {
-                return false;
-            }
-            
-            // Filtro por tipo de prenda
-            if (filters.tipoPrenda && !matchesFilter(product.tipo_prenda_nombre || product.tipo_prenda, filters.tipoPrenda)) {
-                return false;
-            }
-            
-            // Filtro por estilo
-            if (filters.estilo && !matchesFilter(product.estilo_nombre || product.estilo, filters.estilo)) {
-                return false;
-            }
-            
-            // Filtro por tipo de tela
-            if (filters.tipoTela && !matchesFilter(product.tela_nombre || product.tela, filters.tipoTela)) {
-                return false;
-            }
-            
-            // Filtro por género
-            if (filters.genero && filters.genero !== 'todos' && 
-                product.genero && product.genero.toLowerCase() !== filters.genero.toLowerCase()) {
-                return false;
-            }
-            
-            // Filtro por temporada
-            if (filters.temporada && !matchesFilter(product.temporada, filters.temporada)) {
-                return false;
-            }
-            
-            return true;
-        });
-
-        renderProducts(filteredProducts);
-        updateResultsCounter(filteredProducts.length);
-        
-        console.log(`✅ Filtros aplicados: ${filteredProducts.length} productos encontrados`);
-    }
 
     function matchesFilter(productValue, filterValue) {
         if (!productValue || !filterValue) return false;
