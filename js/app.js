@@ -285,6 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyFilters() {
+        console.log('🔍 Aplicando filtros...');
+        
         const filters = {
             categoria: document.getElementById('categoria-filter')?.value || '',
             tipo: document.getElementById('tipo-filter')?.value || '',
@@ -294,6 +296,9 @@ document.addEventListener('DOMContentLoaded', () => {
             genero: document.getElementById('genero-filter')?.value || '',
             temporada: document.getElementById('temporada-filter')?.value || ''
         };
+
+        console.log('📊 Filtros aplicados:', filters);
+        console.log('📦 Total productos:', allProducts.length);
 
         let filteredProducts = allProducts.filter(product => {
             // Filtro por categoría
@@ -305,11 +310,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Filtro por estilo
             if (filters.estilo && product.estilo_id != filters.estilo) return false;
             
-            // Filtro por color
-            if (filters.color && product.color_id != filters.color) return false;
+            // Filtro por color - CORREGIDO: buscar en colores disponibles
+            if (filters.color) {
+                if (!product.colores_disponibles || !product.colores_disponibles.includes(filters.color)) {
+                    return false;
+                }
+            }
             
             // Filtro por tipo de tela
-            if (filters.tipoTela && product.tipo_tela_id != filters.tipoTela) return false;
+            if (filters.tipoTela && product.tela_id != filters.tipoTela) return false;
             
             // Filtro por género
             if (filters.genero && product.genero && product.genero !== filters.genero) return false;
@@ -320,6 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
+        console.log('✅ Productos filtrados:', filteredProducts.length);
         renderProducts(filteredProducts);
         updateResultsCounter(filteredProducts.length);
     }

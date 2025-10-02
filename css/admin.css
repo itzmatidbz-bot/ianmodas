@@ -2,26 +2,29 @@
    🎨 VARIABLES Y BASE - IAN MODAS ADMIN
    ======================================== */
 :root {
-    --admin-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --admin-primary-solid: #667eea;
-    --admin-secondary: #ff6b6b;
-    --admin-success: #51cf66;
-    --admin-warning: #ffd43b;
-    --admin-info: #74c0fc;
+    --admin-primary: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    --admin-primary-solid: #ff6b9d;
+    --admin-secondary: #4834d4;
+    --admin-success: #2ed573;
+    --admin-warning: #ffa502;
+    --admin-info: #70a1ff;
     --admin-light: #f8f9ff;
-    --admin-dark: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-    --admin-dark-solid: #2c3e50;
-    --admin-text: #2d3748;
-    --admin-text-light: #718096;
+    --admin-dark: linear-gradient(135deg, #1e272e 0%, #485460 100%);
+    --admin-dark-solid: #1e272e;
+    --admin-text: #2f3542;
+    --admin-text-light: #57606f;
     --admin-bg-light: #ffffff;
-    --admin-border: #e2e8f0;
-    --shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-    --shadow-lg: 0 20px 25px rgba(102, 126, 234, 0.1);
-    --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.05);
-    --radius: 12px;
-    --radius-lg: 16px;
-    --sidebar-width: 280px;
+    --admin-border: #dfe4ea;
+    --shadow: 0 8px 32px rgba(255, 107, 157, 0.12);
+    --shadow-lg: 0 20px 40px rgba(255, 107, 157, 0.15);
+    --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 12px 40px rgba(255, 107, 157, 0.2);
+    --radius: 16px;
+    --radius-lg: 20px;
+    --sidebar-width: 300px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.2);
 }
 
 * {
@@ -64,26 +67,42 @@ body {
 }
 
 .admin-logo {
-    padding: 0 2rem 2rem;
+    padding: 2rem 2rem 2.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.admin-logo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #ff6b9d, #ffd93d);
+    border-radius: 2px;
 }
 
 .admin-logo h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+    font-size: 1.8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ff6b9d, #ffd93d, #70a1ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
 }
 
 .admin-logo p {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7);
-    font-weight: 500;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .admin-nav {
@@ -372,17 +391,19 @@ body {
 }
 
 .stat-card {
-    background: white;
-    padding: 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    padding: 2.5rem;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-card);
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
     transition: var(--transition);
     position: relative;
     overflow: hidden;
-    border: 1px solid var(--admin-border);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
 }
 
 .stat-card::before {
@@ -391,44 +412,86 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 5px;
     background: var(--admin-primary);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(255, 107, 157, 0.05));
+    border-radius: 50%;
+    transform: translate(30%, -30%);
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-hover);
     border-color: var(--admin-primary-solid);
 }
 
-.stat-card:nth-child(1)::before { background: linear-gradient(45deg, #667eea, #764ba2); }
-.stat-card:nth-child(2)::before { background: linear-gradient(45deg, #ff6b6b, #ee5a24); }
-.stat-card:nth-child(3)::before { background: linear-gradient(45deg, #51cf66, #40c057); }
-.stat-card:nth-child(4)::before { background: linear-gradient(45deg, #ffd43b, #fab005); }
+.stat-card:nth-child(1)::before { background: linear-gradient(135deg, #ff6b9d, #c44569); }
+.stat-card:nth-child(2)::before { background: linear-gradient(135deg, #4834d4, #6c5ce7); }
+.stat-card:nth-child(3)::before { background: linear-gradient(135deg, #2ed573, #20bf6b); }
+.stat-card:nth-child(4)::before { background: linear-gradient(135deg, #ffa502, #ff6348); }
 
 .stat-card i {
-    font-size: 2rem;
-    color: var(--admin-secondary);
-    background: var(--admin-light);
-    padding: 1rem;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
+    font-size: 2.5rem;
+    color: white;
+    background: var(--admin-primary);
+    padding: 1.2rem;
+    border-radius: 20px;
+    width: 70px;
+    height: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.stat-card:nth-child(1) i { background: linear-gradient(135deg, #ff6b9d, #c44569); }
+.stat-card:nth-child(2) i { background: linear-gradient(135deg, #4834d4, #6c5ce7); }
+.stat-card:nth-child(3) i { background: linear-gradient(135deg, #2ed573, #20bf6b); }
+.stat-card:nth-child(4) i { background: linear-gradient(135deg, #ffa502, #ff6348); }
+
+.stat-card .card-content {
+    position: relative;
+    z-index: 2;
 }
 
 .stat-card .card-content h3 {
-    font-size: 1rem;
-    color: #757575;
+    font-size: 1.1rem;
+    color: var(--admin-text-light);
     margin-bottom: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .stat-card .card-content p {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--admin-dark);
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--admin-text);
+    background: linear-gradient(135deg, #2f3542, #57606f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stat-card .card-content small {
+    font-size: 0.85rem;
+    color: var(--admin-text-light);
+    font-weight: 500;
+    opacity: 0.8;
 }
 
 /* ========================================

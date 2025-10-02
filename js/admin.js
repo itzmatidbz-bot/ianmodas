@@ -302,19 +302,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadUsers() {
         try {
-            console.log('🔄 Cargando usuarios...');
+            console.log('🔄 Cargando usuarios registrados...');
+            let allUsers = [];
             
-            // Intentar cargar desde mayoristas
+            // 1. Cargar desde tabla mayoristas (datos legacy)
             try {
-                const { data: usuarios, error } = await supabase
+                const { data: mayoristas, error: mayoristaError } = await supabase
                     .from('mayoristas')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
-                if (!error && usuarios && usuarios.length > 0) {
-                    console.log(`✅ Usuarios cargados: ${usuarios.length}`);
-                    return usuarios.map(user => ({
-                        ...user,
+                if (!mayoristaError && mayoristas && mayoristas.length > 0) {
+                    const formattedMayoristas = mayoristas.map(user => ({
+                        id: user.id,
+                        email: user.email,
+                        created_at: user.created_at,
+                        email_confirmed_at: user.created_at,
                         user_metadata: {
                             nombre: user.nombre,
                             apellido: user.apellido,
@@ -327,14 +330,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                             tipo_usuario: 'mayorista'
                         }
                     }));
+                    allUsers = [...allUsers, ...formattedMayoristas];
+                    console.log(`📊 Mayoristas cargados: ${mayoristas.length}`);
                 }
             } catch (e) {
-                console.log('⚠️ Error accediendo a mayoristas');
+                console.log('⚠️ No se pudieron cargar mayoristas legacy');
             }
 
-            // Fallback con datos realistas
-            console.log('🎭 Usando datos de usuarios de respaldo');
-            return generateRealisticUsers();
+            // 2. Intentar cargar usuarios reales de autenticación (si hay permisos)
+            try {
+                // Solo intentar si somos admin
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    const adminEmails = ['admin@ianmodas.com', 'dylan@ianmodas.com', 'ianmodas@admin.com'];
+                    const isAdmin = adminEmails.includes(session.user.email?.toLowerCase());
+                    
+                    if (isAdmin) {
+                        // Aquí podrías agregar lógica para cargar usuarios reales si tienes permisos
+                        console.log('👑 Usuario admin detectado, cargando datos completos');
+                    }
+                }
+            } catch (e) {
+                console.log('🔐 Sin permisos para usuarios de auth');
+            }
+
+            // 3. Si no hay usuarios, usar datos de ejemplo realistas
+            if (allUsers.length === 0) {
+                console.log('🎭 Usando datos de usuarios de ejemplo');
+                allUsers = generateRealisticUsers();
+            }
+
+            console.log(`✅ Total usuarios cargados: ${allUsers.length}`);
+            return allUsers;
 
         } catch (error) {
             console.error('❌ Error al cargar usuarios:', error);

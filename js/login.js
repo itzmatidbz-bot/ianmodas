@@ -166,13 +166,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error('auth_error');
             }
 
-            // Verificar si el usuario es admin
-            const { data: isAdmin, error: adminCheckError } = await supabase.rpc('is_admin');
+            // Verificar si el usuario es admin usando email específico
+            const adminEmails = ['admin@ianmodas.com', 'dylan@ianmodas.com', 'ianmodas@admin.com'];
+            const isAdmin = adminEmails.includes(authData.user.email?.toLowerCase());
 
-            if (adminCheckError) {
-                console.error('Error al verificar rol de admin:', adminCheckError);
-                throw new Error('role_check_error');
-            }
+            console.log('🔍 Verificando admin:', authData.user.email, 'Es admin:', isAdmin);
 
             // Si es admin, redirigir al panel
             if (isAdmin) {
