@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            // Cargar producto principal
             const { data, error } = await supabase
                 .from('vista_productos_completa')
                 .select('*')
@@ -58,6 +59,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (error || !data) throw error;
             
             currentProduct = data;
+            
+            // Cargar colores disponibles del producto
+            const { data: colores, error: colorsError } = await supabase
+                .from('producto_colores')
+                .select(`
+                    color_id,
+                    disponible,
+                    colores (id, nombre, codigo_hex)
+                `)
+                .eq('producto_id', productId)
+                .eq('disponible', true);
+            
+            if (!colorsError && colores) {
+                currentProduct.colores_disponibles = colores.map(pc => pc.colores);
+            }
+            
             document.title = `${currentProduct.nombre} - Ian Modas`;
             renderProductDetails();
             loadRelatedProducts(currentProduct.categoria_nombre || currentProduct.categoria, currentProduct.id);
@@ -121,17 +138,17 @@ document.addEventListener('DOMContentLoaded', () => {
             priceAndActionsHTML = `
                 <div class="product-detail__price-box">
                     <span class="price">$UYU ${precio.toLocaleString('es-UY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-                    ${currentProduct.stock > 0 ? `<span class="stock-status in-stock">En Stock (${currentProduct.stock})</span>` : '<span class="stock-status out-of-stock">Agotado</span>'}
+                    <span class="stock-status in-stock">Disponible</span>
                 </div>
                 ${coloresHTML}
                 <div class="product-detail__actions">
                     <div class="quantity-selector">
                         <button class="quantity-btn" data-action="decrease">-</button>
-                        <input type="number" id="quantity-input" value="1" min="1" max="${currentProduct.stock}">
+                        <input type="number" id="quantity-input" value="1" min="1">
                         <button class="quantity-btn" data-action="increase">+</button>
                     </div>
-                    <button id="add-to-cart-btn" class="btn" ${currentProduct.stock === 0 ? 'disabled' : ''}>
-                        <i class="fas fa-plus"></i> Añadir al Pedido
+                    <button id="add-to-cart-btn" class="btn">
+                        <i class="fas fa-plus"></i> AÑADIR AL PEDIDO
                     </button>
                 </div>
             `;
@@ -228,9 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function loadRelatedProducts(categoria, currentId) {
         const { data, error } = await supabase
-            .from('productos')
+            .from('vista_productos_completa')
             .select('*')
-            .eq('categoria', categoria)
+            .eq('categoria_nombre', categoria)
             .neq('id', currentId)
             .limit(4);
 
@@ -239,15 +256,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        relatedProductsGrid.innerHTML = data.map(product => `
-            <div class="product-card" data-id="${product.id}">
-                <img src="${product.imagen_url || 'https://placehold.co/600x400/eee/ccc?text=IanModas'}" alt="${product.nombre}" class="product-card__image">
-                <div class="product-card__content">
-                    <p class="product-card__category">${product.categoria}</p>
-                    <h3 class="product-card__title">${product.nombre}</h3>
+        if (data && data.length > 0) {
+            relatedProductsGrid.innerHTML = data.map(product => `
+                <div class="product-card" data-id="${product.id}">
+                    <img src="${product.imagen_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y4ZjlmYSIvPgogIDxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlOWVjZWYiIHN0cm9rZT0iI2RlZTJlNiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNmM3NTdkIj5TaW4gSW1hZ2VuPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiNhZGI1YmQiPlBsYWNlaG9sZGVyPC90ZXh0Pgo8L3N2Zz4K'}" alt="${product.nombre}" class="product-card__image">
+                    <div class="product-card__content">
+                        <p class="product-card__category">${product.categoria_nombre || 'Sin categoría'}</p>
+                        <h3 class="product-card__title">${product.nombre}</h3>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+        } else {
+            relatedProductsGrid.innerHTML = '<p class="no-related">No hay productos relacionados disponibles.</p>';
+        }
         
         document.querySelectorAll('.related-products .product-card').forEach(card => {
             card.addEventListener('click', () => {
@@ -261,17 +282,45 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleAddToCart() {
         const quantityInput = document.getElementById('quantity-input');
         const quantity = parseInt(quantityInput.value);
-
+        const selectedColor = document.querySelector('.color-option.selected');
+        
         if (quantity > 0) {
-            const existingItem = cart.find(item => item.id === currentProduct.id);
+            let productToAdd = { ...currentProduct, quantity };
+            
+            // Si hay color seleccionado, agregarlo al producto
+            if (selectedColor) {
+                const colorId = selectedColor.dataset.colorId;
+                const colorName = selectedColor.querySelector('.color-name').textContent;
+                productToAdd.selectedColor = {
+                    id: colorId,
+                    nombre: colorName
+                };
+                productToAdd.cartId = `${currentProduct.id}-${colorId}`; // ID único para carrito
+            } else {
+                productToAdd.cartId = currentProduct.id.toString();
+            }
+            
+            const existingItem = cart.find(item => item.cartId === productToAdd.cartId);
             if (existingItem) {
                 existingItem.quantity += quantity;
             } else {
-                cart.push({ ...currentProduct, quantity });
+                cart.push(productToAdd);
             }
+            
             saveCart();
             updateCartUI();
             cartModal.classList.add('active');
+            
+            // Mostrar mensaje de confirmación
+            const addBtn = document.getElementById('add-to-cart-btn');
+            const originalText = addBtn.innerHTML;
+            addBtn.innerHTML = '<i class="fas fa-check"></i> ¡AGREGADO!';
+            addBtn.style.backgroundColor = '#28a745';
+            
+            setTimeout(() => {
+                addBtn.innerHTML = originalText;
+                addBtn.style.backgroundColor = '';
+            }, 2000);
         }
     }
     
@@ -305,16 +354,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         cartItemsContainer.innerHTML = cart.map(item => `
-            <div class="cart-item" data-id="${item.id}">
-                <img src="${item.imagen_url}" alt="${item.nombre}" class="cart-item__image">
+            <div class="cart-item" data-cart-id="${item.cartId}">
+                <img src="${item.imagen_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y4ZjlmYSIvPgogIDxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlOWVjZWYiIHN0cm9rZT0iI2RlZTJlNiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNmM3NTdkIj5TaW4gSW1hZ2VuPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiNhZGI1YmQiPlBsYWNlaG9sZGVyPC90ZXh0Pgo8L3N2Zz4K'}" alt="${item.nombre}" class="cart-item__image">
                 <div class="cart-item__info">
                     <p class="cart-item__title">${item.nombre}</p>
-                    <p class="cart-item__price">$${item.precio.toFixed(2)}</p>
+                    ${item.selectedColor ? `<p class="cart-item__color">Color: ${item.selectedColor.nombre}</p>` : ''}
+                    <p class="cart-item__price">$${parseFloat(item.precio).toFixed(0)} UYU</p>
                     <div class="cart-item__quantity">
                         <span>Cantidad: ${item.quantity}</span>
                     </div>
                 </div>
-                <button class="cart-item__remove" data-id="${item.id}">&times;</button>
+                <button class="cart-item__remove" data-cart-id="${item.cartId}">&times;</button>
             </div>
         `).join('');
     }
@@ -346,8 +396,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateCartUI();
             }
         } else if (e.target.classList.contains('cart-item__remove')) {
-            const itemId = parseInt(e.target.dataset.id);
-            cart = cart.filter(item => item.id !== itemId);
+            const cartId = e.target.dataset.cartId;
+            cart = cart.filter(item => item.cartId !== cartId);
             saveCart();
             updateCartUI();
         }
@@ -362,12 +412,15 @@ document.addEventListener('DOMContentLoaded', () => {
         let message = "¡Hola Ian Modas! 👋 Quisiera hacer el siguiente pedido:\n\n";
         cart.forEach(item => {
             message += `▪️ *${item.nombre}*\n`;
+            if (item.selectedColor) {
+                message += `  - Color: ${item.selectedColor.nombre}\n`;
+            }
             message += `  - Cantidad: ${item.quantity}\n`;
-            message += `  - Precio unitario: $${item.precio.toFixed(2)}\n\n`;
+            message += `  - Precio unitario: $${parseFloat(item.precio).toFixed(0)} UYU\n\n`;
         });
 
-        const total = cart.reduce((sum, item) => sum + item.precio * item.quantity, 0);
-        message += `*Total del Pedido: $${total.toFixed(2)}*\n\n`;
+        const total = cart.reduce((sum, item) => sum + parseFloat(item.precio) * item.quantity, 0);
+        message += `*Total del Pedido: $${total.toFixed(0)} UYU*\n\n`;
         message += `¡Quedo a la espera de su confirmación! Gracias.`;
 
         const whatsappUrl = `https://wa.me/59894772730?text=${encodeURIComponent(message)}`;
