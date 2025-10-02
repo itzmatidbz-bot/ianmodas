@@ -82,25 +82,108 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Funciones de Filtros Avanzados ---
     async function loadFilterData() {
         try {
+            console.log('🔧 Cargando datos para filtros...');
+            
             // Cargar categorías
-            const { data: categorias } = await supabase.rpc('get_categorias_activas');
-            populateSelect('categoria-filter', categorias, 'id', 'nombre');
+            try {
+                const { data: categorias } = await supabase.rpc('get_categorias');
+                if (categorias && categorias.length > 0) {
+                    populateSelect('categoria-filter', categorias, 'id', 'nombre');
+                    console.log('✅ Categorías cargadas para filtros:', categorias.length);
+                }
+            } catch (e) {
+                console.log('⚠️ Usando categorías desde productos existentes');
+                const categorias = [...new Set(allProducts.map(p => p.categoria_nombre))].filter(Boolean);
+                populateSelectFromArray('categoria-filter', categorias);
+            }
+
+            // Cargar tipos de prenda
+            try {
+                const { data: tipos } = await supabase.rpc('get_tipos_prenda_todos');
+                if (tipos && tipos.length > 0) {
+                    populateSelect('tipo-prenda-filter', tipos, 'id', 'nombre');
+                }
+            } catch (e) {
+                const tipos = [...new Set(allProducts.map(p => p.tipo_prenda_nombre))].filter(Boolean);
+                populateSelectFromArray('tipo-prenda-filter', tipos);
+            }
 
             // Cargar estilos
-            const { data: estilos } = await supabase.rpc('get_estilos_activos');
-            populateSelect('estilo-filter', estilos, 'id', 'nombre');
-
-            // Cargar colores
-            const { data: colores } = await supabase.rpc('get_colores_activos');
-            populateSelect('color-filter', colores, 'id', 'nombre');
+            try {
+                const { data: estilos } = await supabase.rpc('get_estilos_todos');
+                if (estilos && estilos.length > 0) {
+                    populateSelect('estilo-filter', estilos, 'id', 'nombre');
+                }
+            } catch (e) {
+                const estilos = [...new Set(allProducts.map(p => p.estilo_nombre))].filter(Boolean);
+                populateSelectFromArray('estilo-filter', estilos);
+            }
 
             // Cargar tipos de tela
-            const { data: tiposTela } = await supabase.rpc('get_tipos_tela_activos');
-            populateSelect('tipo-tela-filter', tiposTela, 'id', 'nombre');
+            try {
+                const { data: telas } = await supabase.rpc('get_telas');
+                if (telas && telas.length > 0) {
+                    populateSelect('tipo-tela-filter', telas, 'id', 'nombre');
+                }
+            } catch (e) {
+                const telas = [...new Set(allProducts.map(p => p.tela_nombre))].filter(Boolean);
+                populateSelectFromArray('tipo-tela-filter', telas);
+            }
+
+            // Cargar colores
+            try {
+                const { data: colores } = await supabase.rpc('get_colores');
+                if (colores && colores.length > 0) {
+                    populateSelect('color-filter', colores, 'id', 'nombre');
+                }
+            } catch (e) {
+                // Usar colores básicos como fallback
+                const coloresBasicos = [
+                    'Negro', 'Blanco', 'Gris', 'Azul', 'Rojo', 'Verde', 
+                    'Amarillo', 'Rosa', 'Morado', 'Naranja', 'Celeste', 'Beige'
+                ];
+                populateSelectFromArray('color-filter', coloresBasicos);
+            }
+
+            console.log('✅ Datos de filtros cargados');
 
         } catch (error) {
             console.error('Error loading filter data:', error);
         }
+    }
+
+    function populateSelect(selectId, data, valueField, textField) {
+        const select = document.getElementById(selectId);
+        if (!select || !data) return;
+
+        // Limpiar opciones existentes excepto la primera
+        const firstOption = select.firstElementChild;
+        select.innerHTML = '';
+        if (firstOption) select.appendChild(firstOption);
+
+        data.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item[valueField] || item.id;
+            option.textContent = item[textField] || item.nombre;
+            select.appendChild(option);
+        });
+    }
+
+    function populateSelectFromArray(selectId, items) {
+        const select = document.getElementById(selectId);
+        if (!select || !items) return;
+
+        // Limpiar opciones existentes excepto la primera
+        const firstOption = select.firstElementChild;
+        select.innerHTML = '';
+        if (firstOption) select.appendChild(firstOption);
+
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            select.appendChild(option);
+        });
     }
 
     function populateSelect(selectId, data, valueField, textField) {
@@ -289,7 +372,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Eventos de filtros
+        // Configurar botones de aplicar y limpiar filtros
+        const applyBtn = document.querySelector('[onclick*="APLICAR FILTROS"]') || document.getElementById('apply-filters');
+        const clearBtn = document.querySelector('[onclick*="LIMPIAR FILTROS"]') || document.getElementById('clear-filters');
+        
+        if (applyBtn) {
+            applyBtn.onclick = null; // Remover onclick anterior
+            applyBtn.addEventListener('click', applyFilters);
+        }
+        
+        if (clearBtn) {
+            clearBtn.onclick = null; // Remover onclick anterior  
+            clearBtn.addEventListener('click', clearFilters);
+        }
+
+        // Eventos de filtros individuales
         const categoriaSelect = document.getElementById('categoria-filter');
         if (categoriaSelect) {
             categoriaSelect.addEventListener('change', (e) => {
@@ -520,6 +617,94 @@ document.addEventListener('DOMContentLoaded', () => {
         const whatsappUrl = `https://wa.me/59894772730?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     }
+
+    // === FUNCIONES DE FILTRADO AVANZADO ===
+    function applyFilters() {
+        console.log('🔍 Aplicando filtros...');
+        
+        const filters = {
+            categoria: document.getElementById('categoria-filter')?.value || '',
+            tipoPrenda: document.getElementById('tipo-prenda-filter')?.value || '',
+            estilo: document.getElementById('estilo-filter')?.value || '',
+            color: document.getElementById('color-filter')?.value || '',
+            tipoTela: document.getElementById('tipo-tela-filter')?.value || '',
+            genero: document.getElementById('genero-filter')?.value || '',
+            temporada: document.getElementById('temporada-filter')?.value || ''
+        };
+
+        let filteredProducts = allProducts.filter(product => {
+            // Filtro por categoría
+            if (filters.categoria && !matchesFilter(product.categoria_nombre || product.categoria, filters.categoria)) {
+                return false;
+            }
+            
+            // Filtro por tipo de prenda
+            if (filters.tipoPrenda && !matchesFilter(product.tipo_prenda_nombre || product.tipo_prenda, filters.tipoPrenda)) {
+                return false;
+            }
+            
+            // Filtro por estilo
+            if (filters.estilo && !matchesFilter(product.estilo_nombre || product.estilo, filters.estilo)) {
+                return false;
+            }
+            
+            // Filtro por tipo de tela
+            if (filters.tipoTela && !matchesFilter(product.tela_nombre || product.tela, filters.tipoTela)) {
+                return false;
+            }
+            
+            // Filtro por género
+            if (filters.genero && filters.genero !== 'todos' && 
+                product.genero && product.genero.toLowerCase() !== filters.genero.toLowerCase()) {
+                return false;
+            }
+            
+            // Filtro por temporada
+            if (filters.temporada && !matchesFilter(product.temporada, filters.temporada)) {
+                return false;
+            }
+            
+            return true;
+        });
+
+        renderProducts(filteredProducts);
+        updateResultsCounter(filteredProducts.length);
+        
+        console.log(`✅ Filtros aplicados: ${filteredProducts.length} productos encontrados`);
+    }
+
+    function matchesFilter(productValue, filterValue) {
+        if (!productValue || !filterValue) return false;
+        return productValue.toLowerCase().includes(filterValue.toLowerCase()) || 
+               filterValue.toLowerCase().includes(productValue.toLowerCase());
+    }
+
+    function clearFilters() {
+        console.log('🧹 Limpiando filtros...');
+        
+        // Resetear todos los selects a su valor por defecto
+        const filterSelects = [
+            'categoria-filter', 'tipo-prenda-filter', 'estilo-filter', 
+            'color-filter', 'tipo-tela-filter', 'genero-filter', 'temporada-filter'
+        ];
+
+        filterSelects.forEach(filterId => {
+            const filterElement = document.getElementById(filterId);
+            if (filterElement) {
+                filterElement.selectedIndex = 0;
+            }
+        });
+
+        // Mostrar todos los productos
+        renderProducts(allProducts);
+        updateResultsCounter(allProducts.length);
+        
+        console.log('✅ Filtros limpiados');
+    }
+
+    // Hacer las funciones globales para que puedan ser llamadas desde HTML
+    window.applyFilters = applyFilters;
+    window.clearFilters = clearFilters;
 
     init();
 });

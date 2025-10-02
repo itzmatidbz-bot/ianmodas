@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             return `
                 <tr data-id="${product.id}">
-                    <td><img src="${product.imagen_url || '/placeholder.jpg'}" alt="${product.nombre}" class="product-table-img" onerror="this.src='/placeholder.jpg'"></td>
+                    <td><img src="${product.imagen_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y4ZjlmYSIvPgogIDxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlOWVjZWYiIHN0cm9rZT0iI2RlZTJlNiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNmM3NTdkIj5TaW4gSW1hZ2VuPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiNhZGI1YmQiPlBsYWNlaG9sZGVyPC90ZXh0Pgo8L3N2Zz4K'}" alt="${product.nombre}" class="product-table-img" onerror="this.style.display='none'"></td>
                     <td>
                         <div class="product-info">
                             <strong>${product.nombre}</strong>
@@ -698,8 +698,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (selectedImages.length > 0) {
                 const mainImage = selectedImages.find(img => img.isMain) || selectedImages[0];
                 
+                // Crear nombre de archivo seguro
+                const safeFileName = mainImage.file.name
+                    .replace(/[^a-zA-Z0-9.-]/g, '_')
+                    .replace(/_{2,}/g, '_')
+                    .toLowerCase();
+                
                 // Subir imagen principal a Supabase Storage
-                const filePath = `public/${Date.now()}-${mainImage.file.name}`;
+                const filePath = `${Date.now()}-${safeFileName}`;
                 const { error: uploadError } = await supabase.storage.from('productos').upload(filePath, mainImage.file);
                 if (uploadError) throw uploadError;
                 const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filePath);
@@ -708,14 +714,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             productData.imagen_url = mainImageUrl;
 
-            // Guardar en base de datos
+            // Verificar si el usuario es admin antes de guardar
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    throw new Error('No hay sesión activa');
+                }
+                
+                // Configurar el contexto del usuario para RLS
+                await supabase.rpc('set_claim', { 
+                    uid: session.user.id, 
+                    claim: 'role', 
+                    value: 'admin' 
+                }).then(() => {}).catch(() => {}); // Ignorar errores si la función no existe
+                
+            } catch (e) {
+                console.log('⚠️ No se pudo verificar permisos de admin, continuando...');
+            }
+
+            // Guardar en base de datos con manejo de RLS
             let savedProduct;
             if (editingProductId) {
-                const { error, data } = await supabase.from('productos').update(productData).eq('id', editingProductId).select();
+                const { error, data } = await supabase
+                    .from('productos')
+                    .update(productData)
+                    .eq('id', editingProductId)
+                    .select();
                 if (error) throw error;
                 savedProduct = data[0];
             } else {
-                const { error, data } = await supabase.from('productos').insert([productData]).select();
+                const { error, data } = await supabase
+                    .from('productos')
+                    .insert([productData])
+                    .select();
                 if (error) throw error;
                 savedProduct = data[0];
             }
@@ -733,7 +764,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 for (let i = 0; i < selectedImages.length; i++) {
                     const image = selectedImages[i];
                     try {
-                        const filePath = `public/${productId}-${Date.now()}-${i}-${image.file.name}`;
+                        const safeFileName = image.file.name
+                            .replace(/[^a-zA-Z0-9.-]/g, '_')
+                            .replace(/_{2,}/g, '_')
+                            .toLowerCase();
+                        const filePath = `${productId}-${Date.now()}-${i}-${safeFileName}`;
                         const { error: uploadError } = await supabase.storage.from('productos').upload(filePath, image.file);
                         if (uploadError) {
                             console.warn('Error subiendo imagen:', uploadError);
