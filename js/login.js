@@ -11,43 +11,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!loginForm) return;
 
-    // --- Función helper para crear registro en nueva tabla usuarios_negocio ---
-    const createUsuarioNegocio = async (user) => {
+    // --- Función para crear registro en tabla mayoristas (LA OFICIAL) ---
+    const createMayorista = async (user) => {
         try {
-            const nombreEmpresa = user.user_metadata?.nombre_empresa || `${user.email?.split('@')[0]} Empresa` || 'Mi Empresa';
+            const metadata = user.user_metadata || {};
             
-            console.log('🏢 Creando registro en usuarios_negocio para:', user.email);
+            console.log('🏢 Creando mayorista para:', user.email);
+            
+            const mayoristaData = {
+                email: user.email,
+                nombre: metadata.nombre || user.email?.split('@')[0] || 'Sin nombre',
+                apellido: metadata.apellido || 'Sin apellido',
+                rut: metadata.rut || null,
+                celular: metadata.celular || null,
+                nombre_empresa: metadata.nombre_empresa || `${user.email?.split('@')[0]} Empresa`,
+                direccion: metadata.direccion || null,
+                departamento: metadata.departamento || null,
+                agencia_envio: metadata.agencia_envio || null,
+                activo: true
+            };
             
             const { data, error: createError } = await supabase
-                .from('usuarios_negocio')
-                .insert([{
-                    email: user.email,
-                    nombre_empresa: nombreEmpresa,
-                    telefono: user.user_metadata?.telefono || null,
-                    direccion: user.user_metadata?.direccion || null
-                }])
+                .from('mayoristas')
+                .insert([mayoristaData])
                 .select();
 
             if (createError) {
-                console.warn('Error al crear usuario de negocio:', createError);
+                console.warn('Error al crear mayorista:', createError);
                 
                 // Intentar actualizar si ya existe (por email único)
-                if (createError.code === '23505') { // duplicate key
-                    console.log('Usuario ya existe, intentando actualizar...');
+                if (createError.code === '23505') {
+                    console.log('Mayorista ya existe, intentando actualizar...');
                     const { error: updateError } = await supabase
-                        .from('usuarios_negocio')
-                        .update({ 
-                            nombre_empresa: nombreEmpresa,
-                            updated_at: 'NOW()'
-                        })
+                        .from('mayoristas')
+                        .update(mayoristaData)
                         .eq('email', user.email);
                     
                     if (!updateError) {
-                        console.log('✅ Registro de usuario de negocio actualizado exitosamente');
+                        console.log('✅ Mayorista actualizado exitosamente');
                     }
                 }
             } else {
-                console.log('✅ Registro de usuario de negocio creado exitosamente:', data);
+                console.log('✅ Mayorista creado exitosamente:', data);
                 
                 // 📧 ENVIAR EMAIL DE BIENVENIDA
                 try {
@@ -92,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (data.user) {
                     // Intentar crear el registro de mayorista
-                    await createUsuarioNegocio(data.user);
+                    await createMayorista(data.user);
 
                     const nombreEmpresa = data.user.user_metadata?.nombre_empresa || 'Mi Empresa';
                     const nombreUsuario = data.user.email?.split('@')[0] || 'Usuario';
@@ -167,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Verificar si el usuario es admin usando email específico
-            const adminEmails = ['admin@ianmodas.com', 'dylan@ianmodas.com', 'ianmodas@admin.com'];
+            const adminEmails = ['admin@ianmodas.com', 'dylan@ianmodas.com', 'ianmodas@admin.com', 'adinaventas@hotmail.com'];
             const isAdmin = adminEmails.includes(authData.user.email?.toLowerCase());
 
             console.log('🔍 Verificando admin:', authData.user.email, 'Es admin:', isAdmin);
@@ -182,32 +187,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Si no es admin, verificar si es mayorista (con manejo de errores mejorado)
+            // Si no es admin, verificar/crear mayorista por EMAIL
             let mayorista = null;
             let nombreEmpresa = 'Mayorista';
 
             try {
+                // BUSCAR POR EMAIL, NO POR ID
                 const { data: mayoristaData, error: mayoristaError } = await supabase
                     .from('mayoristas')
                     .select('*')
-                    .eq('id', authData.user.id)
-                    .single();
+                    .eq('email', authData.user.email)
+                    .maybeSingle(); // maybeSingle no falla si no encuentra nada
 
                 if (mayoristaError) {
                     console.warn('Error al consultar mayorista:', mayoristaError);
-                    
-                    // Si es error 500 (servidor) o tabla no existe, crear mayorista igual
-                    if (mayoristaError.code === 'PGRST116' || mayoristaError.message?.includes('500') || !mayoristaError.code) {
-                        console.log('Mayorista no encontrado, creando nuevo registro...');
-                        // Intentar crear mayorista
-                        await createUsuarioNegocio(authData.user);
-                    } else {
-                        // Otros errores, pero permitir login igual
-                        console.warn('Error de BD, permitiendo login sin verificar mayorista');
-                    }
+                    // Crear mayorista automáticamente si hay error
+                    await createMayorista(authData.user);
+                } else if (!mayoristaData) {
+                    console.log('Mayorista no existe, creando...');
+                    // Crear mayorista si no existe
+                    await createMayorista(authData.user);
                 } else {
                     mayorista = mayoristaData;
                     nombreEmpresa = mayorista?.nombre_empresa || 'Mayorista';
+                    console.log('✅ Mayorista encontrado:', nombreEmpresa);
                 }
             } catch (error) {
                 console.warn('Error general al manejar mayorista:', error);

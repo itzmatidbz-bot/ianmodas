@@ -61,17 +61,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             
-            // Verificar si es admin
-            try {
-                const { data: isAdmin } = await supabase.rpc('is_admin');
-                if (!isAdmin) {
-                    await supabase.auth.signOut();
-                    window.location.href = 'login.html?error=auth';
-                    return;
-                }
-            } catch (e) {
-                console.log('⚠️ Función is_admin no disponible, continuando...');
+            // Verificar si es admin usando lista de emails autorizados
+            const adminEmails = ['admin@ianmodas.com', 'dylan@ianmodas.com', 'ianmodas@admin.com', 'adinaventas@hotmail.com'];
+            const userEmail = session.user.email?.toLowerCase();
+            const isAdmin = adminEmails.includes(userEmail);
+            
+            console.log('🔍 Verificando acceso admin:', userEmail, 'Es admin:', isAdmin);
+            
+            if (!isAdmin) {
+                console.log('❌ Acceso denegado - Email no autorizado:', userEmail);
+                await supabase.auth.signOut();
+                alert('Acceso denegado. No tienes permisos de administrador.');
+                window.location.href = 'login.html?error=unauthorized';
+                return;
             }
+            
+            console.log('✅ Acceso autorizado para admin:', userEmail);
             
             // Mostrar admin panel
             const loadingScreen = document.getElementById('loading-screen');
@@ -302,69 +307,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadUsers() {
         try {
-            console.log('🔄 Cargando usuarios registrados...');
-            let allUsers = [];
+            console.log('🔄 Cargando usuarios mayoristas...');
             
-            // 1. Cargar desde tabla mayoristas (datos legacy)
-            try {
-                const { data: mayoristas, error: mayoristaError } = await supabase
-                    .from('mayoristas')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (!mayoristaError && mayoristas && mayoristas.length > 0) {
-                    const formattedMayoristas = mayoristas.map(user => ({
-                        id: user.id,
-                        email: user.email,
-                        created_at: user.created_at,
-                        email_confirmed_at: user.created_at,
-                        user_metadata: {
-                            nombre: user.nombre,
-                            apellido: user.apellido,
-                            rut: user.rut,
-                            celular: user.celular,
-                            nombre_empresa: user.nombre_empresa,
-                            direccion: user.direccion,
-                            departamento: user.departamento,
-                            agencia_envio: user.agencia_envio,
-                            tipo_usuario: 'mayorista'
-                        }
-                    }));
-                    allUsers = [...allUsers, ...formattedMayoristas];
-                    console.log(`📊 Mayoristas cargados: ${mayoristas.length}`);
+            // SOLUCIÓN SIMPLE: Solo usar tabla mayoristas del SQL
+            const { data: mayoristas, error } = await supabase
+                .from('mayoristas')
+                .select('*')
+                .eq('activo', true)
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('❌ Error cargando mayoristas:', error);
+                console.log('🎭 Usando datos de respaldo...');
+                return generateRealisticUsers();
+            }
+            
+            if (!mayoristas || mayoristas.length === 0) {
+                console.log('📝 No hay mayoristas en BD, usando datos de respaldo...');
+                return generateRealisticUsers();
+            }
+            
+            // Formatear mayoristas para la tabla
+            const formattedUsers = mayoristas.map(user => ({
+                id: user.id,
+                email: user.email,
+                created_at: user.created_at,
+                email_confirmed_at: user.created_at,
+                user_metadata: {
+                    nombre: user.nombre || 'Sin nombre',
+                    apellido: user.apellido || 'Sin apellido',
+                    rut: user.rut || 'Sin RUT',
+                    celular: user.celular || 'Sin celular',
+                    nombre_empresa: user.nombre_empresa || 'Sin empresa',
+                    direccion: user.direccion || 'Sin dirección',
+                    departamento: user.departamento || 'Sin departamento',
+                    agencia_envio: user.agencia_envio || 'Sin agencia',
+                    tipo_usuario: 'mayorista'
                 }
-            } catch (e) {
-                console.log('⚠️ No se pudieron cargar mayoristas legacy');
-            }
-
-            // 2. Intentar cargar usuarios reales de autenticación (si hay permisos)
-            try {
-                // Solo intentar si somos admin
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    const adminEmails = ['admin@ianmodas.com', 'dylan@ianmodas.com', 'ianmodas@admin.com'];
-                    const isAdmin = adminEmails.includes(session.user.email?.toLowerCase());
-                    
-                    if (isAdmin) {
-                        // Aquí podrías agregar lógica para cargar usuarios reales si tienes permisos
-                        console.log('👑 Usuario admin detectado, cargando datos completos');
-                    }
-                }
-            } catch (e) {
-                console.log('🔐 Sin permisos para usuarios de auth');
-            }
-
-            // 3. Si no hay usuarios, usar datos de ejemplo realistas
-            if (allUsers.length === 0) {
-                console.log('🎭 Usando datos de usuarios de ejemplo');
-                allUsers = generateRealisticUsers();
-            }
-
-            console.log(`✅ Total usuarios cargados: ${allUsers.length}`);
-            return allUsers;
-
+            }));
+            
+            console.log(`✅ ${formattedUsers.length} mayoristas cargados correctamente`);
+            return formattedUsers;
+            
         } catch (error) {
-            console.error('❌ Error al cargar usuarios:', error);
+            console.error('❌ Error general al cargar usuarios:', error);
+            console.log('🎭 Usando datos de respaldo por error...');
             return generateRealisticUsers();
         }
     }
