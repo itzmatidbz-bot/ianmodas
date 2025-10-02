@@ -586,21 +586,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupMobileMenu() {
+        console.log('🍔 Configurando menú móvil...');
+        
         // Función para abrir menú
         const openMenu = () => {
+            console.log('📱 Abriendo menú móvil');
             if (navMenu) {
-                navMenu.classList.add('active');
+                navMenu.classList.add('show-menu');
                 if (navOverlay) navOverlay.classList.add('active');
                 document.body.style.overflow = 'hidden';
+                
+                // Animación de entrada para los links
+                const navLinks = navMenu.querySelectorAll('.nav__link');
+                navLinks.forEach((link, index) => {
+                    link.style.animation = `slideInRight 0.3s ease ${index * 0.1}s both`;
+                });
             }
         };
 
         // Función para cerrar menú
         const closeMenu = () => {
+            console.log('❌ Cerrando menú móvil');
             if (navMenu) {
-                navMenu.classList.remove('active');
+                navMenu.classList.remove('show-menu');
                 if (navOverlay) navOverlay.classList.remove('active');
                 document.body.style.overflow = '';
+                
+                // Limpiar animaciones
+                const navLinks = navMenu.querySelectorAll('.nav__link');
+                navLinks.forEach(link => {
+                    link.style.animation = '';
+                });
             }
         };
 
@@ -610,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                if (navMenu && navMenu.classList.contains('active')) {
+                if (navMenu && navMenu.classList.contains('show-menu')) {
                     closeMenu();
                 } else {
                     openMenu();

@@ -441,6 +441,9 @@ body {
     }
 }
 
+/* ========================================
+   📱 RESPONSIVE MÓVILES PEQUEÑOS 
+   ======================================== */
 @media (max-width: 480px) {
     .container {
         padding: 0 var(--space-3);
@@ -448,18 +451,85 @@ body {
     
     .nav {
         height: 4rem;
+        padding: 0 var(--space-4);
     }
     
     .nav__logo {
         font-size: var(--font-size-2xl);
     }
     
+    .nav__actions {
+        gap: var(--space-2);
+    }
+    
+    .user-link span {
+        display: none; /* Ocultar texto en móviles muy pequeños */
+    }
+    
     .hero {
         height: 70vh;
+        min-height: 500px;
     }
     
     .hero__content {
         padding: var(--space-4);
+    }
+    
+    .hero__title {
+        font-size: clamp(1.8rem, 7vw, 2.5rem);
+        margin-bottom: var(--space-4);
+    }
+    
+    .hero__subtitle {
+        font-size: clamp(0.9rem, 4vw, 1.1rem);
+        margin-bottom: var(--space-6);
+    }
+    
+    .btn {
+        padding: var(--space-3) var(--space-6);
+        font-size: var(--font-size-sm);
+    }
+    
+    .info-bar {
+        padding: var(--space-4) 0;
+    }
+    
+    .info-bar__grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+        text-align: center;
+    }
+    
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+    }
+    
+    .product-card__image {
+        height: 250px;
+    }
+    
+    .filters-section {
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+    
+    .filters-section select,
+    .filters-section input {
+        width: 100%;
+    }
+    
+    .pagination-container {
+        padding: var(--space-4);
+    }
+    
+    .pagination-controls {
+        gap: var(--space-2);
+    }
+    
+    .pagination-btn {
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--font-size-sm);
     }
 }
 .info-bar__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; text-align: center; }
@@ -1261,13 +1331,67 @@ body {
         text-align: center; 
         gap: 1.5rem;
     }
-    .nav__toggle, .nav__close { display: block; }
+    /* ========================================
+       📱 NAVEGACIÓN MÓVIL MEJORADA
+       ======================================== */
+    .nav__toggle, .nav__close { 
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius);
+        background: var(--bg-gray-50);
+        border: 1px solid var(--bg-gray-200);
+        transition: var(--transition);
+    }
+    
+    .nav__toggle:hover, .nav__close:hover {
+        background: var(--primary-light);
+        border-color: var(--primary-color);
+        transform: scale(1.05);
+    }
+    
+    .nav__menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 300px;
+        height: 100vh;
+        background: var(--bg-color);
+        box-shadow: var(--shadow-lg);
+        padding: var(--space-8) var(--space-6);
+        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1001;
+        border-left: 1px solid var(--bg-gray-100);
+    }
+    
+    .nav__menu.show-menu {
+        right: 0;
+    }
+    
+    .nav__list {
+        flex-direction: column;
+        gap: var(--space-4);
+        margin-top: var(--space-8);
+    }
+    
+    .nav__link {
+        padding: var(--space-4);
+        border-radius: var(--radius-md);
+        display: block;
+        font-size: var(--font-size-lg);
+        transition: var(--transition);
+    }
+    
     .nav__close { 
         position: absolute; 
-        top: 1.5rem; 
-        right: 1.5rem; 
-        font-size: 1.8rem;
-        color: var(--primary-color);
+        top: var(--space-6); 
+        right: var(--space-6); 
+        font-size: var(--font-size-xl);
+        color: var(--text-color);
+        width: 40px;
+        height: 40px;
     }
     
     .nav-overlay {
@@ -1276,16 +1400,29 @@ body {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.3s ease;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(4px);
     }
     
     .nav-overlay.active {
         opacity: 1;
         visibility: visible;
+    }
+    
+    /* Animaciones para el menú móvil */
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
     .hero__title { font-size: 2.5rem; }
     .contact__content { grid-template-columns: 1fr; }
