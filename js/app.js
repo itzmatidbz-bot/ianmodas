@@ -662,29 +662,86 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setupMobileMenu() {
+    // Ensure menu is closed on page load
+    if (navMenu) navMenu.classList.remove("active");
+    if (navOverlay) navOverlay.classList.remove("active");
+    document.body.classList.remove("nav-open");
+
     if (navToggle) {
-      navToggle.addEventListener("click", () => {
-        navMenu.classList.add("active");
-        navOverlay.classList.add("active");
-        document.body.classList.add("nav-open");
+      navToggle.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Toggle menu state
+        const isActive = navMenu.classList.contains("active");
+        
+        if (isActive) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
       });
     }
 
     if (navClose) {
-      navClose.addEventListener("click", () => {
-        navMenu.classList.remove("active");
-        navOverlay.classList.remove("active");
-        document.body.classList.remove("nav-open");
+      navClose.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeMenu();
       });
     }
 
     if (navOverlay) {
-      navOverlay.addEventListener("click", () => {
-        navMenu.classList.remove("active");
-        navOverlay.classList.remove("active");
-        document.body.classList.remove("nav-open");
+      navOverlay.addEventListener("click", (e) => {
+        e.preventDefault();
+        closeMenu();
       });
     }
+
+    // Close menu when clicking nav links
+    const navLinks = document.querySelectorAll(".nav__link");
+    navLinks.forEach(link => {
+      link.addEventListener("click", (e) => {
+        // Only close menu if it's a same-page anchor link
+        if (link.getAttribute("href").startsWith("#")) {
+          closeMenu();
+        }
+      });
+    });
+
+    // Close menu on window resize if screen becomes large
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 768) {
+        closeMenu();
+      }
+    });
+
+    // Prevent menu from opening automatically
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".nav") && navMenu.classList.contains("active")) {
+        closeMenu();
+      }
+    });
+  }
+
+  function openMenu() {
+    navMenu.classList.add("active");
+    navOverlay.classList.add("active");
+    document.body.classList.add("nav-open");
+    
+    // Add smooth animation delay
+    setTimeout(() => {
+      navMenu.style.transform = "translateY(0)";
+    }, 10);
+  }
+
+  function closeMenu() {
+    navMenu.classList.remove("active");
+    navOverlay.classList.remove("active");
+    document.body.classList.remove("nav-open");
+    
+    // Reset transform
+    navMenu.style.transform = "";
   }
 
   function setupAuthForms() {
