@@ -520,12 +520,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (products.length === 0) {
       DOMElements.productsTableBody.innerHTML =
-        '<tr><td colspan="6">No hay productos</td></tr>';
+        '<tr><td colspan="6" class="empty-state"><div class="empty-icon"><i class="fas fa-box-open"></i></div><p>No hay productos disponibles</p><small>Agrega tu primer producto para comenzar</small></td></tr>';
       return;
     }
 
     DOMElements.productsTableBody.innerHTML = products
-      .map((product) => {
+      .map((product, index) => {
         // Soporte completo para estructura 3FN
         const categoria =
           product.categoria_nombre || product.categoria || "Sin categoría";
@@ -536,29 +536,64 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Construir descripción completa
         let descripcionCompleta = categoria;
-        if (tipoPrenda) descripcionCompleta += ` - ${tipoPrenda}`;
-        if (estilo) descripcionCompleta += ` (${estilo})`;
-        if (tela) descripcionCompleta += ` - ${tela}`;
+        if (tipoPrenda) descripcionCompleta += ` • ${tipoPrenda}`;
+        if (estilo) descripcionCompleta += ` • ${estilo}`;
+        if (tela) descripcionCompleta += ` • ${tela}`;
+
+        // Generar colores aleatorios para badges basados en el ID
+        const badgeColors = ['primary', 'success', 'info', 'warning'];
+        const badgeColor = badgeColors[product.id % badgeColors.length];
 
         return `
-                <tr data-id="${product.id}">
-                    <td><img src="${product.imagen_url || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y4ZjlmYSIvPgogIDxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlOWVjZWYiIHN0cm9rZT0iI2RlZTJlNiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNmM3NTdkIj5TaW4gSW1hZ2VuPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiNhZGI1YmQiPlBsYWNlaG9sZGVyPC90ZXh0Pgo8L3N2Zz4K"}" alt="${product.nombre}" class="product-table-img" onerror="this.style.display='none'"></td>
-                    <td>
-                        <div class="product-info">
-                            <strong>${product.nombre}</strong>
-                            <small class="text-muted">${descripcionCompleta}</small>
+                <tr data-id="${product.id}" class="product-row" style="animation-delay: ${index * 0.05}s">
+                    <td class="image-cell">
+                        <div class="product-image-container">
+                            <img src="${product.imagen_url || "placeholder.jpg"}" 
+                                 alt="${product.nombre}" 
+                                 class="product-table-img" 
+                                 onerror="this.src='placeholder.jpg'; this.classList.add('fallback-img');">
+                            <div class="image-overlay">
+                                <i class="fas fa-expand"></i>
+                            </div>
                         </div>
                     </td>
-                    <td><span class="category-badge">${categoria}</span></td>
-                    <td><span class="price-badge">$${product.precio ? Math.round(product.precio) : "0"} UYU</span></td>
-                    <td><span class="available-badge">Disponible</span></td>
-                    <td class="table-actions">
-                        <button class="btn-icon edit" onclick="editProduct(${product.id})" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon delete" onclick="deleteProduct(${product.id})" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <td class="product-info-cell">
+                        <div class="product-info">
+                            <strong class="product-name">${product.nombre}</strong>
+                            <small class="product-description">${descripcionCompleta}</small>
+                            <div class="product-meta">
+                                <span class="product-id">ID: ${product.id}</span>
+                                <span class="product-stock">Stock: ∞</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="category-cell">
+                        <span class="category-badge badge-${badgeColor}">${categoria}</span>
+                    </td>
+                    <td class="price-cell">
+                        <div class="price-display">
+                            <span class="price-badge">$${product.precio ? Math.round(product.precio).toLocaleString() : "0"}</span>
+                            <small class="currency">UYU</small>
+                        </div>
+                    </td>
+                    <td class="status-cell">
+                        <span class="status-badge available">
+                            <i class="fas fa-check-circle"></i>
+                            Disponible
+                        </span>
+                    </td>
+                    <td class="actions-cell">
+                        <div class="table-actions">
+                            <button class="btn-icon edit" onclick="editProduct(${product.id})" title="Editar Producto">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon delete" onclick="deleteProduct(${product.id})" title="Eliminar Producto">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <button class="btn-icon view" onclick="viewProduct(${product.id})" title="Ver Detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -868,6 +903,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (DOMElements.sidebarOverlay)
       DOMElements.sidebarOverlay.classList.toggle("active");
   }
+
+  // Función para ver detalles del producto
+  window.viewProduct = function(productId) {
+    const product = currentProductsData.find(p => p.id === productId);
+    if (!product) return;
+    
+    alert(`📋 DETALLES DEL PRODUCTO\n\n` +
+          `Nombre: ${product.nombre}\n` +
+          `Categoría: ${product.categoria_nombre || 'Sin categoría'}\n` +
+          `Precio: $${product.precio || 0} UYU\n` +
+          `ID: ${product.id}\n\n` +
+          `💡 Funcionalidad completa de vista de productos próximamente`);
+  };
 
   // =====================================================
   // 📝 MANEJO DE FORMULARIOS
