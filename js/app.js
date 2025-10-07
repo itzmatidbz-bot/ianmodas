@@ -91,7 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const { data: categorias } = await supabase.rpc('get_categorias');
                 if (categorias && categorias.length > 0) {
-                    populateSelect('categoria-filter', categorias, 'id', 'nombre');
+                    // Popular por nombre para búsquedas por texto y RPC dependiente
+                    populateSelect('categoria-filter', categorias, 'nombre', 'nombre');
                     console.log('✅ Categorías cargadas para filtros:', categorias.length);
                 }
             } catch (e) {
@@ -100,15 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 populateSelectFromArray('categoria-filter', categorias);
             }
 
-            // Cargar tipos de prenda
-            try {
-                const { data: tipos } = await supabase.rpc('get_tipos_prenda_todos');
-                if (tipos && tipos.length > 0) {
-                    populateSelect('tipo-prenda-filter', tipos, 'id', 'nombre');
-                }
-            } catch (e) {
-                const tipos = [...new Set(allProducts.map(p => p.tipo_prenda_nombre))].filter(Boolean);
-                populateSelectFromArray('tipo-prenda-filter', tipos);
+            // Inicializar Tipo de Prenda vacío y deshabilitado; se cargará por categoría
+            const tipoSelect = document.getElementById('tipo-filter');
+            if (tipoSelect) {
+                tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
+                tipoSelect.disabled = true;
             }
 
             // Cargar estilos
@@ -159,15 +156,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const select = document.getElementById(selectId);
         if (!select || !data) return;
 
-        // Limpiar opciones existentes excepto la primera
-        const firstOption = select.firstElementChild;
+        const defaultOption = select.querySelector('option[value=""]');
         select.innerHTML = '';
-        if (firstOption) select.appendChild(firstOption);
+        if (defaultOption) select.appendChild(defaultOption);
 
         data.forEach(item => {
             const option = document.createElement('option');
-            option.value = item[valueField] || item.id;
-            option.textContent = item[textField] || item.nombre;
+            option.value = item[valueField] ?? item.id ?? '';
+            option.textContent = item[textField] ?? item.nombre ?? '';
             select.appendChild(option);
         });
     }
@@ -176,10 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const select = document.getElementById(selectId);
         if (!select || !items) return;
 
-        // Limpiar opciones existentes excepto la primera
-        const firstOption = select.firstElementChild;
+        const defaultOption = select.querySelector('option[value=""]');
         select.innerHTML = '';
-        if (firstOption) select.appendChild(firstOption);
+        if (defaultOption) select.appendChild(defaultOption);
 
         items.forEach(item => {
             const option = document.createElement('option');
@@ -189,40 +184,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function populateSelect(selectId, data, valueField, textField) {
-        const select = document.getElementById(selectId);
-        if (!select || !data) return;
-
-        // Mantener la opción por defecto
-        const defaultOption = select.querySelector('option[value=""]');
-        select.innerHTML = '';
-        if (defaultOption) select.appendChild(defaultOption);
-
-        // Agregar opciones
-        data.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item[valueField];
-            option.textContent = item[textField];
-            select.appendChild(option);
-        });
-    }
-
-    async function handleCategoryChange(categoriaId) {
+    async function handleCategoryChange(categoriaNombre) {
         const tipoSelect = document.getElementById('tipo-filter');
-        
-        if (!categoriaId) {
+        if (!tipoSelect) return;
+
+        if (!categoriaNombre) {
             tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
             tipoSelect.disabled = true;
             return;
         }
 
         try {
-            const { data: tipos } = await supabase.rpc('get_tipos_prenda_por_categoria', {
-                categoria_id: parseInt(categoriaId)
+            // Usar función existente: get_tipos_prenda(cat_nombre TEXT)
+            const { data: tipos, error } = await supabase.rpc('get_tipos_prenda', {
+                cat_nombre: categoriaNombre
             });
+            if (error) throw error;
 
             tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
-            
             if (tipos && tipos.length > 0) {
                 tipos.forEach(tipo => {
                     const option = document.createElement('option');
@@ -236,7 +215,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error loading tipos de prenda:', error);
-            tipoSelect.disabled = true;
+            // Fallback: derivar tipos únicos del catálogo filtrado por categoría
+            const tiposFallback = [...new Set(allProducts
+                .filter(p => p.categoria_nombre && p.categoria_nombre.toLowerCase() === categoriaNombre.toLowerCase())
+                .map(p => p.tipo_prenda_nombre))].filter(Boolean);
+            tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
+            tiposFallback.forEach(nombre => {
+                const option = document.createElement('option');
+                option.value = nombre; // permitir filtrado por nombre en fallback
+                option.textContent = nombre;
+                tipoSelect.appendChild(option);
+            });
+            tipoSelect.disabled = tiposFallback.length === 0;
         }
     }
 
@@ -476,7 +466,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('temporada-filter').value = '';
         
         // Deshabilitar tipo de prenda
-        document.getElementById('tipo-filter').disabled = true;
+        const tipoSelect = document.getElementById('tipo-filter');
+        if (tipoSelect) {
+            tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
+            tipoSelect.disabled = true;
+        }
         
         // Mostrar todos los productos
         renderProducts(allProducts);
@@ -783,28 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
                filterValue.toLowerCase().includes(productValue.toLowerCase());
     }
 
-    function clearFilters() {
-        console.log('🧹 Limpiando filtros...');
-        
-        // Resetear todos los selects a su valor por defecto
-        const filterSelects = [
-            'categoria-filter', 'tipo-prenda-filter', 'estilo-filter', 
-            'color-filter', 'tipo-tela-filter', 'genero-filter', 'temporada-filter'
-        ];
-
-        filterSelects.forEach(filterId => {
-            const filterElement = document.getElementById(filterId);
-            if (filterElement) {
-                filterElement.selectedIndex = 0;
-            }
-        });
-
-        // Mostrar todos los productos
-        renderProducts(allProducts);
-        updateResultsCounter(allProducts.length);
-        
-        console.log('✅ Filtros limpiados');
-    }
+    // Nota: clearFilters ya está definido más arriba con la lógica correcta.
 
     // Hacer las funciones globales para que puedan ser llamadas desde HTML
     window.applyFilters = applyFilters;
