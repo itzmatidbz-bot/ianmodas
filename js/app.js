@@ -108,9 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
         populateSelectFromArray("categoria-filter", categorias);
       }
 
-    // Cargar tipos de prenda SIMPLE - solo de productos existentes
-    const tipos = [...new Set(allProducts.map((p) => p.tipo_prenda_nombre))].filter(Boolean);
-    populateSelectFromArray("tipo-filter", tipos);      // Cargar estilos
+    // Filtro tipo de prenda eliminado por problemas      // Cargar estilos
       try {
         const { data: estilos } = await supabase.rpc("get_estilos_todos");
         if (estilos && estilos.length > 0) {
@@ -419,7 +417,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const filters = {
       categoria: document.getElementById("categoria-filter")?.value || "",
-      tipo: document.getElementById("tipo-filter")?.value || "",
       estilo: document.getElementById("estilo-filter")?.value || "",
       color: document.getElementById("color-filter")?.value || "",
       tipoTela: document.getElementById("tipo-tela-filter")?.value || "",
@@ -439,12 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!categoryMatch) return false;
       }
 
-      // Filtro por tipo de prenda - búsqueda por texto  
-      if (filters.tipo) {
-        const typeMatch = product.tipo_prenda_nombre &&
-          product.tipo_prenda_nombre.toLowerCase().includes(filters.tipo.toLowerCase());
-        if (!typeMatch) return false;
-      }
+      // Filtro tipo eliminado por problemas
 
       // Filtro por estilo (opcional - no bloquea si no está definido)
       if (
@@ -529,8 +521,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("genero-filter").value = "";
     document.getElementById("temporada-filter").value = "";
 
-    // Mantener tipo de prenda habilitado
-    document.getElementById("tipo-filter").disabled = false;
+    // Filtro tipo eliminado completamente
 
     // Mostrar todos los productos
     renderProducts(allProducts);
@@ -617,7 +608,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Aplicar filtros automáticamente cuando cambian los valores
     const autoFilterSelects = [
       "categoria-filter",
-      "tipo-filter",
       "estilo-filter",
       "color-filter",
       "tipo-tela-filter",
@@ -902,7 +892,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Resetear todos los selects a su valor por defecto
     const filterSelects = [
       "categoria-filter",
-      "tipo-prenda-filter",
       "estilo-filter",
       "color-filter",
       "tipo-tela-filter",

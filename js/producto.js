@@ -354,9 +354,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const quantity = parseInt(quantityInput.value);
     const selectedColor = document.querySelector(".color-option.selected");
 
+    // 🚫 OBLIGAR selección de color
+    if (!selectedColor && currentProduct.colores_disponibles && currentProduct.colores_disponibles.length > 0) {
+      alert("⚠️ Por favor selecciona un color antes de agregar al carrito");
+      // Hacer scroll hasta los colores y resaltarlos
+      const colorSection = document.querySelector(".product-colors");
+      if (colorSection) {
+        colorSection.scrollIntoView({ behavior: 'smooth' });
+        colorSection.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => colorSection.style.animation = '', 500);
+      }
+      return;
+    }
+
     if (quantity > 0) {
       let productToAdd = { ...currentProduct, quantity };
 
+      // 🖼️ ASEGURAR que la imagen se incluya SIEMPRE
+      productToAdd.imagen_url = currentProduct.imagen_url || currentProduct.imagenes?.[0]?.url || 'placeholder.jpg';
+      
       // Si hay color seleccionado, agregarlo al producto
       if (selectedColor) {
         const colorId = selectedColor.dataset.colorId;
@@ -500,7 +516,12 @@ document.addEventListener("DOMContentLoaded", () => {
         message += `  - Color: ${item.selectedColor.nombre}\n`;
       }
       message += `  - Cantidad: ${item.quantity}\n`;
-      message += `  - Precio unitario: $${parseFloat(item.precio).toFixed(0)} UYU\n\n`;
+      message += `  - Precio unitario: $${parseFloat(item.precio).toFixed(0)} UYU\n`;
+      // 🖼️ IMAGEN OBLIGATORIA en WhatsApp
+      if (item.imagen_url && item.imagen_url !== 'placeholder.jpg') {
+        message += `  - 📸 Imagen: ${item.imagen_url}\n`;
+      }
+      message += `\n`;
     });
 
     const total = cart.reduce(
