@@ -108,18 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
         populateSelectFromArray("categoria-filter", categorias);
       }
 
-    // Cargar tipos de prenda
-    try {
-      const { data: tipos } = await supabase.rpc("get_tipos_prenda_todos");
-      if (tipos && tipos.length > 0) {
-        populateSelect("tipo-filter", tipos, "id", "nombre");
-      }
-    } catch (e) {
-      const tipos = [
-        ...new Set(allProducts.map((p) => p.tipo_prenda_nombre)),
-      ].filter(Boolean);
-      populateSelectFromArray("tipo-filter", tipos);
-    }      // Cargar estilos
+    // Cargar tipos de prenda SIMPLE - solo de productos existentes
+    const tipos = [...new Set(allProducts.map((p) => p.tipo_prenda_nombre))].filter(Boolean);
+    populateSelectFromArray("tipo-filter", tipos);      // Cargar estilos
       try {
         const { data: estilos } = await supabase.rpc("get_estilos_todos");
         if (estilos && estilos.length > 0) {
@@ -228,53 +219,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // FILTROS ULTRA SIMPLES - Sin dependencias complicadas
   async function handleCategoryChange(categoriaId) {
-    const tipoSelect = document.getElementById("tipo-filter");
-
-    if (!categoriaId) {
-      // Cargar todos los tipos disponibles si no hay categoría seleccionada
-      try {
-        const { data: tipos } = await supabase.rpc("get_tipos_prenda_todos");
-        if (tipos && tipos.length > 0) {
-          populateSelect("tipo-filter", tipos, "id", "nombre");
-          tipoSelect.disabled = false;
-        } else {
-          const tipos = [...new Set(allProducts.map((p) => p.tipo_prenda_nombre))].filter(Boolean);
-          populateSelectFromArray("tipo-filter", tipos);
-          tipoSelect.disabled = false;
-        }
-      } catch (e) {
-        tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
-        tipoSelect.disabled = true;
-      }
-      return;
-    }
-
-    try {
-      const { data: tipos } = await supabase.rpc(
-        "get_tipos_prenda_por_categoria",
-        {
-          categoria_id: parseInt(categoriaId),
-        },
-      );
-
-      tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
-
-      if (tipos && tipos.length > 0) {
-        tipos.forEach((tipo) => {
-          const option = document.createElement("option");
-          option.value = tipo.id;
-          option.textContent = tipo.nombre;
-          tipoSelect.appendChild(option);
-        });
-        tipoSelect.disabled = false;
-      } else {
-        tipoSelect.disabled = true;
-      }
-    } catch (error) {
-      console.error("Error loading tipos de prenda:", error);
-      tipoSelect.disabled = true;
-    }
+    // Ya no hacemos nada especial, todos los filtros son independientes
+    console.log('Categoría cambiada:', categoriaId);
   }
 
   function showFilterLoading(show) {
@@ -464,9 +412,9 @@ document.addEventListener("DOMContentLoaded", () => {
   window.changePage = changePage;
 
   function applyFilters() {
-    console.log("🔍 Aplicando filtros inteligentes...");
+    console.log("🔍 Filtros ultra simples iniciando...");
     
-    // Mostrar animación de carga
+    // Mostrar animación elegante
     showFilterLoading(true);
 
     const filters = {
@@ -482,27 +430,19 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("📊 Filtros aplicados:", filters);
     console.log("📦 Total productos disponibles:", allProducts.length);
 
-    // FILTRO INTELIGENTE: Solo aplica los filtros que están seleccionados
+    // FILTROS SÚPER SIMPLES: Solo buscar por texto en nombres
     let filteredProducts = allProducts.filter((product) => {
-      // Filtro por categoría (más flexible)
+      // Filtro por categoría - búsqueda por texto
       if (filters.categoria) {
-        const categoryMatch =
-          product.categoria_id == filters.categoria ||
-          (product.categoria_nombre &&
-            product.categoria_nombre
-              .toLowerCase()
-              .includes(filters.categoria.toLowerCase()));
+        const categoryMatch = product.categoria_nombre &&
+          product.categoria_nombre.toLowerCase().includes(filters.categoria.toLowerCase());
         if (!categoryMatch) return false;
       }
 
-      // Filtro por tipo de prenda (más flexible)
+      // Filtro por tipo de prenda - búsqueda por texto  
       if (filters.tipo) {
-        const typeMatch =
-          product.tipo_prenda_id == filters.tipo ||
-          (product.tipo_prenda_nombre &&
-            product.tipo_prenda_nombre
-              .toLowerCase()
-              .includes(filters.tipo.toLowerCase()));
+        const typeMatch = product.tipo_prenda_nombre &&
+          product.tipo_prenda_nombre.toLowerCase().includes(filters.tipo.toLowerCase());
         if (!typeMatch) return false;
       }
 
