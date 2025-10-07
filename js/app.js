@@ -785,12 +785,14 @@ document.addEventListener("DOMContentLoaded", () => {
       .map(
         (item) => `
             <div class="cart-item" data-id="${item.id}" data-color="${item.color_id || "sin-color"}">
-                <img src="${item.imagen_url}" alt="${item.nombre}" class="cart-item__image">
+                <img src="${item.imagen_url || 'https://placehold.co/80x80/eee/ccc?text=Producto'}" alt="${item.nombre}" class="cart-item__image" onerror="this.src='https://placehold.co/80x80/eee/ccc?text=Sin+Imagen'">
                 <div class="cart-item__info">
                     <p class="cart-item__title">${item.nombre}</p>
                     ${item.color_nombre ? `<p class="cart-item__color">Color: ${item.color_nombre}</p>` : ""}
+                    ${item.tipo_tela_nombre ? `<p class="cart-item__fabric">Tela: ${item.tipo_tela_nombre}</p>` : ""}
                     <p class="cart-item__quantity">Cantidad: ${item.quantity}</p>
-                    <p class="cart-item__price">$${(item.precio * item.quantity).toFixed(0)}</p>
+                    <p class="cart-item__price">$${(item.precio * item.quantity).toLocaleString('es-UY')}</p>
+                    <p class="cart-item__image-link"><small>Imagen: <a href="${item.imagen_url}" target="_blank" rel="noopener">Ver original</a></small></p>
                 </div>
                 <button class="cart-item__remove" data-id="${item.id}" data-color="${item.color_id || "sin-color"}">&times;</button>
             </div>
@@ -858,21 +860,27 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     let message = "¡Hola Ian Modas! 👋 Quisiera hacer el siguiente pedido:\n\n";
-    cart.forEach((item) => {
-      message += `▪️ *${item.nombre}*\n`;
-      if (item.color_nombre) message += `  - Color: ${item.color_nombre}\n`;
-      if (item.tipo_tela_nombre)
-        message += `  - Tela: ${item.tipo_tela_nombre}\n`;
-      message += `  - Cantidad: ${item.quantity}\n`;
-      message += `  - Precio unitario: $${item.precio.toFixed(2)}\n`;
-      message += `  - Subtotal: $${(item.precio * item.quantity).toFixed(2)}\n\n`;
+    cart.forEach((item, index) => {
+      message += `${index + 1}. *${item.nombre}*\n`;
+      if (item.color_nombre) message += `   🎨 Color: ${item.color_nombre}\n`;
+      if (item.tipo_tela_nombre) message += `   🧵 Tela: ${item.tipo_tela_nombre}\n`;
+      message += `   📦 Cantidad: ${item.quantity}\n`;
+      message += `   💰 Precio unitario: $${item.precio.toLocaleString('es-UY')}\n`;
+      message += `   💵 Subtotal: $${(item.precio * item.quantity).toLocaleString('es-UY')}\n`;
+      if (item.imagen_url) {
+        message += `   📸 Imagen: ${item.imagen_url}\n`;
+      }
+      message += `\n`;
     });
     const total = cart.reduce(
       (sum, item) => sum + item.precio * item.quantity,
       0,
     );
-    message += `*Total del Pedido: $${total.toFixed(2)}*\n\n`;
-    message += `¡Quedo a la espera de su confirmación! Gracias.`;
+    message += `🛒 *TOTAL DEL PEDIDO: $${total.toLocaleString('es-UY')}*\n\n`;
+    message += `📝 *Detalles adicionales:*\n`;
+    message += `• ${cart.length} producto${cart.length > 1 ? 's' : ''} en total\n`;
+    message += `• Pedido realizado desde la web\n\n`;
+    message += `¡Quedo a la espera de su confirmación! Gracias. 😊`;
     const whatsappUrl = `https://wa.me/59894772730?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   }
