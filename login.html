@@ -1,162 +1,231 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Acceso Mayoristas - Ian Modas</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="login-page-bg">
+    <link rel="stylesheet" href="css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body class="login-page-bg">
     <div class="login-container">
-        <div class="login-header">
-            <a href="index.html" class="nav__logo">Ian Modas</a>
-            <h2>Acceso Mayoristas</h2>
+      <div class="login-header">
+        <a href="index.html" class="nav__logo">Ian Modas</a>
+        <h2>Acceso Mayoristas</h2>
+      </div>
+
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <i class="fas fa-envelope"></i>
+          <input
+            type="email"
+            id="email"
+            class="form-input"
+            placeholder="Correo electrónico"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <i class="fas fa-lock"></i>
+          <input
+            type="password"
+            id="password"
+            class="form-input"
+            placeholder="Contraseña"
+            required
+          />
+        </div>
+        <button type="submit" id="submit-btn" class="btn">Ingresar</button>
+      </form>
+      <p id="error-message" class="error-message"></p>
+      <p id="success-message" class="success-message"></p>
+      <p class="login-switch">
+        ¿No tenés cuenta? <a href="#" id="show-register">Registrate acá</a>
+      </p>
+
+      <!-- Formulario de Registro (oculto por defecto) -->
+      <form id="register-form" class="login-form" style="display: none">
+        <div class="register-header">
+          <h3>Registro de Mayorista</h3>
+          <p>Completá todos los datos para activar tu cuenta</p>
         </div>
 
-        <form id="login-form" class="login-form">
+        <!-- Datos Personales -->
+        <div class="form-section">
+          <h4><i class="fas fa-user"></i> Datos Personales</h4>
+          <div class="form-row">
             <div class="form-group">
-                <i class="fas fa-envelope"></i>
-                <input type="email" id="email" class="form-input" placeholder="Correo electrónico" required>
+              <i class="fas fa-user"></i>
+              <input
+                type="text"
+                id="register-nombre"
+                class="form-input"
+                placeholder="Nombre *"
+                required
+              />
             </div>
             <div class="form-group">
-                <i class="fas fa-lock"></i>
-                <input type="password" id="password" class="form-input" placeholder="Contraseña" required>
+              <i class="fas fa-user"></i>
+              <input
+                type="text"
+                id="register-apellido"
+                class="form-input"
+                placeholder="Apellido *"
+                required
+              />
             </div>
-            <button type="submit" id="submit-btn" class="btn">Ingresar</button>
-        </form>
-        <p id="error-message" class="error-message"></p>
-        <p id="success-message" class="success-message"></p>
-        <p class="login-switch">¿No tenés cuenta? <a href="#" id="show-register">Registrate acá</a></p>
+          </div>
 
-        <!-- Formulario de Registro (oculto por defecto) -->
-        <form id="register-form" class="login-form" style="display: none;">
-            <div class="register-header">
-                <h3>Registro de Mayorista</h3>
-                <p>Completá todos los datos para activar tu cuenta</p>
+          <div class="form-row">
+            <div class="form-group">
+              <i class="fas fa-id-card"></i>
+              <input
+                type="text"
+                id="register-rut"
+                class="form-input"
+                placeholder="RUT (ej: 12345678-9) *"
+                required
+              />
             </div>
-            
-            <!-- Datos Personales -->
-            <div class="form-section">
-                <h4><i class="fas fa-user"></i> Datos Personales</h4>
-                <div class="form-row">
-                    <div class="form-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="register-nombre" class="form-input" placeholder="Nombre *" required>
-                    </div>
-                    <div class="form-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="register-apellido" class="form-input" placeholder="Apellido *" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <i class="fas fa-id-card"></i>
-                        <input type="text" id="register-rut" class="form-input" placeholder="RUT (ej: 12345678-9) *" required>
-                    </div>
-                    <div class="form-group">
-                        <i class="fas fa-phone"></i>
-                        <input type="tel" id="register-celular" class="form-input" placeholder="Celular (ej: 099123456) *" required>
-                    </div>
-                </div>
+            <div class="form-group">
+              <i class="fas fa-phone"></i>
+              <input
+                type="tel"
+                id="register-celular"
+                class="form-input"
+                placeholder="Celular (ej: 099123456) *"
+                required
+              />
             </div>
+          </div>
+        </div>
 
-            <!-- Datos de la Empresa -->
-            <div class="form-section">
-                <h4><i class="fas fa-store"></i> Datos de la Empresa</h4>
-                <div class="form-group">
-                    <i class="fas fa-store"></i>
-                    <input type="text" id="register-empresa" class="form-input" placeholder="Nombre del Emprendimiento/Empresa *" required>
-                </div>
-                
-                <div class="form-group">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="register-email" class="form-input" placeholder="Correo electrónico *" required>
-                </div>
-                
-                <div class="form-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="register-password" class="form-input" placeholder="Crear Contraseña *" required>
-                </div>
-            </div>
+        <!-- Datos de la Empresa -->
+        <div class="form-section">
+          <h4><i class="fas fa-store"></i> Datos de la Empresa</h4>
+          <div class="form-group">
+            <i class="fas fa-store"></i>
+            <input
+              type="text"
+              id="register-empresa"
+              class="form-input"
+              placeholder="Nombre del Emprendimiento/Empresa *"
+              required
+            />
+          </div>
 
-            <!-- Dirección de Envío -->
-            <div class="form-section">
-                <h4><i class="fas fa-map-marker-alt"></i> Dirección de Envío</h4>
-                <div class="form-group">
-                    <i class="fas fa-road"></i>
-                    <input type="text" id="register-direccion" class="form-input" placeholder="Dirección completa *" required>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <i class="fas fa-map"></i>
-                        <select id="register-depto" class="form-input" required>
-                            <option value="">Seleccionar Departamento *</option>
-                            <option value="Montevideo">Montevideo</option>
-                            <option value="Canelones">Canelones</option>
-                            <option value="Maldonado">Maldonado</option>
-                            <option value="Rocha">Rocha</option>
-                            <option value="Treinta y Tres">Treinta y Tres</option>
-                            <option value="Cerro Largo">Cerro Largo</option>
-                            <option value="Rivera">Rivera</option>
-                            <option value="Tacuarembó">Tacuarembó</option>
-                            <option value="Salto">Salto</option>
-                            <option value="Artigas">Artigas</option>
-                            <option value="Paysandú">Paysandú</option>
-                            <option value="Río Negro">Río Negro</option>
-                            <option value="Soriano">Soriano</option>
-                            <option value="Colonia">Colonia</option>
-                            <option value="San José">San José</option>
-                            <option value="Flores">Flores</option>
-                            <option value="Florida">Florida</option>
-                            <option value="Lavalleja">Lavalleja</option>
-                            <option value="Durazno">Durazno</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <i class="fas fa-shipping-fast"></i>
-                        <select id="register-agencia" class="form-input">
-                            <option value="">Agencia de Envío (Opcional)</option>
-                            <option value="DAC">DAC</option>
-                            <option value="UES">UES</option>
-                            <option value="Mirtrans">Mirtrans</option>
-                            <option value="Nordeste">Nordeste</option>
-                            <option value="Turil">Turil</option>
-                            <option value="Sabelin">Sabelin</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+          <div class="form-group">
+            <i class="fas fa-envelope"></i>
+            <input
+              type="email"
+              id="register-email"
+              class="form-input"
+              placeholder="Correo electrónico *"
+              required
+            />
+          </div>
 
-            <div class="form-terms">
-                <label class="checkbox-container">
-                    <input type="checkbox" id="register-terms" required>
-                    <span class="checkmark"></span>
-                    Acepto los <a href="#" target="_blank">términos y condiciones</a> *
-                </label>
+          <div class="form-group">
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="register-password"
+              class="form-input"
+              placeholder="Crear Contraseña *"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Dirección de Envío -->
+        <div class="form-section">
+          <h4><i class="fas fa-map-marker-alt"></i> Dirección de Envío</h4>
+          <div class="form-group">
+            <i class="fas fa-road"></i>
+            <input
+              type="text"
+              id="register-direccion"
+              class="form-input"
+              placeholder="Dirección completa *"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <i class="fas fa-map"></i>
+              <select id="register-depto" class="form-input" required>
+                <option value="">Seleccionar Departamento *</option>
+                <option value="Montevideo">Montevideo</option>
+                <option value="Canelones">Canelones</option>
+                <option value="Maldonado">Maldonado</option>
+                <option value="Rocha">Rocha</option>
+                <option value="Treinta y Tres">Treinta y Tres</option>
+                <option value="Cerro Largo">Cerro Largo</option>
+                <option value="Rivera">Rivera</option>
+                <option value="Tacuarembó">Tacuarembó</option>
+                <option value="Salto">Salto</option>
+                <option value="Artigas">Artigas</option>
+                <option value="Paysandú">Paysandú</option>
+                <option value="Río Negro">Río Negro</option>
+                <option value="Soriano">Soriano</option>
+                <option value="Colonia">Colonia</option>
+                <option value="San José">San José</option>
+                <option value="Flores">Flores</option>
+                <option value="Florida">Florida</option>
+                <option value="Lavalleja">Lavalleja</option>
+                <option value="Durazno">Durazno</option>
+              </select>
             </div>
 
-            <button type="submit" id="register-submit-btn" class="btn">
-                <i class="fas fa-user-plus"></i>
-                Registrar Cuenta Mayorista
-            </button>
-            
-            <div class="form-note">
-                <p><small>* Campos obligatorios</small></p>
-                <p><small>Tu cuenta será activada dentro de las próximas 24hs</small></p>
+            <div class="form-group">
+              <i class="fas fa-shipping-fast"></i>
+              <select id="register-agencia" class="form-input">
+                <option value="">Agencia de Envío (Opcional)</option>
+                <option value="DAC">DAC</option>
+                <option value="UES">UES</option>
+                <option value="Mirtrans">Mirtrans</option>
+                <option value="Nordeste">Nordeste</option>
+                <option value="Turil">Turil</option>
+                <option value="Sabelin">Sabelin</option>
+                <option value="Otro">Otro</option>
+              </select>
             </div>
-        </form>
-        <p id="register-error-message" class="error-message"></p>
-        <p id="register-success-message" class="success-message"></p>
-        <p class="login-switch" id="show-login" style="display: none;">¿Ya tenés cuenta? <a href="#">Ingresá acá</a></p>
+          </div>
+        </div>
+
+        <div class="form-terms">
+          <label class="checkbox-container">
+            <input type="checkbox" id="register-terms" required />
+            <span class="checkmark"></span>
+            Acepto los <a href="#" target="_blank">términos y condiciones</a> *
+          </label>
+        </div>
+
+        <button type="submit" id="register-submit-btn" class="btn">
+          <i class="fas fa-user-plus"></i>
+          Registrar Cuenta Mayorista
+        </button>
+
+        <div class="form-note">
+          <p><small>* Campos obligatorios</small></p>
+          <p>
+            <small>Tu cuenta será activada dentro de las próximas 24hs</small>
+          </p>
+        </div>
+      </form>
+      <p id="register-error-message" class="error-message"></p>
+      <p id="register-success-message" class="success-message"></p>
+      <p class="login-switch" id="show-login" style="display: none">
+        ¿Ya tenés cuenta? <a href="#">Ingresá acá</a>
+      </p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/login.js"></script>
-</body>
+  </body>
 </html>
