@@ -108,20 +108,18 @@ document.addEventListener("DOMContentLoaded", () => {
         populateSelectFromArray("categoria-filter", categorias);
       }
 
-      // Cargar tipos de prenda
-      try {
-        const { data: tipos } = await supabase.rpc("get_tipos_prenda_todos");
-        if (tipos && tipos.length > 0) {
-          populateSelect("tipo-prenda-filter", tipos, "id", "nombre");
-        }
-      } catch (e) {
-        const tipos = [
-          ...new Set(allProducts.map((p) => p.tipo_prenda_nombre)),
-        ].filter(Boolean);
-        populateSelectFromArray("tipo-prenda-filter", tipos);
+    // Cargar tipos de prenda
+    try {
+      const { data: tipos } = await supabase.rpc("get_tipos_prenda_todos");
+      if (tipos && tipos.length > 0) {
+        populateSelect("tipo-filter", tipos, "id", "nombre");
       }
-
-      // Cargar estilos
+    } catch (e) {
+      const tipos = [
+        ...new Set(allProducts.map((p) => p.tipo_prenda_nombre)),
+      ].filter(Boolean);
+      populateSelectFromArray("tipo-filter", tipos);
+    }      // Cargar estilos
       try {
         const { data: estilos } = await supabase.rpc("get_estilos_todos");
         if (estilos && estilos.length > 0) {
@@ -234,8 +232,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const tipoSelect = document.getElementById("tipo-filter");
 
     if (!categoriaId) {
-      tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
-      tipoSelect.disabled = true;
+      // Cargar todos los tipos disponibles si no hay categoría seleccionada
+      try {
+        const { data: tipos } = await supabase.rpc("get_tipos_prenda_todos");
+        if (tipos && tipos.length > 0) {
+          populateSelect("tipo-filter", tipos, "id", "nombre");
+          tipoSelect.disabled = false;
+        } else {
+          const tipos = [...new Set(allProducts.map((p) => p.tipo_prenda_nombre))].filter(Boolean);
+          populateSelectFromArray("tipo-filter", tipos);
+          tipoSelect.disabled = false;
+        }
+      } catch (e) {
+        tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
+        tipoSelect.disabled = true;
+      }
       return;
     }
 
@@ -267,21 +278,54 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showFilterLoading(show) {
-    const loadingIndicator = document.querySelector(".filter-loading");
-    if (!loadingIndicator) {
-      if (show) {
-        const loader = document.createElement("div");
-        loader.className = "filter-loading";
-        loader.innerHTML = `
-                    <div class="loading-spinner"></div>
-                    <span>Filtrando productos...</span>
-                `;
-        document.querySelector(".filter-section")?.appendChild(loader);
+    const loadingIndicator = document.querySelector(".search-loading");
+    
+    if (!loadingIndicator && show) {
+      const loader = document.createElement("div");
+      loader.className = "search-loading";
+      loader.innerHTML = `
+        <div class="search-animation">
+          <div class="search-icon">
+            <i class="fas fa-search"></i>
+            <div class="search-pulse"></div>
+          </div>
+          <div class="search-text">
+            <h3>Buscando productos increíbles</h3>
+            <p>Explorando nuestro catálogo...</p>
+            <div class="progress-bar">
+              <div class="progress-fill"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Insertar antes del grid de productos con efecto suave
+      const productGrid = document.getElementById("product-grid");
+      if (productGrid) {
+        productGrid.parentNode.insertBefore(loader, productGrid);
+        
+        // Trigger animation
+        setTimeout(() => {
+          loader.classList.add('active');
+        }, 10);
       }
+      
       return;
     }
-
-    loadingIndicator.style.display = show ? "flex" : "none";
+    
+    if (loadingIndicator) {
+      if (show) {
+        loadingIndicator.style.display = "flex";
+        loadingIndicator.classList.add('active');
+      } else {
+        loadingIndicator.classList.add('fade-out');
+        setTimeout(() => {
+          if (loadingIndicator && loadingIndicator.parentNode) {
+            loadingIndicator.parentNode.removeChild(loadingIndicator);
+          }
+        }, 500);
+      }
+    }
   }
 
   function renderProducts(products, page = 1) {
@@ -290,13 +334,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Mostrar indicador de carga
     showFilterLoading(true);
 
-    // Simulamos un pequeño delay para mostrar el loading
+    // Simulamos un pequeño delay para mostrar el loading elegante
     setTimeout(() => {
       // Limpiar el grid
       productGrid.innerHTML = "";
 
       // Mostrar/ocultar mensaje de no resultados
-      noResultsMessage.style.display = products.length === 0 ? "block" : "none";
+      if (noResultsMessage) {
+        noResultsMessage.style.display = products.length === 0 ? "block" : "none";
+      }
 
       if (products.length === 0) {
         showFilterLoading(false);
@@ -355,7 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Ocultar indicador de carga
       showFilterLoading(false);
-    }, 150); // Pequeño delay para mostrar el feedback visual
+    }, 600); // Timing optimizado para mejor UX
   }
 
   function renderPagination(totalProducts, currentPage) {
@@ -419,6 +465,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function applyFilters() {
     console.log("🔍 Aplicando filtros inteligentes...");
+    
+    // Mostrar animación de carga
+    showFilterLoading(true);
 
     const filters = {
       categoria: document.getElementById("categoria-filter")?.value || "",
@@ -509,8 +558,13 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(
       `✅ Filtros aplicados: ${allProducts.length} → ${filteredProducts.length} productos`,
     );
+    
+    // Renderizar productos (incluye ocultar loading)
     renderProducts(filteredProducts);
     updateResultsCounter(filteredProducts.length);
+    
+    // Asegurar que el loading se oculte después del procesamiento
+    setTimeout(() => showFilterLoading(false), 900);
 
     // Debug: Mostrar algunos productos filtrados
     if (filteredProducts.length > 0) {
@@ -535,8 +589,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("genero-filter").value = "";
     document.getElementById("temporada-filter").value = "";
 
-    // Deshabilitar tipo de prenda
-    document.getElementById("tipo-filter").disabled = true;
+    // Mantener tipo de prenda habilitado
+    document.getElementById("tipo-filter").disabled = false;
 
     // Mostrar todos los productos
     renderProducts(allProducts);
@@ -785,16 +839,23 @@ document.addEventListener("DOMContentLoaded", () => {
       .map(
         (item) => `
             <div class="cart-item" data-id="${item.id}" data-color="${item.color_id || "sin-color"}">
-                <img src="${item.imagen_url || 'https://placehold.co/80x80/eee/ccc?text=Producto'}" alt="${item.nombre}" class="cart-item__image" onerror="this.src='https://placehold.co/80x80/eee/ccc?text=Sin+Imagen'">
+                <div class="cart-item__image-container">
+                    <img src="${item.imagen_url || 'placeholder.jpg'}" alt="${item.nombre}" class="cart-item__image" onerror="this.src='placeholder.jpg'">
+                    ${item.imagen_url ? `<a href="${item.imagen_url}" target="_blank" rel="noopener" class="cart-item__image-link-overlay" title="Ver imagen original"><i class="fas fa-external-link-alt"></i></a>` : ''}
+                </div>
                 <div class="cart-item__info">
                     <p class="cart-item__title">${item.nombre}</p>
                     ${item.color_nombre ? `<p class="cart-item__color">Color: ${item.color_nombre}</p>` : ""}
                     ${item.tipo_tela_nombre ? `<p class="cart-item__fabric">Tela: ${item.tipo_tela_nombre}</p>` : ""}
                     <p class="cart-item__quantity">Cantidad: ${item.quantity}</p>
                     <p class="cart-item__price">$${(item.precio * item.quantity).toLocaleString('es-UY')}</p>
-                    <p class="cart-item__image-link"><small>Imagen: <a href="${item.imagen_url}" target="_blank" rel="noopener">Ver original</a></small></p>
+                    ${item.imagen_url ? `<div class="cart-item__image-actions">
+                        <a href="${item.imagen_url}" target="_blank" rel="noopener" class="image-link-btn">
+                            <i class="fas fa-image"></i> Ver imagen completa
+                        </a>
+                    </div>` : ''}
                 </div>
-                <button class="cart-item__remove" data-id="${item.id}" data-color="${item.color_id || "sin-color"}">&times;</button>
+                <button class="cart-item__remove" data-id="${item.id}" data-color="${item.color_id || "sin-color"}" title="Eliminar del carrito">&times;</button>
             </div>
         `,
       )
