@@ -41,9 +41,12 @@ body {
     "Segoe UI",
     Roboto,
     sans-serif;
-  background-color: var(--admin-light);
+  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
   color: var(--admin-text);
   line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ========================================

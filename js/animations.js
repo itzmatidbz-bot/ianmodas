@@ -38,7 +38,7 @@ const animateOnScroll = new IntersectionObserver((entries) => {
   });
 }, observerOptions);
 
-// Sistema avanzado de scroll con throttling
+// Sistema avanzado de scroll con efectos premium
 let lastScrollY = window.scrollY;
 let ticking = false;
 const header = document.querySelector(".header");
@@ -46,22 +46,42 @@ const header = document.querySelector(".header");
 function updateScrollEffects() {
   const currentScrollY = window.scrollY;
   const scrollDirection = currentScrollY > lastScrollY ? "down" : "up";
-  const scrollProgress = Math.min(currentScrollY / 200, 1);
+  const scrollProgress = Math.min(currentScrollY / 150, 1);
 
   if (header) {
-    // Efecto de desvanecimiento y blur progresivo
-    header.style.background = `rgba(255, 255, 255, ${0.9 + scrollProgress * 0.1})`;
-    header.style.backdropFilter = `blur(${15 + scrollProgress * 10}px)`;
+    // Efecto de desvanecimiento y blur progresivo mejorado
+    const opacity = 0.85 + scrollProgress * 0.15;
+    const blurAmount = 25 + scrollProgress * 15;
     
-    // Agregar clases según el scroll
-    if (currentScrollY > 50) {
-      header.classList.add("scrolled");
-      header.style.transform = scrollDirection === "down" && currentScrollY > 200 
-        ? "translateY(-100%)" 
-        : "translateY(0)";
+    header.style.background = `rgba(255, 255, 255, ${opacity})`;
+    header.style.backdropFilter = `blur(${blurAmount}px)`;
+    header.style.webkitBackdropFilter = `blur(${blurAmount}px)`;
+    
+    // Auto-hide header en scroll down (solo en desktop)
+    if (window.innerWidth > 768) {
+      if (currentScrollY > 100) {
+        header.classList.add("scrolled");
+        if (scrollDirection === "down" && currentScrollY > 300) {
+          header.style.transform = "translateY(-100%)";
+          header.style.opacity = "0.95";
+        } else {
+          header.style.transform = "translateY(0)";
+          header.style.opacity = "1";
+        }
+      } else {
+        header.classList.remove("scrolled");
+        header.style.transform = "translateY(0)";
+        header.style.opacity = "1";
+      }
     } else {
-      header.classList.remove("scrolled");
+      // En móvil, mantener header siempre visible
       header.style.transform = "translateY(0)";
+      header.style.opacity = "1";
+      if (currentScrollY > 50) {
+        header.classList.add("scrolled");
+      } else {
+        header.classList.remove("scrolled");
+      }
     }
   }
 
@@ -69,7 +89,7 @@ function updateScrollEffects() {
   ticking = false;
 }
 
-// Throttled scroll listener para mejor performance
+// Throttled scroll listener con detección de dispositivo
 window.addEventListener("scroll", () => {
   if (!ticking) {
     requestAnimationFrame(updateScrollEffects);
@@ -268,119 +288,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// CSS avanzado para animaciones Silicon Valley
-const additionalStyles = `
-/* Animación del logo con efecto premium */
-@keyframes logoClick {
-    0% { 
-        transform: scale(1) rotate(0deg);
-        filter: brightness(1);
-    }
-    25% { 
-        transform: scale(1.05) rotate(1deg);
-        filter: brightness(1.1);
-    }
-    50% { 
-        transform: scale(1.1) rotate(2deg);
-        filter: brightness(1.2);
-    }
-    75% { 
-        transform: scale(1.05) rotate(1deg);
-        filter: brightness(1.1);
-    }
-    100% { 
-        transform: scale(1) rotate(0deg);
-        filter: brightness(1);
-    }
-}
-
-/* Animaciones de entrada escalonadas */
-.animate-in {
-    animation: slideInUp 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.9);
-        filter: blur(2px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
-}
-
-/* Efecto de shimmer premium */
-.shimmer {
-    background: linear-gradient(110deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.1) 25%,
-        rgba(255, 77, 141, 0.1) 50%,
-        rgba(140, 82, 255, 0.1) 75%,
-        transparent 100%);
-    background-size: 300% 100%;
-    animation: shimmerMove 3s ease-in-out infinite;
-}
-
-@keyframes shimmerMove {
-    0% { background-position: -300% 0; }
-    50% { background-position: 300% 0; }
-    100% { background-position: -300% 0; }
-}
-
-/* Efecto de respiración mejorado */
-.loading-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { 
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% { 
-        opacity: 0.7;
-        transform: scale(1.02);
-    }
-}
-
-/* Animación de desvanecimiento suave */
-.fade-in {
-    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Mejoras para hover states */
-.hover-lift {
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.hover-lift:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
-/* Transiciones globales suaves */
-* {
-    transition-property: transform, opacity, box-shadow, background-color, border-color;
-    transition-duration: 0.3s;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-`;
-
-// Agregar estilos al documento
-const styleSheet = document.createElement("style");
-styleSheet.textContent = additionalStyles;
-document.head.appendChild(styleSheet);
+// Finalización del archivo de animaciones
+console.log('🎨 Sistema de animaciones IAN MODAS cargado correctamente');

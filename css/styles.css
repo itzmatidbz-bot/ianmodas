@@ -272,6 +272,15 @@ body.nav-open {
   gap: var(--space-8);
 }
 
+/* Asegurar que el toggle esté oculto en desktop */
+.nav__toggle {
+  display: none;
+}
+
+.nav__close {
+  display: none;
+}
+
 .nav__link {
   text-decoration: none;
   color: var(--text-color);
@@ -355,13 +364,13 @@ body.nav-open {
 
 .nav-overlay {
   position: fixed;
-  top: 0;
+  top: 5rem; /* Debajo del header */
   left: 0;
   width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  height: calc(100vh - 5rem);
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(8px);
-  z-index: 999;
+  z-index: 998;
   opacity: 0;
   visibility: hidden;
   transition: var(--transition);
@@ -1617,10 +1626,12 @@ img {
     justify-content: center;
     z-index: 1002;
     background: var(--bg-gray-50);
-    border-radius: var(--radius);
-    padding: var(--space-2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
     transition: var(--transition);
     border: 1px solid var(--bg-gray-200);
+    width: 44px;
+    height: 44px;
   }
 
   .nav__toggle:hover {
@@ -1629,6 +1640,37 @@ img {
     transform: scale(1.05);
   }
 
+  .nav__close {
+    display: flex !important;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    z-index: 1002;
+    background: var(--bg-gray-100);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    border: 1px solid var(--bg-gray-200);
+  }
+
+  .nav__close:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    transform: rotate(90deg);
+  }
+
+  /* El header siempre visible */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  /* Menú móvil que se despliega DEBAJO del header */
   .nav__menu {
     position: fixed;
     top: -100%;
@@ -1642,12 +1684,14 @@ img {
     flex-direction: column;
     padding: 2rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1001;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999;
     border-bottom-left-radius: var(--radius-lg);
     border-bottom-right-radius: var(--radius-lg);
     border: 1px solid var(--bg-gray-100);
+    margin-top: 5rem; /* Espacio para el header */
   }
+  
   .nav__menu.active {
     top: 0;
   }
@@ -1698,19 +1742,58 @@ img {
 @media (max-width: 480px) {
   .container {
     padding: 0 0.75rem;
+    width: 100%;
   }
-  .hero__title {
-    font-size: 2rem;
+  
+  .nav {
+    height: 5rem;
+    padding: 0 1rem;
   }
+  
+  .nav__logo {
+    font-size: 1.5rem;
+  }
+  
   .nav__actions {
     gap: 0.5rem;
   }
+  
+  .user-link span {
+    display: none;
+  }
+  
+  .hero__title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+  
+  .hero__content {
+    padding: 1rem;
+  }
+  
   .btn {
     padding: 0.8rem 1.5rem;
     font-size: 0.9rem;
+    min-height: 44px;
   }
+  
   .cart-modal {
     max-width: 100%;
+  }
+  
+  .cart-modal__content {
+    width: 95%;
+    margin: 0.5rem;
+  }
+  
+  /* Menú móvil específico para pantallas muy pequeñas */
+  .nav__menu {
+    padding: 1.5rem 1rem;
+    margin-top: 5rem;
+  }
+  
+  .nav__link {
+    font-size: 1rem;
+    padding: 0.8rem;
   }
 }
 /* Asegúrate de que este código se añada al final de tu archivo styles.css existente */
@@ -2118,6 +2201,9 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1003; /* Siempre por encima del menú */
+  width: 44px;
+  height: 44px;
 }
 
 .cart-btn:hover {
@@ -2160,7 +2246,7 @@ img {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1001;
+  z-index: 1050; /* Por encima de todo */
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -2339,22 +2425,81 @@ img {
    ✨ SILICON VALLEY STYLE ENHANCEMENTS
    ======================================== */
 
-/* Glassmorphism effects */
+/* Glassmorphism effects premium */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Header con efecto de cristal mejorado */
+.header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 20px rgba(0, 0, 0, 0.08);
+}
+
+.header.scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(35px);
+  -webkit-backdrop-filter: blur(35px);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.12);
 }
 
 /* Enhanced card hover effects */
 .product-card:hover {
-  transform: translateY(-8px) scale(1.02);
+  transform: translateY(-12px) scale(1.03);
   box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(var(--primary-rgb), 0.1);
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(var(--primary-rgb), 0.15),
+    0 10px 30px rgba(var(--primary-rgb), 0.1);
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Botones con efectos premium mejorados */
+.btn {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  border: none;
+  box-shadow: 
+    0 4px 15px rgba(var(--primary-rgb), 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 
+    0 8px 25px rgba(var(--primary-rgb), 0.4),
+    0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(-1px) scale(1.02);
 }
 
 /* Smooth micro-interactions */
@@ -2377,15 +2522,83 @@ img {
   100% { background-position: 200% 0; }
 }
 
-/* Improved focus states */
+/* Improved focus states con efectos premium */
 .filter-select:focus,
 .form-input:focus,
 .btn:focus {
   outline: none;
   box-shadow: 
-    0 0 0 3px rgba(var(--primary-rgb), 0.2),
-    0 4px 12px rgba(var(--primary-rgb), 0.15);
+    0 0 0 3px rgba(var(--primary-rgb), 0.25),
+    0 6px 20px rgba(var(--primary-rgb), 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
+
+/* Navegación con efectos de cristal */
+.nav__link {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav__link:hover {
+  background: rgba(var(--primary-rgb), 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transform: translateY(-1px);
+}
+
+/* Mejoras para el carrito */
+.cart-btn:hover {
+  background: rgba(var(--primary-rgb), 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 8px 25px rgba(var(--primary-rgb), 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Efectos de entrada para elementos */
+.fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Efectos de hover para tarjetas de producto mejorados */
+.product-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-rgb), 0.02), 
+    rgba(var(--accent-rgb), 0.02));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.product-card:hover::before {
+  opacity: 1;
 }
 
 /* Modern scrollbar */
@@ -2594,4 +2807,63 @@ img {
     font-size: 0.8rem;
     padding: 8px 16px;
   }
+}
+
+/* ========================================
+   ✨ EFECTOS PREMIUM FINALES V2.0
+   ======================================== */
+
+/* Efectos premium adicionales */
+.premium-glow {
+  box-shadow: 
+    0 0 20px rgba(var(--primary-rgb), 0.3),
+    0 0 40px rgba(var(--primary-rgb), 0.1);
+}
+
+.smooth-appear {
+  animation: smoothAppear 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes smoothAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Mejoras para accesibilidad y UX */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Optimizaciones para rendimiento */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+/* Estados de carga premium */
+.loading-skeleton {
+  background: linear-gradient(90deg, 
+    rgba(var(--primary-rgb), 0.1) 25%, 
+    rgba(var(--primary-rgb), 0.2) 50%, 
+    rgba(var(--primary-rgb), 0.1) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 2s infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
