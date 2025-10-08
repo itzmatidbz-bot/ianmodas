@@ -143,6 +143,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadFallbackTiposTela();
       }
 
+      // Cargar países
+      try {
+        const { data: paises, error } = await supabase.rpc("get_paises_activos");
+        if (!error && paises && paises.length > 0) {
+          populateSelect("pais-origen", paises, "Selecciona país de origen");
+        } else {
+          loadFallbackPaises();
+        }
+      } catch (e) {
+        loadFallbackPaises();
+      }
+
       // Cargar colores
       try {
         const { data: colores, error } = await supabase.rpc("get_colores");
@@ -156,6 +168,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadFallbackColores();
       }
 
+      // Configurar dependencias de categorización
+      setupCategoryDependencies();
+      
       // Configurar múltiples imágenes
       setupMultipleImages();
 
@@ -180,13 +195,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       console.log("📦 Categoría seleccionada:", categoriaNombre);
 
+      const subcategoriaSelect = document.getElementById("subcategoria");
       const tipoPrendaSelect = document.getElementById("tipo-prenda");
       const estiloSelect = document.getElementById("estilo");
 
       if (!categoriaId) {
+        // Reset subcategorías
+        resetSelect(subcategoriaSelect, "Primero selecciona categoría");
         resetSelect(tipoPrendaSelect, "Selecciona tipo de prenda");
         resetSelect(estiloSelect, "Selecciona estilo");
         return;
+      }
+
+      // Cargar subcategorías para esta categoría
+      if (subcategoriaSelect) {
+        try {
+          const { data: subcategorias, error } = await supabase.rpc("get_subcategorias_por_categoria", {
+            categoria_id_param: parseInt(categoriaId)
+          });
+          
+          if (!error && subcategorias && subcategorias.length > 0) {
+            populateSelect("subcategoria", subcategorias, "Selecciona subcategoría");
+          } else {
+            // Fallback
+            loadSubcategoriasPorCategoria(parseInt(categoriaId));
+          }
+        } catch (error) {
+          console.error("Error cargando subcategorías:", error);
+          loadSubcategoriasPorCategoria(parseInt(categoriaId));
+        }
       }
 
       // Cargar tipos de prenda para esta categoría
@@ -1280,6 +1317,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     imageInput.addEventListener("change", (e) => {
       const files = Array.from(e.target.files);
       handleImageFiles(files);
+
     });
   }
 
@@ -1332,33 +1370,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("📦 Cargando categorías de respaldo...");
 
     const fallbackCategorias = [
-      { id: 1, nombre: "Tops", descripcion: "Prendas superiores" },
-      { id: 2, nombre: "Pantalones", descripcion: "Todo tipo de pantalones" },
-      {
-        id: 3,
-        nombre: "Vestidos",
-        descripcion: "Vestidos casuales y elegantes",
-      },
-      { id: 4, nombre: "Faldas", descripcion: "Faldas de diferentes estilos" },
-      { id: 5, nombre: "Conjuntos", descripcion: "Sets coordinados" },
-      { id: 6, nombre: "Abrigos", descripcion: "Chaquetas y abrigos" },
-      { id: 7, nombre: "Blazers", descripcion: "Blazers y sacos elegantes" },
-      { id: 8, nombre: "Buzos", descripcion: "Buzos y sudaderas" },
-      { id: 9, nombre: "Camperas", descripcion: "Camperas y chaquetas" },
-      { id: 10, nombre: "Calzado", descripcion: "Zapatos y calzado" },
-      {
-        id: 11,
-        nombre: "Accesorios",
-        descripcion: "Complementos y accesorios",
-      },
-      {
-        id: 12,
-        nombre: "Ropa Interior",
-        descripcion: "Lencería y ropa interior",
-      },
-      { id: 13, nombre: "Pijamas", descripcion: "Ropa de dormir" },
-      { id: 14, nombre: "Trajes de Baño", descripcion: "Bikinis y mallas" },
-      { id: 15, nombre: "Deportivo", descripcion: "Ropa deportiva" },
+      { id: 1, nombre: "Camisas", descripcion: "Camisas formales y casuales" },
+      { id: 2, nombre: "Camisetas", descripcion: "Camisetas básicas y estampadas" },
+      { id: 3, nombre: "Remeras", descripcion: "Remeras casuales y deportivas" },
+      { id: 4, nombre: "Pantalones", descripcion: "Todo tipo de pantalones" },
+      { id: 5, nombre: "Vestidos", descripcion: "Vestidos casuales y elegantes" },
+      { id: 6, nombre: "Faldas", descripcion: "Faldas de diferentes estilos" },
+      { id: 7, nombre: "Conjuntos", descripcion: "Sets coordinados" },
+      { id: 8, nombre: "Abrigos", descripcion: "Chaquetas y abrigos" },
+      { id: 9, nombre: "Blazers", descripcion: "Blazers y sacos elegantes" },
+      { id: 10, nombre: "Buzos", descripcion: "Buzos y sudaderas" },
+      { id: 11, nombre: "Camperas", descripcion: "Camperas y chaquetas" },
+      { id: 12, nombre: "Calzado", descripcion: "Zapatos y calzado" },
+      { id: 13, nombre: "Accesorios", descripcion: "Complementos y accesorios" },
+      { id: 14, nombre: "Ropa Interior", descripcion: "Lencería y ropa interior" },
+      { id: 15, nombre: "Pijamas", descripcion: "Ropa de dormir" },
+      { id: 16, nombre: "Trajes de Baño", descripcion: "Bikinis y mallas" },
+      { id: 17, nombre: "Deportivo", descripcion: "Ropa deportiva" },
     ];
 
     populateSelect("categoria", fallbackCategorias, "Selecciona categoría");
@@ -1452,6 +1480,55 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const tipos = tiposPorCategoria[categoriaId] || [];
     populateSelect("tipo-prenda", tipos, "Selecciona tipo de prenda");
+  }
+
+  // =====================================================
+  // 🏷️ FUNCIONES PARA SUBCATEGORÍAS
+  // =====================================================
+  function loadFallbackSubcategorias() {
+    const fallbackSubcategorias = {
+      1: [ // Camisas
+        { id: 1, nombre: "Camisas Formales", descripcion: "Camisas elegantes para ocasiones formales" },
+        { id: 2, nombre: "Camisas Casuales", descripcion: "Camisas relajadas para uso diario" },
+        { id: 3, nombre: "Maxicamisas", descripcion: "Camisas largas estilo túnica" }
+      ],
+      2: [ // Camisetas
+        { id: 4, nombre: "Camisetas Básicas", descripcion: "Camisetas lisas y simples" },
+        { id: 5, nombre: "Camisetas Estampadas", descripcion: "Camisetas con diseños y prints" },
+        { id: 6, nombre: "Blusas", descripcion: "Blusas elegantes y femeninas" }
+      ],
+      3: [ // Remeras
+        { id: 7, nombre: "Remeras Deportivas", descripcion: "Remeras para actividad física" },
+        { id: 8, nombre: "Remeras Casuales", descripcion: "Remeras para uso diario" },
+        { id: 9, nombre: "Remeras Premium", descripcion: "Remeras de alta calidad y diseño" }
+      ]
+    };
+
+    return fallbackSubcategorias;
+  }
+
+  function loadSubcategoriasPorCategoria(categoriaId) {
+    const subcategoriaSelect = document.getElementById("subcategoria");
+    if (!subcategoriaSelect) return;
+
+    const subcategorias = loadFallbackSubcategorias();
+    const subcategoriasCategoria = subcategorias[categoriaId] || [];
+    
+    populateSelect("subcategoria", subcategoriasCategoria, "Selecciona subcategoría");
+  }
+
+  // =====================================================
+  // 🌍 FUNCIONES PARA PAÍSES
+  // =====================================================
+  function loadFallbackPaises() {
+    const fallbackPaises = [
+      { id: 1, nombre: "Argentina", descripcion: "Productos nacionales de excelente calidad y diseño" },
+      { id: 2, nombre: "Turquía", descripcion: "Productos turcos reconocidos por su calidad textil" },
+      { id: 3, nombre: "Italia", descripcion: "Productos italianos de alta costura y elegancia" },
+      { id: 4, nombre: "Outlet", descripcion: "Productos de temporadas anteriores con descuentos especiales" }
+    ];
+
+    populateSelect("pais-origen", fallbackPaises, "Selecciona país de origen");
   }
 
   // =====================================================
