@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("pais-filter").value = "";
 
     // Limpiar banderas del body
-    document.body.classList.remove('flag-argentina', 'flag-turquia', 'flag-italia', 'flag-outlet');
+    document.body.classList.remove('theme-argentina', 'theme-turquia', 'theme-italia', 'theme-outlet');
 
     // Mostrar todos los productos
     renderProducts(allProducts);
@@ -895,39 +895,87 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function changeCountryBackground(country) {
-    console.log(`🔄 Cambiando fondo para: "${country}"`);
+    console.log(`🎨 Cambiando TEMÁTICA COMPLETA para: "${country}"`);
     
-    // Limpiar todas las clases de banderas anteriores
-    document.body.classList.remove('flag-argentina', 'flag-turquia', 'flag-italia', 'flag-outlet');
-    console.log("🧹 Clases de banderas limpiadas del body");
+    // Limpiar todas las clases de temas anteriores
+    document.body.classList.remove('theme-argentina', 'theme-turquia', 'theme-italia', 'theme-outlet');
+    console.log("🧹 Clases de temas limpiadas del body");
 
     if (!country || country === "") {
-      console.log("🏳️ Fondo limpiado - sin país seleccionado");
+      console.log("🏳️ Temática limpiada - sin país seleccionado");
       return;
     }
 
-    // Mapeo simple de países a clases CSS
-    const countryMapping = {
-      'Argentina': 'flag-argentina',
-      'Turquía': 'flag-turquia', 
-      'Italia': 'flag-italia',
-      'Outlet': 'flag-outlet'
+    // Mapeo de países a temas completos
+    const themeMapping = {
+      'Argentina': 'theme-argentina',
+      'Turquía': 'theme-turquia', 
+      'Italia': 'theme-italia',
+      'Outlet': 'theme-outlet'
     };
 
-    console.log(`🗺️ Mapeando "${country}" en:`, countryMapping);
+    console.log(`🗺️ Mapeando "${country}" a tema:`, themeMapping);
     
-    const flagClass = countryMapping[country];
-    if (flagClass) {
-      // Aplicar bandera como fondo del body
-      document.body.classList.add(flagClass);
-      console.log(`✅ Fondo aplicado: ${country} (clase: ${flagClass})`);
+    const themeClass = themeMapping[country];
+    if (themeClass) {
+      // Aplicar tema completo al sitio
+      document.body.classList.add(themeClass);
+      console.log(`✅ TEMA COMPLETO aplicado: ${country} (clase: ${themeClass})`);
       console.log(`📋 Clases actuales del body:`, document.body.className);
       
-      // Mostrar notificación
-      showCountryNotification(country);
+      // Mostrar notificación del tema activado
+      showThemeNotification(country);
     } else {
       console.log(`❌ No se encontró mapeo para: "${country}"`);
     }
+  }
+
+  function showThemeNotification(country) {
+    // Remover notificación anterior si existe
+    const existingNotification = document.querySelector('.theme-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+    
+    // Configuración por país
+    const themeConfig = {
+      'Argentina': { message: '🇦🇷 Temática Argentina Activada', color: '#74ACDF' },
+      'Turquía': { message: '🇹🇷 Temática Turquía Activada', color: '#E30A17' },
+      'Italia': { message: '🇮🇹 Temática Italia Activada', color: '#009246' },
+      'Outlet': { message: '🏷️ Temática Outlet Activada', color: '#667EEA' }
+    };
+    
+    const config = themeConfig[country];
+    if (!config) return;
+    
+    // Crear nueva notificación
+    const notification = document.createElement('div');
+    notification.className = 'theme-notification';
+    notification.textContent = config.message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: white;
+      color: ${config.color};
+      padding: 15px 25px;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      border: 2px solid ${config.color};
+      font-weight: bold;
+      z-index: 9999;
+      animation: slideInRight 0.5s ease-out;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remover después de 4 segundos
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = 'slideOutRight 0.5s ease-in';
+        setTimeout(() => notification.remove(), 500);
+      }
+    }, 4000);
   }
 
   function showCountryNotification(countryName) {

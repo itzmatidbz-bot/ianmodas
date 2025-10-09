@@ -1998,97 +1998,462 @@ img {
 }
 
 /* ========================================
-   🏳️ BANDERAS COMO FONDO COMPLETO DEL SITIO
+   � TEMÁTICA COMPLETA POR PAÍSES - CAMBIO TOTAL DE ESTÉTICA
    ======================================== */
 
-/* Banderas como fondo completo del body */
-body.flag-argentina {
+/* Variables de colores dinámicos por país */
+:root {
+  /* Argentina */
+  --argentina-primary: #74ACDF;
+  --argentina-secondary: #F6D44A; 
+  --argentina-accent: #87CEEB;
+  
+  /* Turquía */
+  --turquia-primary: #E30A17;
+  --turquia-secondary: #FFFFFF;
+  --turquia-accent: #FF6B7A;
+  
+  /* Italia */
+  --italia-primary: #009246;
+  --italia-secondary: #CE2B37;
+  --italia-accent: #FFFFFF;
+  
+  /* Outlet */
+  --outlet-primary: #667EEA;
+  --outlet-secondary: #764BA2;
+  --outlet-accent: #9C88FF;
+}
+
+/* ===== TEMA ARGENTINA ===== */
+body.theme-argentina {
+  --primary-color: var(--argentina-primary);
+  --primary-dark: #5A8BC4;
+  --accent-color: var(--argentina-secondary);
+  --secondary-color: #E8F4FD;
+  transition: all 0.6s ease-in-out;
+}
+
+/* Header Argentina */
+body.theme-argentina .header {
+  background: linear-gradient(135deg, var(--argentina-primary), var(--argentina-accent)) !important;
+  color: white;
+}
+
+body.theme-argentina .nav__logo {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+body.theme-argentina .nav__link {
+  color: white !important;
+}
+
+body.theme-argentina .nav__link:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+/* Info Bar Argentina */
+body.theme-argentina .info-bar {
+  background: linear-gradient(135deg, var(--argentina-secondary), var(--argentina-primary)) !important;
+  color: #333 !important;
+}
+
+/* Sección de Productos Argentina - Con bandera de fondo */
+body.theme-argentina .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)),
+    linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)),
     url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Flag_of_Argentina.svg/2000px-Flag_of_Argentina.svg.png') 
-    center/cover no-repeat fixed !important;
-  min-height: 100vh;
-  transition: all 1s ease-in-out;
-}
-
-body.flag-turquia {
-  background: 
-    linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)),
-    url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Turkey.svg/2000px-Flag_of_Turkey.svg.png') 
-    center/cover no-repeat fixed !important;
-  min-height: 100vh;
-  transition: all 1s ease-in-out;
-}
-
-body.flag-italia {
-  background: 
-    linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)),
-    url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Flag_of_Italy.svg/2000px-Flag_of_Italy.svg.png') 
-    center/cover no-repeat fixed !important;
-  min-height: 100vh;
-  transition: all 1s ease-in-out;
-}
-
-body.flag-outlet {
-  background: 
-    linear-gradient(135deg, #667eea 0%, #764ba2 100%) fixed !important;
-  min-height: 100vh;
-  transition: all 1s ease-in-out;
-}
-
-/* Asegurar que header y footer mantengan su fondo */
-body.flag-argentina .header,
-body.flag-turquia .header,
-body.flag-italia .header,
-body.flag-outlet .header {
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(20px) !important;
-}
-
-body.flag-argentina .footer,
-body.flag-turquia .footer,
-body.flag-italia .footer,
-body.flag-outlet .footer {
-  background-color: var(--primary-color) !important;
-}
-
-/* Asegurar legibilidad de las secciones sobre las banderas */
-body.flag-argentina .products,
-body.flag-turquia .products,
-body.flag-italia .products,
-body.flag-outlet .products {
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(15px);
-  margin: 2rem 0;
+    center/cover no-repeat !important;
+  backdrop-filter: blur(5px);
   border-radius: var(--radius-lg);
+  margin: 2rem 0;
   padding: 2rem !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 15px 40px rgba(116, 172, 223, 0.3);
 }
 
-body.flag-argentina .contact,
-body.flag-turquia .contact,
-body.flag-italia .contact,
-body.flag-outlet .contact {
-  background: rgba(248, 240, 244, 0.95) !important;
-  backdrop-filter: blur(15px);
+/* Filtros Argentina */
+body.theme-argentina .filters-header {
+  background: linear-gradient(135deg, var(--argentina-primary), var(--argentina-secondary)) !important;
+  color: white !important;
+}
+
+body.theme-argentina .filter-group select {
+  border-color: var(--argentina-primary) !important;
+}
+
+body.theme-argentina .filter-group select:focus {
+  border-color: var(--argentina-secondary) !important;
+  box-shadow: 0 0 0 3px rgba(116, 172, 223, 0.2) !important;
+}
+
+/* Botones Argentina */
+body.theme-argentina .btn--primary {
+  background: linear-gradient(135deg, var(--argentina-primary), var(--argentina-secondary)) !important;
+  border: none !important;
+}
+
+body.theme-argentina .btn--primary:hover {
+  background: linear-gradient(135deg, var(--argentina-secondary), var(--argentina-primary)) !important;
+  transform: translateY(-2px);
+}
+
+/* Cards Argentina */
+body.theme-argentina .product-card {
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+body.theme-argentina .product-card:hover {
+  border-color: var(--argentina-primary) !important;
+  box-shadow: 0 15px 40px rgba(116, 172, 223, 0.4) !important;
+  transform: translateY(-5px);
+}
+
+body.theme-argentina .product-card .card__price {
+  color: var(--argentina-primary) !important;
+  font-weight: bold;
+}
+
+/* Footer Argentina */
+body.theme-argentina .footer {
+  background: linear-gradient(135deg, var(--argentina-primary), var(--argentina-accent)) !important;
+}
+
+/* ===== TEMA TURQUÍA ===== */
+body.theme-turquia {
+  --primary-color: var(--turquia-primary);
+  --primary-dark: #B8080F;
+  --accent-color: var(--turquia-accent);
+  --secondary-color: #FFEBEE;
+  transition: all 0.6s ease-in-out;
+}
+
+/* Header Turquía */
+body.theme-turquia .header {
+  background: linear-gradient(135deg, var(--turquia-primary), #8B0000) !important;
+  color: white;
+}
+
+body.theme-turquia .nav__logo {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+body.theme-turquia .nav__link {
+  color: white !important;
+}
+
+body.theme-turquia .nav__link:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+/* Info Bar Turquía */
+body.theme-turquia .info-bar {
+  background: linear-gradient(135deg, var(--turquia-primary), var(--turquia-accent)) !important;
+  color: white !important;
+}
+
+/* Sección de Productos Turquía - Con bandera de fondo */
+body.theme-turquia .products {
+  background: 
+    linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)),
+    url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Turkey.svg/2000px-Flag_of_Turkey.svg.png') 
+    center/cover no-repeat !important;
+  backdrop-filter: blur(5px);
+  border-radius: var(--radius-lg);
+  margin: 2rem 0;
   padding: 2rem !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 15px 40px rgba(227, 10, 23, 0.3);
 }
 
-body.flag-argentina .info-bar,
-body.flag-turquia .info-bar,
-body.flag-italia .info-bar,
-body.flag-outlet .info-bar {
-  background: rgba(255, 77, 141, 0.9) !important;
-  backdrop-filter: blur(10px);
+/* Filtros Turquía */
+body.theme-turquia .filters-header {
+  background: linear-gradient(135deg, var(--turquia-primary), #8B0000) !important;
+  color: white !important;
 }
 
-/* Ocultar el contenedor de banderas cuando se usa como fondo */
-body.flag-argentina #country-flag-container,
-body.flag-turquia #country-flag-container,
-body.flag-italia #country-flag-container,
-body.flag-outlet #country-flag-container {
-  display: none;
+body.theme-turquia .filter-group select {
+  border-color: var(--turquia-primary) !important;
+}
+
+body.theme-turquia .filter-group select:focus {
+  border-color: var(--turquia-accent) !important;
+  box-shadow: 0 0 0 3px rgba(227, 10, 23, 0.2) !important;
+}
+
+/* Botones Turquía */
+body.theme-turquia .btn--primary {
+  background: linear-gradient(135deg, var(--turquia-primary), var(--turquia-accent)) !important;
+  border: none !important;
+}
+
+body.theme-turquia .btn--primary:hover {
+  background: linear-gradient(135deg, var(--turquia-accent), var(--turquia-primary)) !important;
+  transform: translateY(-2px);
+}
+
+/* Cards Turquía */
+body.theme-turquia .product-card {
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+body.theme-turquia .product-card:hover {
+  border-color: var(--turquia-primary) !important;
+  box-shadow: 0 15px 40px rgba(227, 10, 23, 0.4) !important;
+  transform: translateY(-5px);
+}
+
+body.theme-turquia .product-card .card__price {
+  color: var(--turquia-primary) !important;
+  font-weight: bold;
+}
+
+/* Footer Turquía */
+body.theme-turquia .footer {
+  background: linear-gradient(135deg, var(--turquia-primary), #8B0000) !important;
+}
+
+/* ===== TEMA ITALIA ===== */
+body.theme-italia {
+  --primary-color: var(--italia-primary);
+  --primary-dark: #007A39;
+  --accent-color: var(--italia-secondary);
+  --secondary-color: #E8F5E8;
+  transition: all 0.6s ease-in-out;
+}
+
+/* Header Italia */
+body.theme-italia .header {
+  background: linear-gradient(135deg, var(--italia-primary), var(--italia-secondary)) !important;
+  color: white;
+}
+
+body.theme-italia .nav__logo {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+body.theme-italia .nav__link {
+  color: white !important;
+}
+
+body.theme-italia .nav__link:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+/* Info Bar Italia */
+body.theme-italia .info-bar {
+  background: linear-gradient(135deg, var(--italia-primary), var(--italia-secondary)) !important;
+  color: white !important;
+}
+
+/* Sección de Productos Italia - Con bandera de fondo */
+body.theme-italia .products {
+  background: 
+    linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)),
+    url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Flag_of_Italy.svg/2000px-Flag_of_Italy.svg.png') 
+    center/cover no-repeat !important;
+  backdrop-filter: blur(5px);
+  border-radius: var(--radius-lg);
+  margin: 2rem 0;
+  padding: 2rem !important;
+  box-shadow: 0 15px 40px rgba(0, 146, 70, 0.3);
+}
+
+/* Filtros Italia */
+body.theme-italia .filters-header {
+  background: linear-gradient(135deg, var(--italia-primary), var(--italia-secondary)) !important;
+  color: white !important;
+}
+
+body.theme-italia .filter-group select {
+  border-color: var(--italia-primary) !important;
+}
+
+body.theme-italia .filter-group select:focus {
+  border-color: var(--italia-secondary) !important;
+  box-shadow: 0 0 0 3px rgba(0, 146, 70, 0.2) !important;
+}
+
+/* Botones Italia */
+body.theme-italia .btn--primary {
+  background: linear-gradient(135deg, var(--italia-primary), var(--italia-secondary)) !important;
+  border: none !important;
+}
+
+body.theme-italia .btn--primary:hover {
+  background: linear-gradient(135deg, var(--italia-secondary), var(--italia-primary)) !important;
+  transform: translateY(-2px);
+}
+
+/* Cards Italia */
+body.theme-italia .product-card {
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+body.theme-italia .product-card:hover {
+  border-color: var(--italia-primary) !important;
+  box-shadow: 0 15px 40px rgba(0, 146, 70, 0.4) !important;
+  transform: translateY(-5px);
+}
+
+body.theme-italia .product-card .card__price {
+  color: var(--italia-primary) !important;
+  font-weight: bold;
+}
+
+/* Footer Italia */
+body.theme-italia .footer {
+  background: linear-gradient(135deg, var(--italia-primary), var(--italia-secondary)) !important;
+}
+
+/* ===== TEMA OUTLET ===== */
+body.theme-outlet {
+  --primary-color: var(--outlet-primary);
+  --primary-dark: #5A6FD8;
+  --accent-color: var(--outlet-secondary);
+  --secondary-color: #F3F4FF;
+  transition: all 0.6s ease-in-out;
+}
+
+/* Header Outlet */
+body.theme-outlet .header {
+  background: linear-gradient(135deg, var(--outlet-primary), var(--outlet-secondary)) !important;
+  color: white;
+}
+
+body.theme-outlet .nav__logo {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+body.theme-outlet .nav__link {
+  color: white !important;
+}
+
+body.theme-outlet .nav__link:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+/* Info Bar Outlet */
+body.theme-outlet .info-bar {
+  background: linear-gradient(135deg, var(--outlet-primary), var(--outlet-secondary)) !important;
+  color: white !important;
+}
+
+/* Sección de Productos Outlet - Gradiente especial */
+body.theme-outlet .products {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15)) !important;
+  position: relative;
+  border-radius: var(--radius-lg);
+  margin: 2rem 0;
+  padding: 3rem 2rem 2rem !important;
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+}
+
+body.theme-outlet .products::before {
+  content: '🏷️ OFERTAS ESPECIALES 🏷️';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--outlet-primary), var(--outlet-secondary));
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  z-index: 1;
+}
+
+/* Filtros Outlet */
+body.theme-outlet .filters-header {
+  background: linear-gradient(135deg, var(--outlet-primary), var(--outlet-secondary)) !important;
+  color: white !important;
+}
+
+body.theme-outlet .filter-group select {
+  border-color: var(--outlet-primary) !important;
+}
+
+body.theme-outlet .filter-group select:focus {
+  border-color: var(--outlet-accent) !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* Botones Outlet */
+body.theme-outlet .btn--primary {
+  background: linear-gradient(135deg, var(--outlet-primary), var(--outlet-secondary)) !important;
+  border: none !important;
+}
+
+body.theme-outlet .btn--primary:hover {
+  background: linear-gradient(135deg, var(--outlet-secondary), var(--outlet-primary)) !important;
+  transform: translateY(-2px);
+}
+
+/* Cards Outlet */
+body.theme-outlet .product-card {
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+body.theme-outlet .product-card:hover {
+  border-color: var(--outlet-primary) !important;
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4) !important;
+  transform: translateY(-5px);
+}
+
+body.theme-outlet .product-card .card__price {
+  color: var(--outlet-primary) !important;
+  font-weight: bold;
+}
+
+/* Footer Outlet */
+body.theme-outlet .footer {
+  background: linear-gradient(135deg, var(--outlet-primary), var(--outlet-secondary)) !important;
+}
+
+/* ===== EFECTOS GLOBALES DE TRANSICIÓN ===== */
+.header, .nav__logo, .nav__link, .info-bar, .products, .filters-header, 
+.btn--primary, .product-card, .footer, .filter-group select {
+  transition: all 0.6s ease-in-out !important;
+}
+
+/* ===== ANIMACIONES PARA NOTIFICACIONES DE TEMA ===== */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.theme-notification {
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  user-select: none;
+  cursor: default;
 }
 
 /* Notificación de país seleccionado */
