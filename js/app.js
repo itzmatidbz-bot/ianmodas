@@ -508,14 +508,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("temporada-filter").value = "";
     document.getElementById("pais-filter").value = "";
 
-    // Limpiar bandera de país y tema completo
-    const flagContainer = document.getElementById("country-flag-container");
-    if (flagContainer) {
-      flagContainer.classList.remove("active", "flag-background-argentina", "flag-background-turquia", "flag-background-italia", "flag-background-outlet");
-    }
-    
-    // Limpiar tema del body
-    document.body.classList.remove('theme-argentina', 'theme-turquia', 'theme-italia', 'theme-outlet');
+    // Limpiar banderas del body
+    document.body.classList.remove('flag-argentina', 'flag-turquia', 'flag-italia', 'flag-outlet');
 
     // Mostrar todos los productos
     renderProducts(allProducts);
@@ -874,24 +868,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =====================================================
-  // 🏳️ FUNCIONES DE TEMÁTICA POR PAÍSES
+  // 🏳️ FUNCIONES SIMPLES PARA BANDERAS COMO FONDO
   // =====================================================
   
   function setupCountryFlags() {
-    console.log("🏳️ Configurando funcionalidad de banderas por países...");
+    console.log("🏳️ Configurando banderas como fondo del sitio...");
     
     const paisFilter = document.getElementById("pais-filter");
-    const flagContainer = document.getElementById("country-flag-container");
     
-    if (!paisFilter || !flagContainer) {
-      console.warn("⚠️ No se encontraron elementos para banderas");
+    if (!paisFilter) {
+      console.warn("⚠️ No se encontró el filtro de países");
       return;
     }
 
     paisFilter.addEventListener("change", (e) => {
       const selectedCountry = e.target.value;
-      console.log(`🏳️ País seleccionado: ${selectedCountry}`);
-      updateCountryTheme(selectedCountry, flagContainer);
+      console.log(`🏳️ País seleccionado: "${selectedCountry}"`);
+      console.log(`📋 Opciones disponibles:`, paisFilter.innerHTML);
+      changeCountryBackground(selectedCountry);
       
       // También aplicar filtros automáticamente
       setTimeout(applyFilters, 100);
@@ -900,66 +894,39 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ Funcionalidad de banderas configurada");
   }
 
-  function updateCountryTheme(country, flagContainer) {
-    // Limpiar todas las clases de tema y bandera anteriores
-    document.body.classList.remove('theme-argentina', 'theme-turquia', 'theme-italia', 'theme-outlet');
-    flagContainer.classList.remove(
-      'active', 
-      'flag-background-argentina', 
-      'flag-background-turquia', 
-      'flag-background-italia', 
-      'flag-background-outlet'
-    );
+  function changeCountryBackground(country) {
+    console.log(`🔄 Cambiando fondo para: "${country}"`);
+    
+    // Limpiar todas las clases de banderas anteriores
+    document.body.classList.remove('flag-argentina', 'flag-turquia', 'flag-italia', 'flag-outlet');
+    console.log("🧹 Clases de banderas limpiadas del body");
 
-    if (!country) {
-      console.log("🏳️ Tema limpiado - sin país seleccionado");
+    if (!country || country === "") {
+      console.log("🏳️ Fondo limpiado - sin país seleccionado");
       return;
     }
 
-    // Mapeo de países a temas y clases
+    // Mapeo simple de países a clases CSS
     const countryMapping = {
-      'Argentina': {
-        theme: 'theme-argentina',
-        flag: 'flag-background-argentina',
-        name: 'Argentina 🇦🇷'
-      },
-      'Turquía': {
-        theme: 'theme-turquia', 
-        flag: 'flag-background-turquia',
-        name: 'Turquía 🇹🇷'
-      },
-      'Italia': {
-        theme: 'theme-italia',
-        flag: 'flag-background-italia', 
-        name: 'Italia 🇮🇹'
-      },
-      'Outlet': {
-        theme: 'theme-outlet',
-        flag: 'flag-background-outlet',
-        name: 'Outlet 🏷️'
-      }
+      'Argentina': 'flag-argentina',
+      'Turquía': 'flag-turquia', 
+      'Italia': 'flag-italia',
+      'Outlet': 'flag-outlet'
     };
 
-    const selectedTheme = countryMapping[country];
-    if (selectedTheme) {
-      // Aplicar tema al body
-      document.body.classList.add(selectedTheme.theme);
+    console.log(`🗺️ Mapeando "${country}" en:`, countryMapping);
+    
+    const flagClass = countryMapping[country];
+    if (flagClass) {
+      // Aplicar bandera como fondo del body
+      document.body.classList.add(flagClass);
+      console.log(`✅ Fondo aplicado: ${country} (clase: ${flagClass})`);
+      console.log(`📋 Clases actuales del body:`, document.body.className);
       
-      // Aplicar bandera al contenedor
-      flagContainer.classList.add(selectedTheme.flag, 'active');
-      
-      // Scroll suave hacia la bandera
-      setTimeout(() => {
-        flagContainer.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 300);
-
-      console.log(`✅ Tema aplicado: ${selectedTheme.name}`);
-      
-      // Mostrar notificación temporal
-      showCountryNotification(selectedTheme.name);
+      // Mostrar notificación
+      showCountryNotification(country);
+    } else {
+      console.log(`❌ No se encontró mapeo para: "${country}"`);
     }
   }
 
@@ -969,8 +936,8 @@ document.addEventListener("DOMContentLoaded", () => {
     notification.className = 'country-notification';
     notification.innerHTML = `
       <div class="notification-content">
-        <i class="fas fa-globe"></i>
-        <span>Explorando productos de ${countryName}</span>
+        <i class="fas fa-flag"></i>
+        <span>Mostrando productos de ${countryName}</span>
       </div>
     `;
     
@@ -979,11 +946,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Mostrar con animación
     setTimeout(() => notification.classList.add('show'), 100);
     
-    // Ocultar después de 3 segundos
+    // Ocultar después de 2 segundos
     setTimeout(() => {
       notification.classList.add('hide');
       setTimeout(() => notification.remove(), 500);
-    }, 3000);
+    }, 2000);
   }
 
   // === FUNCIONES DE FILTRADO AVANZADO ===
