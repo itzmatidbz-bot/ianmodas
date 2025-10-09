@@ -479,13 +479,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           product.categoria_nombre || product.categoria || "Sin categoría";
         const tipoPrenda =
           product.tipo_prenda_nombre || product.tipo_prenda || "";
-        const estilo = product.estilo_nombre || product.estilo || "";
         const tela = product.tela_nombre || product.tela || "";
 
-        // Construir descripción completa
+        // Construir descripción completa (sin incluir estilo)
         let descripcionCompleta = categoria;
         if (tipoPrenda) descripcionCompleta += ` • ${tipoPrenda}`;
-        if (estilo) descripcionCompleta += ` • ${estilo}`;
         if (tela) descripcionCompleta += ` • ${tela}`;
 
         // Generar colores aleatorios para badges basados en el ID
@@ -1483,8 +1481,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         form.categoria.value = product.categoria_id;
       if (form["tipo-prenda"] && product.tipo_prenda_id)
         form["tipo-prenda"].value = product.tipo_prenda_id;
-      if (form.estilo && product.estilo_id)
-        form.estilo.value = product.estilo_id;
+      // Campo "estilo" eliminado - ya no se usa
       if (form.genero) form.genero.value = product.genero || "mujer";
       if (form.temporada)
         form.temporada.value = product.temporada || "todo_año";
@@ -1544,7 +1541,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const nombreInput = document.getElementById("nombre");
       const categoriaSelect = document.getElementById("categoria");
       const tipoPrendaSelect = document.getElementById("tipo-prenda");
-      const estiloSelect = document.getElementById("estilo");
+      // Campo "estilo" eliminado del formulario
       const telaSelect = document.getElementById("tipo-tela");
 
       const nombre = nombreInput?.value || "";
@@ -1552,8 +1549,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         categoriaSelect?.options[categoriaSelect.selectedIndex]?.text || "";
       const tipoPrenda =
         tipoPrendaSelect?.options[tipoPrendaSelect.selectedIndex]?.text || "";
-      const estilo =
-        estiloSelect?.options[estiloSelect.selectedIndex]?.text || "";
       const tela = telaSelect?.options[telaSelect.selectedIndex]?.text || "";
 
       if (!nombre.trim()) {
@@ -1571,7 +1566,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           nombre,
           categoria,
           tipoPrenda,
-          estilo,
+          null, // estilo eliminado
           tela,
         );
 
@@ -1613,25 +1608,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     estilo,
     tela,
   ) {
+    // Función helper para limpiar valores vacíos
+    function esValorValido(valor) {
+      return valor && 
+             valor.trim() !== "" && 
+             !valor.toLowerCase().includes("sin") && 
+             !valor.toLowerCase().includes("específic") &&
+             valor !== "Sin especificar";
+    }
+
+    // Solo usar valores que realmente tienen contenido útil
+    const nombreLimpio = esValorValido(nombre) ? nombre : "Esta prenda";
+    const categoriaLimpia = esValorValido(categoria) ? categoria : null;
+    const tipoPrendaLimpio = esValorValido(tipoPrenda) ? tipoPrenda : null;
+    const telaLimpia = esValorValido(tela) ? tela : null;
+
     const plantillas = {
-      Tops: `${nombre} es una prenda superior ${estilo ? `de estilo ${estilo.toLowerCase()}` : "versátil"} ${tela ? `confeccionada en ${tela.toLowerCase()}` : ""}. Perfecta para combinar con diferentes outfits, ofrece comodidad y elegancia en cada ocasión. Su diseño cuidadoso y materiales de calidad la convierten en una opción ideal para tu guardarropa.`,
+      Tops: () => {
+        let desc = `${nombreLimpio} es una prenda superior versátil`;
+        if (telaLimpia) desc += ` confeccionada en ${telaLimpia.toLowerCase()}`;
+        desc += `. Perfecta para combinar con diferentes outfits, ofrece comodidad y elegancia en cada ocasión. Su diseño cuidadoso y materiales de calidad la convierten en una opción ideal para tu guardarropa.`;
+        return desc;
+      },
 
-      Pantalones: `${nombre} ${tipoPrenda ? `tipo ${tipoPrenda.toLowerCase()}` : ""} ${estilo ? `con corte ${estilo.toLowerCase()}` : "de corte clásico"} ${tela ? `en ${tela.toLowerCase()}` : ""}. Diseñado para brindar comodidad y estilo, se adapta perfectamente a tu figura. Ideal para crear looks casuales o elegantes según la ocasión.`,
+      Pantalones: () => {
+        let desc = `${nombreLimpio}`;
+        if (tipoPrendaLimpio) desc += ` tipo ${tipoPrendaLimpio.toLowerCase()}`;
+        desc += ` de corte moderno`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Diseñado para brindar comodidad y estilo, se adapta perfectamente a tu figura. Ideal para crear looks casuales o elegantes según la ocasión.`;
+        return desc;
+      },
 
-      Vestidos: `${nombre} es un hermoso vestido ${estilo ? `de estilo ${estilo.toLowerCase()}` : "elegante"} ${tela ? `confeccionado en ${tela.toLowerCase()}` : ""}. Su diseño favorecedor y detalles cuidados lo convierten en la elección perfecta para ocasiones especiales. Combina elegancia y comodidad de manera excepcional.`,
+      Vestidos: () => {
+        let desc = `${nombreLimpio} es un hermoso vestido elegante`;
+        if (telaLimpia) desc += ` confeccionado en ${telaLimpia.toLowerCase()}`;
+        desc += `. Su diseño favorecedor y detalles cuidados lo convierten en la elección perfecta para ocasiones especiales. Combina elegancia y comodidad de manera excepcional.`;
+        return desc;
+      },
 
-      default: `${nombre} es una prenda de alta calidad ${categoria ? `de la categoría ${categoria.toLowerCase()}` : ""} ${tela ? `confeccionada en ${tela.toLowerCase()}` : ""}. Su diseño cuidadoso y atención al detalle la convierten en una excelente adición a tu guardarropa. Perfecta para diferentes ocasiones y fácil de combinar.`,
+      default: () => {
+        let desc = `${nombreLimpio} es una prenda de alta calidad`;
+        if (categoriaLimpia) desc += ` de la categoría ${categoriaLimpia.toLowerCase()}`;
+        if (telaLimpia) desc += ` confeccionada en ${telaLimpia.toLowerCase()}`;
+        desc += `. Su diseño cuidadoso y atención al detalle la convierten en una excelente adición a tu guardarropa. Perfecta para diferentes ocasiones y fácil de combinar.`;
+        return desc;
+      }
     };
 
     // Simulamos un delay para que parezca que está procesando
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const template = plantillas[categoria] || plantillas["default"];
+    const plantillaFunc = plantillas[categoriaLimpia] || plantillas["default"];
+    let descripcionFinal = plantillaFunc();
 
-    let descripcionFinal = template;
-
-    if (estilo && !template.includes(estilo.toLowerCase())) {
-      descripcionFinal += ` Su estilo ${estilo.toLowerCase()} aporta un toque distintivo a tu look.`;
+    // Solo agregar información adicional si realmente aporta valor
+    if (tipoPrendaLimpio && categoriaLimpia !== "Pantalones" && !descripcionFinal.includes(tipoPrendaLimpio.toLowerCase())) {
+      descripcionFinal += ` Como ${tipoPrendaLimpio.toLowerCase()}, destaca por su versatilidad.`;
     }
 
     return descripcionFinal;

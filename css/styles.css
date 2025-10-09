@@ -2426,6 +2426,55 @@ body.theme-outlet .footer {
   transition: all 0.6s ease-in-out !important;
 }
 
+/* ===== ESTILOS PARA EL SELECT DE PAÍSES ===== */
+.country-select {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef) !important;
+  border: 2px solid #dee2e6 !important;
+  border-radius: 10px !important;
+  padding: 12px 15px !important;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.country-select:focus {
+  box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.2) !important;
+  border-color: var(--primary-color) !important;
+}
+
+/* Opciones del select con colores de países */
+.country-italia {
+  background: linear-gradient(90deg, 
+    rgba(0, 146, 70, 0.15) 0%, 
+    rgba(255, 255, 255, 0.15) 33%, 
+    rgba(206, 43, 55, 0.15) 100%) !important;
+  color: #009246 !important;
+  font-weight: bold !important;
+}
+
+.country-turquia {
+  background: linear-gradient(90deg, 
+    rgba(227, 10, 23, 0.15) 0%, 
+    rgba(227, 10, 23, 0.05) 100%) !important;
+  color: #E30A17 !important;
+  font-weight: bold !important;
+}
+
+.country-argentina {
+  background: linear-gradient(90deg, 
+    rgba(116, 172, 223, 0.15) 0%, 
+    rgba(246, 212, 74, 0.15) 100%) !important;
+  color: #74ACDF !important;
+  font-weight: bold !important;
+}
+
+.country-outlet {
+  background: linear-gradient(90deg, 
+    rgba(102, 126, 234, 0.15) 0%, 
+    rgba(118, 75, 162, 0.15) 100%) !important;
+  color: #667EEA !important;
+  font-weight: bold !important;
+}
+
 /* ===== ANIMACIONES PARA NOTIFICACIONES DE TEMA ===== */
 @keyframes slideInRight {
   from {

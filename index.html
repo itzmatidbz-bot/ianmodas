@@ -235,12 +235,12 @@
                     <i class="fas fa-globe"></i>
                     País:
                   </label>
-                  <select id="pais-filter" class="filter-select" onchange="handleCountryChange(this.value)">
+                  <select id="pais-filter" class="filter-select country-select" onchange="handleCountryChange(this.value)">
                     <option value="">Todos los países</option>
-                    <option value="Argentina">🇦🇷 Argentina</option>
-                    <option value="Turquía">🇹🇷 Turquía</option>
-                    <option value="Italia">🇮🇹 Italia</option>
-                    <option value="Outlet">🏷️ Outlet</option>
+                    <option value="Italia" class="country-italia">�� Italia</option>
+                    <option value="Turquía" class="country-turquia">🇹🇷 Turquía</option>
+                    <option value="Argentina" class="country-argentina">�� Argentina</option>
+                    <option value="Outlet" class="country-outlet">🏷️ Outlet</option>
                   </select>
                 </div>
               </div>
@@ -248,15 +248,7 @@
         <!-- Contenedor para las banderas de ambientación -->
         <div id="country-flag-container" class="country-flag-background"></div>
         
-        <!-- 🚨 TEST TEMPORAL - Verificar funciones -->
-        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
-          <h4>🧪 TEST TEMAS</h4>
-          <button onclick="testTheme('Argentina')" style="display: block; margin: 5px 0; padding: 8px 15px; background: #74ACDF; color: white; border: none; border-radius: 5px; cursor: pointer;">🇦🇷 Test Argentina</button>
-          <button onclick="testTheme('Turquía')" style="display: block; margin: 5px 0; padding: 8px 15px; background: #E30A17; color: white; border: none; border-radius: 5px; cursor: pointer;">🇹🇷 Test Turquía</button>
-          <button onclick="testTheme('Italia')" style="display: block; margin: 5px 0; padding: 8px 15px; background: #009246; color: white; border: none; border-radius: 5px; cursor: pointer;">🇮🇹 Test Italia</button>
-          <button onclick="testTheme('Outlet')" style="display: block; margin: 5px 0; padding: 8px 15px; background: #667EEA; color: white; border: none; border-radius: 5px; cursor: pointer;">🏷️ Test Outlet</button>
-          <button onclick="testTheme('')" style="display: block; margin: 5px 0; padding: 8px 15px; background: #ccc; color: #333; border: none; border-radius: 5px; cursor: pointer;">🔄 Limpiar</button>
-        </div>
+
         
         <script>
           // Función directa para manejar cambios de país
