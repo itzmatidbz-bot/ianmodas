@@ -436,22 +436,25 @@ body.nav-open {
   font-weight: 700;
   margin-bottom: var(--space-6);
   line-height: 1.1;
-  /* H1 CON CONTRASTE MEJORADO */
+  /* TÍTULO CON MÁXIMA LEGIBILIDAD */
   color: #ffffff;
   text-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.8),
-    0 4px 8px rgba(0, 0, 0, 0.6),
-    0 8px 16px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(0, 0, 0, 0.3);
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
-  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.3);
+    0 3px 6px rgba(0, 0, 0, 0.95),
+    0 6px 12px rgba(0, 0, 0, 0.8),
+    0 12px 24px rgba(0, 0, 0, 0.6),
+    0 0 60px rgba(0, 0, 0, 0.5);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));
+  -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.6);
 }
 
 .hero__accent {
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
+  text-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.95),
+    0 6px 12px rgba(0, 0, 0, 0.8),
+    0 12px 24px rgba(0, 0, 0, 0.6);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));
+  -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.6);
   position: relative;
 }
 
@@ -2000,12 +2003,150 @@ img {
 }
 
 /* ========================================
-   🏳️ ESTILOS PARA BANDERAS DE PAÍSES
+   🏳️ TEMÁTICA COMPLETA POR PAÍSES CON BANDERAS REALES
    ======================================== */
 
+/* Variables de colores por país */
+:root {
+  /* Argentina */
+  --argentina-blue: #74ACDF;
+  --argentina-white: #FFFFFF;
+  --argentina-yellow: #F6D44A;
+  
+  /* Turquía */
+  --turquia-red: #E30A17;
+  --turquia-white: #FFFFFF;
+  
+  /* Italia */
+  --italia-green: #009246;
+  --italia-white: #FFFFFF;
+  --italia-red: #CE2B37;
+  
+  /* Outlet */
+  --outlet-purple: #667EEA;
+  --outlet-blue: #764BA2;
+}
+
+/* Temática Argentina */
+body.theme-argentina {
+  --primary-color: var(--argentina-blue);
+  --primary-dark: #5A8BC4;
+  --accent-color: var(--argentina-yellow);
+  background: linear-gradient(135deg, rgba(116, 172, 223, 0.08) 0%, rgba(246, 212, 74, 0.08) 100%);
+  transition: all 0.8s ease-in-out;
+}
+
+body.theme-argentina .hero {
+  background: 
+    linear-gradient(135deg, rgba(116, 172, 223, 0.8), rgba(0, 0, 0, 0.6)),
+    url('https://images.unsplash.com/photo-1589909202802-8f7af5d1f0ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+}
+
+body.theme-argentina .info-bar {
+  background: linear-gradient(135deg, var(--argentina-blue), var(--argentina-yellow));
+}
+
+body.theme-argentina .btn--primary {
+  background: linear-gradient(135deg, var(--argentina-blue), var(--argentina-yellow));
+  transition: all 0.6s ease-in-out;
+}
+
+body.theme-argentina .product-card:hover {
+  border-color: var(--argentina-blue);
+  box-shadow: 0 8px 25px rgba(116, 172, 223, 0.3);
+}
+
+/* Temática Turquía */
+body.theme-turquia {
+  --primary-color: var(--turquia-red);
+  --primary-dark: #B8080F;
+  --accent-color: #FF6B7A;
+  background: linear-gradient(135deg, rgba(227, 10, 23, 0.08) 0%, rgba(255, 255, 255, 0.05) 100%);
+  transition: all 0.8s ease-in-out;
+}
+
+body.theme-turquia .hero {
+  background: 
+    linear-gradient(135deg, rgba(227, 10, 23, 0.8), rgba(0, 0, 0, 0.6)),
+    url('https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+}
+
+body.theme-turquia .info-bar {
+  background: linear-gradient(135deg, var(--turquia-red), #FF6B7A);
+}
+
+body.theme-turquia .btn--primary {
+  background: linear-gradient(135deg, var(--turquia-red), #FF6B7A);
+  transition: all 0.6s ease-in-out;
+}
+
+body.theme-turquia .product-card:hover {
+  border-color: var(--turquia-red);
+  box-shadow: 0 8px 25px rgba(227, 10, 23, 0.3);
+}
+
+/* Temática Italia */
+body.theme-italia {
+  --primary-color: var(--italia-green);
+  --primary-dark: #007A39;
+  --accent-color: var(--italia-red);
+  background: linear-gradient(135deg, rgba(0, 146, 70, 0.08) 0%, rgba(206, 43, 55, 0.08) 100%);
+  transition: all 0.8s ease-in-out;
+}
+
+body.theme-italia .hero {
+  background: 
+    linear-gradient(135deg, rgba(0, 146, 70, 0.8), rgba(0, 0, 0, 0.6)),
+    url('https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+}
+
+body.theme-italia .info-bar {
+  background: linear-gradient(135deg, var(--italia-green), var(--italia-red));
+}
+
+body.theme-italia .btn--primary {
+  background: linear-gradient(135deg, var(--italia-green), var(--italia-red));
+  transition: all 0.6s ease-in-out;
+}
+
+body.theme-italia .product-card:hover {
+  border-color: var(--italia-green);
+  box-shadow: 0 8px 25px rgba(0, 146, 70, 0.3);
+}
+
+/* Temática Outlet */
+body.theme-outlet {
+  --primary-color: var(--outlet-purple);
+  --primary-dark: #5A6FD8;
+  --accent-color: var(--outlet-blue);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  transition: all 0.8s ease-in-out;
+}
+
+body.theme-outlet .hero {
+  background: 
+    linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(0, 0, 0, 0.6)),
+    url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+}
+
+body.theme-outlet .info-bar {
+  background: linear-gradient(135deg, var(--outlet-purple), var(--outlet-blue));
+}
+
+body.theme-outlet .btn--primary {
+  background: linear-gradient(135deg, var(--outlet-purple), var(--outlet-blue));
+  transition: all 0.6s ease-in-out;
+}
+
+body.theme-outlet .product-card:hover {
+  border-color: var(--outlet-purple);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* Contenedor de banderas con imágenes reales */
 .country-flag-background {
   position: relative;
-  min-height: 200px;
+  min-height: 250px;
   border-radius: var(--radius-lg);
   margin: 2rem 0;
   background-size: cover;
@@ -2014,10 +2155,12 @@ img {
   opacity: 0;
   transition: all 0.8s ease-in-out;
   overflow: hidden;
+  box-shadow: var(--shadow-lg);
 }
 
 .country-flag-background.active {
   opacity: 1;
+  transform: scale(1.02);
 }
 
 .country-flag-background::before {
@@ -2028,38 +2171,25 @@ img {
   right: 0;
   bottom: 0;
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(1px);
   border-radius: var(--radius-lg);
 }
 
-/* Banderas específicas por país */
+/* Banderas con imágenes reales de internet */
 .flag-background-argentina {
-  background-image: 
-    linear-gradient(to bottom, #74acdf 33%, #ffffff 33%, #ffffff 66%, #74acdf 66%),
-    radial-gradient(circle, #f6d44a 30%, transparent 30%);
-  background-position: center, center;
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Flag_of_Argentina.svg/2000px-Flag_of_Argentina.svg.png');
 }
 
 .flag-background-turquia {
-  background: linear-gradient(135deg, #e30a17 0%, #ff4757 100%);
-}
-
-.flag-background-turquia::after {
-  content: '☪️';
-  position: absolute;
-  top: 50%;
-  left: 30%;
-  transform: translate(-50%, -50%);
-  font-size: 3rem;
-  opacity: 0.7;
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Turkey.svg/2000px-Flag_of_Turkey.svg.png');
 }
 
 .flag-background-italia {
-  background: linear-gradient(to right, #009246 33%, #ffffff 33%, #ffffff 66%, #ce2b37 66%);
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Flag_of_Italy.svg/2000px-Flag_of_Italy.svg.png');
 }
 
 .flag-background-outlet {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--outlet-purple) 0%, var(--outlet-blue) 100%);
   position: relative;
 }
 
@@ -2071,41 +2201,130 @@ img {
   transform: translate(-50%, -50%);
   color: white;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.3);
+  padding: 1rem 2rem;
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
 }
 
-/* Efectos adicionales */
+/* Efectos especiales para cada bandera */
 .country-flag-background.flag-background-argentina::after {
-  content: '🇦🇷';
+  content: 'PRODUCTOS ARGENTINOS DE CALIDAD';
   position: absolute;
-  top: 50%;
+  bottom: 20px;
   left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 4rem;
-  opacity: 0.8;
+  transform: translateX(-50%);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  background: rgba(116, 172, 223, 0.9);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-lg);
+}
+
+.country-flag-background.flag-background-turquia::after {
+  content: 'TEXTILES TURCOS DE PRIMERA CALIDAD';
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  background: rgba(227, 10, 23, 0.9);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-lg);
 }
 
 .country-flag-background.flag-background-italia::after {
-  content: '🇮🇹';
+  content: 'MODA ITALIANA ELEGANTE';
   position: absolute;
-  top: 50%;
+  bottom: 20px;
   left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 4rem;
-  opacity: 0.8;
+  transform: translateX(-50%);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  background: rgba(0, 146, 70, 0.9);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-lg);
 }
 
-.country-flag-background.flag-background-turquia::before {
-  content: '🇹🇷';
-  position: absolute;
-  top: 50%;
-  right: 20%;
-  transform: translate(50%, -50%);
-  font-size: 4rem;
-  opacity: 0.8;
-  z-index: 2;
+/* Animaciones especiales */
+@keyframes flagWave {
+  0%, 100% { transform: scale(1.02) rotateY(0deg); }
+  50% { transform: scale(1.03) rotateY(2deg); }
+}
+
+.country-flag-background.active {
+  animation: flagWave 3s ease-in-out infinite;
+}
+
+/* Notificación de país seleccionado */
+.country-notification {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1rem 1.5rem;
+  transform: translateX(400px);
+  opacity: 0;
+  transition: all 0.4s ease-in-out;
+  z-index: 1000;
+  border-left: 4px solid var(--primary-color);
+}
+
+.country-notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.country-notification.hide {
+  transform: translateX(400px);
+  opacity: 0;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.notification-content i {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .country-notification {
+    right: 10px;
+    left: 10px;
+    right: 10px;
+    transform: translateY(-100px);
+  }
+  
+  .country-notification.show {
+    transform: translateY(0);
+  }
+  
+  .country-notification.hide {
+    transform: translateY(-100px);
+  }
 }
 
 @media (max-width: 768px) {
