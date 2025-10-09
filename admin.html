@@ -320,6 +320,13 @@
         font-weight: bold;
       }
 
+      /* Estilos para campos obligatorios */
+      .required {
+        color: #e74c3c;
+        font-weight: bold;
+        margin-left: 3px;
+      }
+
       /* Estilos para el generador IA */
       .ai-description-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -642,22 +649,14 @@
                   <small class="form-help">Opcional: Algodón, Jean, Lycra, etc.</small>
                 </div>
                 <div class="form-group">
-                  <label for="pais-origen">País de Origen</label>
-                  <select id="pais-origen" name="pais-origen">
-                    <option value="" selected>Sin país específico</option>
+                  <label for="pais-origen">País de Origen <span class="required">*</span></label>
+                  <select id="pais-origen" name="pais-origen" required>
+                    <option value="" disabled selected>Selecciona el país de origen</option>
                   </select>
-                  <small class="form-help">Opcional: Argentina, Turquía, Italia, Outlet</small>
+                  <small class="form-help">Obligatorio: Argentina, Turquía, Italia, o Outlet</small>
                 </div>
               </div>
               <div class="form-row">
-                <div class="form-group">
-                  <label for="estilo">Estilo</label>
-                  <select id="estilo" name="estilo">
-                    <option value="" disabled selected>
-                      Primero selecciona tipo de prenda
-                    </option>
-                  </select>
-                </div>
                 <div class="form-group">
                   <label for="tipo-tela">Tipo de Tela</label>
                   <select id="tipo-tela" name="tipo-tela">

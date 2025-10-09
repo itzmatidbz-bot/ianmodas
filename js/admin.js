@@ -884,12 +884,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       const nombre = formData.get("nombre")?.trim();
       const descripcion = formData.get("descripcion")?.trim();
       const precio = parseFloat(formData.get("precio"));
+      const paisOrigen = formData.get("pais-origen")?.trim();
 
-      console.log("📝 Datos del formulario:", { nombre, descripcion, precio });
+      console.log("📝 Datos del formulario:", { nombre, descripcion, precio, paisOrigen });
 
       if (!nombre || !descripcion || isNaN(precio)) {
         throw new Error(
           "Por favor completa todos los campos requeridos (nombre, descripción y precio)",
+        );
+      }
+
+      if (!paisOrigen) {
+        throw new Error(
+          "El país de origen es obligatorio. Por favor selecciona Argentina, Turquía, Italia o Outlet.",
         );
       }
 
@@ -1279,13 +1286,69 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("📦 Cargando categorías de respaldo...");
 
     const fallbackCategorias = [
-      { id: 1, nombre: "Camisas", descripcion: "Todo tipo de camisas" },
-      { id: 2, nombre: "Camisetas", descripcion: "Camisetas y tops básicos" },
-      { id: 3, nombre: "Remeras", descripcion: "Remeras casuales y deportivas" },
-      { id: 4, nombre: "Pantalones", descripcion: "Pantalones largos y jeans" },
-      { id: 5, nombre: "Bermudas", descripcion: "Pantalones cortos y shorts" },
-      { id: 6, nombre: "Faldas", descripcion: "Todo tipo de faldas" },
-      { id: 7, nombre: "Vestidos", descripcion: "Vestidos casuales y elegantes" },
+      // ===== PARTE SUPERIOR =====
+      { id: 1, nombre: "Camisas", descripcion: "Camisas formales y casuales" },
+      { id: 2, nombre: "Camisetas", descripcion: "Camisetas básicas y estampadas" },
+      { id: 3, nombre: "Remeras", descripcion: "Remeras de manga corta y larga" },
+      { id: 4, nombre: "Tops", descripcion: "Tops, blusas y camisolas" },
+      { id: 5, nombre: "Blusas", descripcion: "Blusas elegantes y casuales" },
+      { id: 6, nombre: "Sweaters", descripcion: "Sweaters y pulóvers" },
+      { id: 7, nombre: "Buzos", descripcion: "Buzos con y sin capucha" },
+      { id: 8, nombre: "Chaquetas", descripcion: "Chaquetas y blazers" },
+      { id: 9, nombre: "Camperas", descripcion: "Camperas y abrigos" },
+      { id: 10, nombre: "Cardigans", descripcion: "Cardigans y chalecos abiertos" },
+      { id: 11, nombre: "Chalecos", descripcion: "Chalecos y prendas sin mangas" },
+      { id: 12, nombre: "Crop Tops", descripcion: "Tops cortos y ombligueras" },
+      
+      // ===== PARTE INFERIOR =====
+      { id: 13, nombre: "Pantalones", descripcion: "Pantalones largos y de vestir" },
+      { id: 14, nombre: "Jeans", descripcion: "Pantalones de mezclilla" },
+      { id: 15, nombre: "Bermudas", descripcion: "Pantalones cortos y shorts" },
+      { id: 16, nombre: "Shorts", descripcion: "Shorts deportivos y casuales" },
+      { id: 17, nombre: "Faldas", descripcion: "Faldas largas y cortas" },
+      { id: 18, nombre: "Polleras", descripcion: "Polleras y faldas plisadas" },
+      { id: 19, nombre: "Leggings", descripcion: "Leggings y calzas" },
+      { id: 20, nombre: "Joggers", descripcion: "Pantalones deportivos" },
+      { id: 21, nombre: "Capris", descripcion: "Pantalones a la pantorrilla" },
+      
+      // ===== VESTIDOS Y CONJUNTOS =====
+      { id: 22, nombre: "Vestidos", descripcion: "Vestidos largos y cortos" },
+      { id: 23, nombre: "Vestidos Largos", descripcion: "Vestidos maxi y de gala" },
+      { id: 24, nombre: "Vestidos Cortos", descripcion: "Vestidos mini y midi" },
+      { id: 25, nombre: "Monos", descripcion: "Monos y jumpsuits" },
+      { id: 26, nombre: "Conjuntos", descripcion: "Conjuntos de dos piezas" },
+      { id: 27, nombre: "Enteritos", descripcion: "Enteritos y mamelucos" },
+      
+      // ===== ROPA INTERIOR Y DEPORTIVA =====
+      { id: 28, nombre: "Ropa Interior", descripcion: "Lencería y ropa íntima" },
+      { id: 29, nombre: "Corpiños", descripcion: "Sostenes y corpiños" },
+      { id: 30, nombre: "Bombachas", descripcion: "Bombachas y tangas" },
+      { id: 31, nombre: "Medias", descripcion: "Medias y pantys" },
+      { id: 32, nombre: "Pijamas", descripcion: "Pijamas y ropa de dormir" },
+      { id: 33, nombre: "Ropa Deportiva", descripcion: "Indumentaria deportiva" },
+      { id: 34, nombre: "Mallas", descripcion: "Mallas y ropa de ejercicio" },
+      { id: 35, nombre: "Bikinis", descripcion: "Trajes de baño de dos piezas" },
+      { id: 36, nombre: "Mallas de Baño", descripcion: "Trajes de baño enteros" },
+      
+      // ===== ACCESORIOS =====
+      { id: 37, nombre: "Cinturones", descripcion: "Cintos y fajas" },
+      { id: 38, nombre: "Carteras", descripcion: "Bolsos y carteras" },
+      { id: 39, nombre: "Mochilas", descripcion: "Mochilas y bolsos de espalda" },
+      { id: 40, nombre: "Gorros", descripcion: "Sombreros y gorras" },
+      { id: 41, nombre: "Bufandas", descripcion: "Bufandas y pañuelos" },
+      { id: 42, nombre: "Guantes", descripcion: "Guantes y mitones" },
+      
+      // ===== CALZADO =====
+      { id: 43, nombre: "Zapatos", descripcion: "Calzado formal y casual" },
+      { id: 44, nombre: "Zapatillas", descripcion: "Calzado deportivo" },
+      { id: 45, nombre: "Botas", descripcion: "Botas y botinetas" },
+      { id: 46, nombre: "Sandalias", descripcion: "Sandalias y ojotas" },
+      { id: 47, nombre: "Mocasines", descripcion: "Mocasines y zapatos sin cordones" },
+      
+      // ===== OCASIONES ESPECIALES =====
+      { id: 48, nombre: "Ropa de Fiesta", descripcion: "Indumentaria para eventos" },
+      { id: 49, nombre: "Ropa Formal", descripcion: "Trajes y vestimenta elegante" },
+      { id: 50, nombre: "Ropa Casual", descripcion: "Indumentaria de uso diario" },
     ];
 
     populateSelect("categoria", fallbackCategorias, "Selecciona categoría");
@@ -1624,14 +1687,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     const telaLimpia = esValorValido(tela) ? tela : null;
 
     const plantillas = {
-      Tops: () => {
-        let desc = `${nombreLimpio} es una prenda superior versátil`;
+      // ===== PARTE SUPERIOR =====
+      "Camisas": () => {
+        let desc = `${nombreLimpio} es una camisa versátil`;
         if (telaLimpia) desc += ` confeccionada en ${telaLimpia.toLowerCase()}`;
-        desc += `. Perfecta para combinar con diferentes outfits, ofrece comodidad y elegancia en cada ocasión. Su diseño cuidadoso y materiales de calidad la convierten en una opción ideal para tu guardarropa.`;
+        desc += `. Perfecta para looks formales o casuales, ofrece comodidad y elegancia. Su corte cuidadoso y calidad en los materiales la convierten en una pieza esencial del guardarropa.`;
         return desc;
       },
 
-      Pantalones: () => {
+      "Camisetas": () => {
+        let desc = `${nombreLimpio} es una camiseta cómoda y práctica`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Ideal para el uso diario, se adapta a cualquier ocasión casual. Su diseño simple y versátil permite combinaciones infinitas en tu guardarropa.`;
+        return desc;
+      },
+
+      "Remeras": () => {
+        let desc = `${nombreLimpio} es una remera de estilo moderno`;
+        if (telaLimpia) desc += ` fabricada en ${telaLimpia.toLowerCase()}`;
+        desc += `. Perfecta para looks casuales y relajados, ofrece comodidad durante todo el día. Su diseño actual la convierte en una excelente opción para cualquier actividad.`;
+        return desc;
+      },
+
+      "Tops": () => {
+        let desc = `${nombreLimpio} es un top elegante y moderno`;
+        if (telaLimpia) desc += ` confeccionado en ${telaLimpia.toLowerCase()}`;
+        desc += `. Perfecto para combinar con diferentes prendas, aporta un toque sofisticado a cualquier outfit. Su diseño favorecedor lo hace ideal para diversas ocasiones.`;
+        return desc;
+      },
+
+      "Blusas": () => {
+        let desc = `${nombreLimpio} es una blusa refinada`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Combina elegancia y comodidad, siendo perfecta para el ámbito profesional o eventos especiales. Su diseño cuidado aporta distinción a tu look.`;
+        return desc;
+      },
+
+      // ===== PARTE INFERIOR =====
+      "Pantalones": () => {
         let desc = `${nombreLimpio}`;
         if (tipoPrendaLimpio) desc += ` tipo ${tipoPrendaLimpio.toLowerCase()}`;
         desc += ` de corte moderno`;
@@ -1640,16 +1733,103 @@ document.addEventListener("DOMContentLoaded", async () => {
         return desc;
       },
 
-      Vestidos: () => {
-        let desc = `${nombreLimpio} es un hermoso vestido elegante`;
+      "Jeans": () => {
+        let desc = `${nombreLimpio} es un jean de alta calidad`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Su corte moderno y resistente lo convierte en una pieza fundamental del guardarropa. Perfecto para looks casuales y versátil para cualquier ocasión.`;
+        return desc;
+      },
+
+      "Bermudas": () => {
+        let desc = `${nombreLimpio} es una bermuda cómoda`;
+        if (telaLimpia) desc += ` confeccionada en ${telaLimpia.toLowerCase()}`;
+        desc += `. Ideal para días cálidos y actividades al aire libre. Su diseño práctico y moderno la hace perfecta para el verano y looks casuales.`;
+        return desc;
+      },
+
+      "Shorts": () => {
+        let desc = `${nombreLimpio} es un short versátil`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Perfecto para actividades deportivas o looks casuales de verano. Su diseño cómodo permite libertad de movimiento y estilo.`;
+        return desc;
+      },
+
+      "Faldas": () => {
+        let desc = `${nombreLimpio} es una falda elegante`;
+        if (telaLimpia) desc += ` confeccionada en ${telaLimpia.toLowerCase()}`;
+        desc += `. Su diseño favorecedor aporta feminidad y estilo a cualquier outfit. Perfecta para ocasiones especiales o uso profesional.`;
+        return desc;
+      },
+
+      "Polleras": () => {
+        let desc = `${nombreLimpio} es una pollera de diseño moderno`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Su corte favorecedor y detalles cuidados la hacen perfecta para looks femeninos y elegantes. Ideal para diversas ocasiones.`;
+        return desc;
+      },
+
+      "Leggings": () => {
+        let desc = `${nombreLimpio} es un legging cómodo y elástico`;
+        if (telaLimpia) desc += ` fabricado en ${telaLimpia.toLowerCase()}`;
+        desc += `. Perfecto para actividades deportivas o looks casuales. Su diseño ajustado y cómodo permite total libertad de movimiento.`;
+        return desc;
+      },
+
+      // ===== VESTIDOS Y CONJUNTOS =====
+      "Vestidos": () => {
+        let desc = `${nombreLimpio} es un hermoso vestido`;
         if (telaLimpia) desc += ` confeccionado en ${telaLimpia.toLowerCase()}`;
         desc += `. Su diseño favorecedor y detalles cuidados lo convierten en la elección perfecta para ocasiones especiales. Combina elegancia y comodidad de manera excepcional.`;
         return desc;
       },
 
+      "Vestidos Largos": () => {
+        let desc = `${nombreLimpio} es un vestido largo elegante`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Su diseño fluido y sofisticado lo hace ideal para eventos especiales y ocasiones formales. Aporta distinción y elegancia a tu look.`;
+        return desc;
+      },
+
+      "Vestidos Cortos": () => {
+        let desc = `${nombreLimpio} es un vestido corto moderno`;
+        if (telaLimpia) desc += ` confeccionado en ${telaLimpia.toLowerCase()}`;
+        desc += `. Perfecto para looks casuales o eventos informales. Su diseño juvenil y favorecedor lo hace una opción versátil para múltiples ocasiones.`;
+        return desc;
+      },
+
+      "Monos": () => {
+        let desc = `${nombreLimpio} es un mono elegante y moderno`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Su diseño de una pieza ofrece comodidad y estilo en un solo look. Perfecto para quienes buscan sofisticación sin complicaciones.`;
+        return desc;
+      },
+
+      "Conjuntos": () => {
+        let desc = `${nombreLimpio} es un conjunto coordinado`;
+        if (telaLimpia) desc += ` confeccionado en ${telaLimpia.toLowerCase()}`;
+        desc += `. Perfecto para crear looks armoniosos sin esfuerzo. Su diseño pensado permite versatilidad usando las piezas por separado o juntas.`;
+        return desc;
+      },
+
+      // ===== ROPA DEPORTIVA E INTERIOR =====
+      "Ropa Deportiva": () => {
+        let desc = `${nombreLimpio} es una prenda deportiva funcional`;
+        if (telaLimpia) desc += ` en ${telaLimpia.toLowerCase()}`;
+        desc += `. Diseñada para brindar comodidad y rendimiento durante la actividad física. Su tecnología textil permite transpirabilidad y libertad de movimiento.`;
+        return desc;
+      },
+
+      "Mallas": () => {
+        let desc = `${nombreLimpio} es una malla deportiva de alto rendimiento`;
+        if (telaLimpia) desc += ` fabricada en ${telaLimpia.toLowerCase()}`;
+        desc += `. Su diseño elástico y cómodo la hace perfecta para entrenamientos y actividades deportivas. Combina funcionalidad con estilo moderno.`;
+        return desc;
+      },
+
+      // ===== PLANTILLA POR DEFECTO =====
       default: () => {
         let desc = `${nombreLimpio} es una prenda de alta calidad`;
-        if (categoriaLimpia) desc += ` de la categoría ${categoriaLimpia.toLowerCase()}`;
+        if (categoriaLimpia) desc += ` de la línea ${categoriaLimpia.toLowerCase()}`;
         if (telaLimpia) desc += ` confeccionada en ${telaLimpia.toLowerCase()}`;
         desc += `. Su diseño cuidadoso y atención al detalle la convierten en una excelente adición a tu guardarropa. Perfecta para diferentes ocasiones y fácil de combinar.`;
         return desc;
