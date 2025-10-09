@@ -108,18 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
         populateSelectFromArray("categoria-filter", categorias);
       }
 
-    // Filtro tipo de prenda eliminado por problemas      // Cargar estilos
-      try {
-        const { data: estilos } = await supabase.rpc("get_estilos_todos");
-        if (estilos && estilos.length > 0) {
-          populateSelect("estilo-filter", estilos, "id", "nombre");
-        }
-      } catch (e) {
-        const estilos = [
-          ...new Set(allProducts.map((p) => p.estilo_nombre)),
-        ].filter(Boolean);
-        populateSelectFromArray("estilo-filter", estilos);
-      }
+    // Filtro tipo de prenda eliminado por problemas      // Filtro de estilos eliminado para simplificar la experiencia de usuario
 
       // Cargar tipos de tela
       try {
@@ -417,11 +406,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const filters = {
       categoria: document.getElementById("categoria-filter")?.value || "",
-      estilo: document.getElementById("estilo-filter")?.value || "",
       color: document.getElementById("color-filter")?.value || "",
       tipoTela: document.getElementById("tipo-tela-filter")?.value || "",
       genero: document.getElementById("genero-filter")?.value || "",
       temporada: document.getElementById("temporada-filter")?.value || "",
+      pais: document.getElementById("pais-filter")?.value || "",
     };
 
     console.log("📊 Filtros aplicados:", filters);
@@ -436,16 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!categoryMatch) return false;
       }
 
-      // Filtro tipo eliminado por problemas
-
-      // Filtro por estilo (opcional - no bloquea si no está definido)
-      if (
-        filters.estilo &&
-        product.estilo_id &&
-        product.estilo_id != filters.estilo
-      ) {
-        return false;
-      }
+      // Filtro de estilo eliminado para simplificar la experiencia de usuario
 
       // Filtro por color (busca en string de colores disponibles)
       if (filters.color && product.colores_disponibles) {
@@ -484,6 +464,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // Filtro por país (buscar en diferentes campos posibles)
+      if (filters.pais) {
+        const paisMatch = 
+          (product.pais_nombre && product.pais_nombre.toLowerCase().includes(filters.pais.toLowerCase())) ||
+          (product.pais_origen && product.pais_origen.toLowerCase().includes(filters.pais.toLowerCase()));
+        if (!paisMatch) return false;
+      }
+
       return true;
     });
 
@@ -514,14 +502,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function clearFilters() {
     // Resetear todos los selects
     document.getElementById("categoria-filter").value = "";
-    document.getElementById("tipo-filter").value = "";
-    document.getElementById("estilo-filter").value = "";
     document.getElementById("color-filter").value = "";
     document.getElementById("tipo-tela-filter").value = "";
     document.getElementById("genero-filter").value = "";
     document.getElementById("temporada-filter").value = "";
+    document.getElementById("pais-filter").value = "";
 
-    // Filtro tipo eliminado completamente
+    // Limpiar bandera de país
+    const flagContainer = document.getElementById("country-flag-container");
+    if (flagContainer) {
+      flagContainer.classList.remove("active", "flag-background-argentina", "flag-background-turquia", "flag-background-italia", "flag-background-outlet");
+    }
 
     // Mostrar todos los productos
     renderProducts(allProducts);
@@ -608,11 +599,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Aplicar filtros automáticamente cuando cambian los valores
     const autoFilterSelects = [
       "categoria-filter",
-      "estilo-filter",
       "color-filter",
       "tipo-tela-filter",
       "genero-filter",
       "temporada-filter",
+      "pais-filter",
     ];
 
     autoFilterSelects.forEach((selectId) => {
@@ -623,6 +614,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     });
+
+    // Configurar funcionalidad de banderas por país
+    setupCountryFlags();
 
     // Formularios de auth
     if (document.getElementById("login-form")) {
@@ -892,11 +886,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Resetear todos los selects a su valor por defecto
     const filterSelects = [
       "categoria-filter",
-      "estilo-filter",
       "color-filter",
       "tipo-tela-filter",
       "genero-filter",
       "temporada-filter",
+      "pais-filter",
     ];
 
     filterSelects.forEach((filterId) => {
@@ -913,9 +907,69 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ Filtros limpiados");
   }
 
+  // =====================================================
+  // 🏳️ FUNCIONALIDAD DE BANDERAS POR PAÍS
+  // =====================================================
+  function setupCountryFlags() {
+    const paisFilter = document.getElementById("pais-filter");
+    const flagContainer = document.getElementById("country-flag-container");
+    
+    if (!paisFilter || !flagContainer) return;
+    
+    console.log("🏳️ Configurando funcionalidad de banderas...");
+    
+    paisFilter.addEventListener("change", (e) => {
+      const selectedCountry = e.target.value;
+      console.log(`🏳️ País seleccionado: ${selectedCountry}`);
+      updateCountryBackground(selectedCountry, flagContainer);
+      
+      // También aplicar filtros automáticamente
+      setTimeout(applyFilters, 100);
+    });
+  }
+
+  function updateCountryBackground(country, container) {
+    if (!container) return;
+    
+    // Limpiar clases anteriores
+    container.classList.remove("active", "flag-background-argentina", "flag-background-turquia", "flag-background-italia", "flag-background-outlet");
+    
+    // Mapeo de países a clases CSS
+    const countryFlags = {
+      "Argentina": "flag-background-argentina",
+      "Turquía": "flag-background-turquia", 
+      "Italia": "flag-background-italia",
+      "Outlet": "flag-background-outlet"
+    };
+    
+    if (country && countryFlags[country]) {
+      console.log(`🏳️ Aplicando bandera para: ${country}`);
+      
+      // Añadir la clase correspondiente
+      container.classList.add(countryFlags[country]);
+      
+      // Activar con animación
+      setTimeout(() => {
+        container.classList.add("active");
+      }, 100);
+      
+      // Opcional: Scroll suave al contenedor de banderas
+      setTimeout(() => {
+        container.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "center" 
+        });
+      }, 300);
+    } else {
+      // Si no hay país seleccionado, ocultar bandera
+      container.classList.remove("active");
+    }
+  }
+
   // Hacer las funciones globales para que puedan ser llamadas desde HTML
   window.applyFilters = applyFilters;
   window.clearFilters = clearFilters;
+  window.updateCountryBackground = updateCountryBackground;
 
   init();
 });

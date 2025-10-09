@@ -623,38 +623,36 @@
               <h3>🏷️ Categorización</h3>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="categoria">Categoría Principal *</label>
+                  <label for="categoria">Categoría *</label>
                   <select id="categoria" name="categoria" required>
                     <option value="" disabled selected>
                       Cargando categorías...
                     </option>
                   </select>
+                  <small class="form-help">Ej: Camisas, Pantalones, Vestidos, etc.</small>
                 </div>
                 <div class="form-group">
-                  <label for="subcategoria">Subcategoría *</label>
-                  <select id="subcategoria" name="subcategoria" required>
-                    <option value="" disabled selected>
-                      Primero selecciona categoría
-                    </option>
+                  <label for="estilo">Estilo</label>
+                  <select id="estilo" name="estilo">
+                    <option value="" selected>Sin estilo específico</option>
                   </select>
+                  <small class="form-help">Opcional: Casual, Formal, Deportivo, etc.</small>
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="tipo-prenda">Tipo de Prenda</label>
-                  <select id="tipo-prenda" name="tipo-prenda">
-                    <option value="" disabled selected>
-                      Selecciona tipo de prenda
-                    </option>
+                  <label for="tipo-tela">Tipo de Tela</label>
+                  <select id="tipo-tela" name="tipo-tela">
+                    <option value="" selected>Sin tela específica</option>
                   </select>
+                  <small class="form-help">Opcional: Algodón, Jean, Lycra, etc.</small>
                 </div>
                 <div class="form-group">
-                  <label for="pais-origen">País de Origen *</label>
-                  <select id="pais-origen" name="pais-origen" required>
-                    <option value="" disabled selected>
-                      Cargando países...
-                    </option>
+                  <label for="pais-origen">País de Origen</label>
+                  <select id="pais-origen" name="pais-origen">
+                    <option value="" selected>Sin país específico</option>
                   </select>
+                  <small class="form-help">Opcional: Argentina, Turquía, Italia, Outlet</small>
                 </div>
               </div>
               <div class="form-row">

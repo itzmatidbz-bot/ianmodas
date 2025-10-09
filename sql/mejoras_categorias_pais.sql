@@ -1,53 +1,55 @@
 -- =====================================================
--- 🏗️ MEJORAS BASE DE DATOS - CATEGORÍAS Y PAÍS
+-- 🏗️ MEJORAS BASE DE DATOS - CATEGORÍAS SIMPLIFICADAS
 -- =====================================================
 
--- Actualizar categorías principales con las nuevas
-UPDATE categorias SET nombre = 'Camisas', descripcion = 'Camisas formales y casuales' WHERE id = 1;
-UPDATE categorias SET nombre = 'Camisetas', descripcion = 'Camisetas básicas y estampadas' WHERE id = 2;
+-- CATEGORÍAS PRINCIPALES SIMPLIFICADAS (solo lo esencial)
+UPDATE categorias SET nombre = 'Camisas', descripcion = 'Todo tipo de camisas' WHERE id = 1;
+UPDATE categorias SET nombre = 'Camisetas', descripcion = 'Camisetas y tops básicos' WHERE id = 2;
 UPDATE categorias SET nombre = 'Remeras', descripcion = 'Remeras casuales y deportivas' WHERE id = 3;
-UPDATE categorias SET nombre = 'Pantalones', descripcion = 'Todo tipo de pantalones' WHERE id = 4;
-UPDATE categorias SET nombre = 'Vestidos', descripcion = 'Vestidos casuales y elegantes' WHERE id = 5;
+UPDATE categorias SET nombre = 'Pantalones', descripcion = 'Pantalones largos y jeans' WHERE id = 4;
+UPDATE categorias SET nombre = 'Bermudas', descripcion = 'Pantalones cortos y shorts' WHERE id = 5;
+UPDATE categorias SET nombre = 'Faldas', descripcion = 'Todo tipo de faldas' WHERE id = 6;
+UPDATE categorias SET nombre = 'Vestidos', descripcion = 'Vestidos casuales y elegantes' WHERE id = 7;
 
 -- Si no existen, insertarlas
 INSERT INTO categorias (id, nombre, descripcion) VALUES 
-(1, 'Camisas', 'Camisas formales y casuales'),
-(2, 'Camisetas', 'Camisetas básicas y estampadas'), 
-(3, 'Remeras', 'Remeras casuales y deportivas')
+(1, 'Camisas', 'Todo tipo de camisas'),
+(2, 'Camisetas', 'Camisetas y tops básicos'),
+(3, 'Remeras', 'Remeras casuales y deportivas'),
+(4, 'Pantalones', 'Pantalones largos y jeans'),
+(5, 'Bermudas', 'Pantalones cortos y shorts'),
+(6, 'Faldas', 'Todo tipo de faldas'),
+(7, 'Vestidos', 'Vestidos casuales y elegantes')
 ON CONFLICT (id) DO UPDATE SET 
   nombre = EXCLUDED.nombre,
   descripcion = EXCLUDED.descripcion;
 
 -- =====================================================
--- 🏷️ SUBCATEGORÍAS NUEVAS
+-- � ESTILOS SIMPLIFICADOS (reemplaza subcategorías)
 -- =====================================================
 
--- Crear tabla de subcategorías si no existe
-CREATE TABLE IF NOT EXISTS subcategorias (
+-- Los "estilos" serán más intuitivos que subcategorías
+-- Ejemplos: Formal, Casual, Deportivo, Elegante, Básico, Estampado
+
+-- Actualizar tabla estilos existente o crearla
+CREATE TABLE IF NOT EXISTS estilos (
     id SERIAL PRIMARY KEY,
-    categoria_id INTEGER REFERENCES categorias(id),
-    nombre VARCHAR(100) NOT NULL,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
     descripcion TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Subcategorías para Camisas (categoria_id = 1)
-INSERT INTO subcategorias (categoria_id, nombre, descripcion) VALUES
-(1, 'Camisas Formales', 'Camisas elegantes para ocasiones formales'),
-(1, 'Camisas Casuales', 'Camisas relajadas para uso diario'),
-(1, 'Maxicamisas', 'Camisas largas estilo túnica');
-
--- Subcategorías para Camisetas (categoria_id = 2)  
-INSERT INTO subcategorias (categoria_id, nombre, descripcion) VALUES
-(2, 'Camisetas Básicas', 'Camisetas lisas y simples'),
-(2, 'Camisetas Estampadas', 'Camisetas con diseños y prints'),
-(2, 'Blusas', 'Blusas elegantes y femeninas');
-
--- Subcategorías para Remeras (categoria_id = 3)
-INSERT INTO subcategorias (categoria_id, nombre, descripcion) VALUES
-(3, 'Remeras Deportivas', 'Remeras para actividad física'),
-(3, 'Remeras Casuales', 'Remeras para uso diario'),
-(3, 'Remeras Premium', 'Remeras de alta calidad y diseño');
+-- Estilos universales que funcionan para todas las categorías
+INSERT INTO estilos (nombre, descripcion) VALUES
+('Básico', 'Diseño simple y versátil'),
+('Casual', 'Estilo relajado para el día a día'),
+('Formal', 'Elegante para ocasiones especiales'),
+('Deportivo', 'Para actividades físicas y comodidad'),
+('Estampado', 'Con diseños, prints o patrones'),
+('Elegante', 'Sofisticado y refinado'),
+('Vintage', 'Estilo retro y clásico'),
+('Oversize', 'Corte amplio y holgado')
+ON CONFLICT (nombre) DO NOTHING;
 
 -- =====================================================
 -- 🌍 AGREGAR CAMPO PAÍS A PRODUCTOS
@@ -79,17 +81,21 @@ INSERT INTO paises (codigo, nombre, descripcion) VALUES
 ('OUT', 'Outlet', 'Productos de temporadas anteriores con descuentos especiales')
 ON CONFLICT (codigo) DO NOTHING;
 
--- Agregar referencia a países en productos
+-- Agregar referencia a países en productos (OPCIONAL)
 ALTER TABLE productos 
-ADD COLUMN IF NOT EXISTS pais_id INTEGER REFERENCES paises(id) DEFAULT 1;
+ADD COLUMN IF NOT EXISTS pais_id INTEGER REFERENCES paises(id);
 
 -- =====================================================
--- 🔗 RELACIÓN PRODUCTOS-SUBCATEGORÍAS
+-- 🔗 SIMPLIFICAR ESTRUCTURA DE PRODUCTOS
 -- =====================================================
 
--- Agregar subcategoría a productos
-ALTER TABLE productos 
-ADD COLUMN IF NOT EXISTS subcategoria_id INTEGER REFERENCES subcategorias(id);
+-- Solo mantener lo esencial:
+-- ✅ categoria_id (obligatorio) - ej: Camisas, Pantalones, etc.
+-- ✅ estilo_id (opcional) - ej: Casual, Formal, Deportivo
+-- ✅ tela_id (opcional) - ej: Algodón, Jean, Lycra  
+-- ✅ pais_id (opcional) - ej: Argentina, Turquía
+-- ❌ NO subcategorias (redundante con estilos)
+-- ❌ NO tipos_prenda (redundante con categorías)
 
 -- =====================================================
 -- 📊 VISTA ACTUALIZADA CON NUEVA ESTRUCTURA
@@ -111,25 +117,19 @@ SELECT
     p.created_at,
     p.updated_at,
     
-    -- Categoría principal
+    -- Categoría principal (OBLIGATORIO)
     c.nombre AS categoria_nombre,
     c.descripcion AS categoria_descripcion,
     
-    -- Subcategoría
-    sc.nombre AS subcategoria_nombre,
-    sc.descripcion AS subcategoria_descripcion,
-    
-    -- Tipo de prenda (si existe)
-    tp.nombre AS tipo_prenda_nombre,
-    
-    -- Estilo (si existe)
+    -- Estilo (OPCIONAL - reemplaza subcategorías y tipos)
     e.nombre AS estilo_nombre,
+    e.descripcion AS estilo_descripcion,
     
-    -- Tela
+    -- Tela (OPCIONAL)
     t.nombre AS tela_nombre,
     t.descripcion AS tela_descripcion,
     
-    -- País de origen
+    -- País de origen (OPCIONAL)
     pais.nombre AS pais_nombre,
     pais.descripcion AS pais_descripcion,
     p.pais_origen,
@@ -137,19 +137,17 @@ SELECT
     
 FROM productos p
 LEFT JOIN categorias c ON p.categoria_id = c.id
-LEFT JOIN subcategorias sc ON p.subcategoria_id = sc.id
-LEFT JOIN tipos_prenda tp ON p.tipo_prenda_id = tp.id
 LEFT JOIN estilos e ON p.estilo_id = e.id
 LEFT JOIN telas t ON p.tela_id = t.id
 LEFT JOIN paises pais ON p.pais_id = pais.id
 WHERE p.activo = true;
 
 -- =====================================================
--- 🔧 FUNCIONES PARA EL ADMIN
+-- 🔧 FUNCIONES SIMPLIFICADAS PARA EL ADMIN
 -- =====================================================
 
--- Función para obtener subcategorías por categoría
-CREATE OR REPLACE FUNCTION get_subcategorias_por_categoria(categoria_id_param INTEGER)
+-- Función para obtener estilos (reemplaza subcategorías)
+CREATE OR REPLACE FUNCTION get_estilos_disponibles()
 RETURNS TABLE (
     id INTEGER,
     nombre VARCHAR(100),
@@ -157,10 +155,9 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT sc.id, sc.nombre, sc.descripcion
-    FROM subcategorias sc
-    WHERE sc.categoria_id = categoria_id_param
-    ORDER BY sc.nombre;
+    SELECT e.id, e.nombre, e.descripcion
+    FROM estilos e
+    ORDER BY e.nombre;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -182,32 +179,31 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- =====================================================
--- 📝 ACTUALIZAR DATOS EXISTENTES
+-- 📝 ACTUALIZAR DATOS EXISTENTES (OPCIONAL)
 -- =====================================================
 
--- Asignar país por defecto a productos existentes
-UPDATE productos 
-SET pais_id = 1, 
-    pais_origen = 'Argentina',
-    pais_descripcion = 'Producto nacional de alta calidad'
-WHERE pais_id IS NULL;
+-- Los productos existentes mantendrán sus datos
+-- País es opcional, no asignamos por defecto
+-- Estilos son opcionales, se pueden agregar manualmente
 
--- Asignar subcategorías por defecto según categoría
+-- Solo actualizar productos que no tengan categoría asignada
 UPDATE productos 
-SET subcategoria_id = (
-    SELECT id FROM subcategorias 
-    WHERE categoria_id = productos.categoria_id 
-    LIMIT 1
-)
-WHERE subcategoria_id IS NULL AND categoria_id IN (1, 2, 3);
+SET categoria_id = 1 
+WHERE categoria_id IS NULL;
 
 COMMIT;
 
 -- =====================================================
--- ✅ VERIFICACIÓN
+-- ✅ VERIFICACIÓN SIMPLIFICADA
 -- =====================================================
-SELECT 'Estructura actualizada correctamente' AS status;
+SELECT 'Estructura simplificada correctamente' AS status;
 SELECT COUNT(*) as total_categorias FROM categorias;
-SELECT COUNT(*) as total_subcategorias FROM subcategorias;  
+SELECT COUNT(*) as total_estilos FROM estilos;  
 SELECT COUNT(*) as total_paises FROM paises;
-SELECT COUNT(*) as productos_con_pais FROM productos WHERE pais_id IS NOT NULL;
+SELECT COUNT(*) as productos_activos FROM productos WHERE activo = true;
+
+-- ESTRUCTURA FINAL SIMPLIFICADA:
+-- 📦 CATEGORÍAS: Camisas, Camisetas, Remeras, Pantalones, Bermudas, Faldas, Vestidos
+-- 🎨 ESTILOS: Básico, Casual, Formal, Deportivo, Estampado, Elegante, Vintage, Oversize  
+-- 🌍 PAÍSES: Argentina, Turquía, Italia, Outlet (todos opcionales)
+-- 🧵 TELAS: Algodón, Jean, Seda, Lycra, etc. (opcional)

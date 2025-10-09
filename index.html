@@ -105,11 +105,11 @@
         <div class="hero__overlay"></div>
         <div class="hero__content container">
           <h1 class="hero__title">
-            <span class="hero__accent">Moda Mayorista</span> que Impulsa tu Negocio
+            <span class="hero__accent">Descubrí la Moda</span> que Define tu Estilo
           </h1>
           <p class="hero__subtitle">
-            Descubrí las últimas tendencias de moda internacional con calidad premium.
-            <strong>+500 productos</strong> listos para impulsar tu negocio.
+            Encuentra las últimas tendencias de moda internacional con calidad premium.
+            <strong>+500 productos</strong> únicos esperando por vos.
           </p>
           <div class="hero__actions">
             <a href="#productos" class="btn btn--primary">
@@ -128,7 +128,7 @@
         <div class="container info-bar__grid">
           <div class="info-bar__item">
             <i class="fas fa-map-marker-alt"></i>
-            <span>Amézaga 1784/1786, Montevideo</span>
+            <span>Dr. Juan José de Amézaga 1784/1786, casi esquina Justicia</span>
           </div>
           <div class="info-bar__item">
             <i class="fab fa-whatsapp"></i>
@@ -173,16 +173,7 @@
 
                 <!-- Filtro eliminado - causaba problemas -->
 
-                <!-- Estilo -->
-                <div class="filter-group">
-                  <label for="estilo-filter">
-                    <i class="fas fa-palette"></i>
-                    Estilo:
-                  </label>
-                  <select id="estilo-filter" class="filter-select">
-                    <option value="">Todos los estilos</option>
-                  </select>
-                </div>
+
 
                 <!-- Color -->
                 <div class="filter-group">
@@ -237,7 +228,25 @@
                     <option value="Todo el año">Todo el año</option>
                   </select>
                 </div>
+
+                <!-- País de origen -->
+                <div class="filter-group">
+                  <label for="pais-filter">
+                    <i class="fas fa-globe"></i>
+                    País:
+                  </label>
+                  <select id="pais-filter" class="filter-select">
+                    <option value="">Todos los países</option>
+                    <option value="Argentina">🇦🇷 Argentina</option>
+                    <option value="Turquía">🇹🇷 Turquía</option>
+                    <option value="Italia">🇮🇹 Italia</option>
+                    <option value="Outlet">🏷️ Outlet</option>
+                  </select>
+                </div>
               </div>
+
+              <!-- Contenedor para las banderas de ambientación -->
+              <div id="country-flag-container" class="country-flag-background"></div>
 
               <!-- Botones de Acción -->
               <div class="filters-actions">
@@ -284,16 +293,32 @@
           <div class="contact__content">
             <div class="contact__info">
               <h3><i class="fas fa-store"></i> Nuestros Locales</h3>
-              <p>📍 Dr. Juan J. de Amézaga 1784/1786 esquina Justicia</p>
+              <p>📍 Dr. Juan José de Amézaga 1784/1786, casi esquina Justicia</p>
               <p><strong>Lunes a Viernes:</strong> 8:30 a 18:00 hs</p>
               <p><strong>Sábados:</strong> 9:00 a 13:00 hs</p>
             </div>
             <div class="contact__social">
               <h3><i class="fas fa-share-alt"></i> Seguinos</h3>
               <p>¡Enterate de todas las novedades al instante!</p>
+              <div class="social-links">
+                <a
+                  href="https://www.instagram.com/ianmodas_/?hl=es"
+                  class="btn social-btn instagram"
+                  target="_blank"
+                >
+                  <i class="fab fa-instagram"></i> Instagram
+                </a>
+                <a
+                  href="https://www.tiktok.com/@_ianmodas"
+                  class="btn social-btn tiktok"
+                  target="_blank"
+                >
+                  <i class="fab fa-tiktok"></i> TikTok
+                </a>
+              </div>
               <a
                 href="https://wa.me/59894772730?text=Hola!%20Quisiera%20hacer%20una%20consulta%20desde%20la%20web."
-                class="btn"
+                class="btn whatsapp-btn"
                 target="_blank"
               >
                 <i class="fab fa-whatsapp"></i> Chatear por WhatsApp
@@ -305,7 +330,22 @@
     </main>
 
     <footer class="footer">
-      <p>&copy; 2025 Ian Modas. Todos los derechos reservados.</p>
+      <div class="footer-content container">
+        <div class="footer-info">
+          <p>&copy; 2025 Ian Modas. Todos los derechos reservados.</p>
+        </div>
+        <div class="footer-social">
+          <a href="https://www.instagram.com/ianmodas_/?hl=es" class="social-link instagram" target="_blank" title="Seguinos en Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://www.tiktok.com/@_ianmodas" class="social-link tiktok" target="_blank" title="Seguinos en TikTok">
+            <i class="fab fa-tiktok"></i>
+          </a>
+          <a href="https://wa.me/59894772730" class="social-link whatsapp" target="_blank" title="Contactanos por WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+          </a>
+        </div>
+      </div>
     </footer>
 
     <!-- Modal del Carrito de Pedido -->

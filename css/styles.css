@@ -1363,12 +1363,130 @@ img {
   margin-bottom: 1.5rem;
 }
 
+/* Estilos para redes sociales en contacto */
+.social-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  border: none;
+}
+
+.social-btn.instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: white;
+}
+
+.social-btn.tiktok {
+  background: #000000;
+  color: white;
+}
+
+.social-btn.instagram:hover,
+.social-btn.tiktok:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.whatsapp-btn {
+  background: #25D366 !important;
+  color: white !important;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 280px;
+}
+
+.whatsapp-btn:hover {
+  background: #1db954 !important;
+}
+
+@media (max-width: 768px) {
+  .social-links {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .social-btn {
+    width: 100%;
+    max-width: 250px;
+    justify-content: center;
+  }
+  
+  .whatsapp-btn {
+    max-width: 250px;
+  }
+}
+
 /* --- Footer --- */
 .footer {
   background-color: var(--primary-color);
   color: white;
-  text-align: center;
-  padding: 1.5rem 0;
+  padding: 2rem 0;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-social {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.2rem;
+  transition: var(--transition);
+  text-decoration: none;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.social-link:hover {
+  transform: scale(1.1);
+  border-color: white;
+}
+
+.social-link.instagram:hover {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.social-link.tiktok:hover {
+  background: #000000;
+}
+
+.social-link.whatsapp:hover {
+  background: #25D366;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
 }
 
 /* --- Login Page --- */
@@ -1878,6 +1996,131 @@ img {
   }
   .nav__logo {
     font-size: 1.8rem;
+  }
+}
+
+/* ========================================
+   🏳️ ESTILOS PARA BANDERAS DE PAÍSES
+   ======================================== */
+
+.country-flag-background {
+  position: relative;
+  min-height: 200px;
+  border-radius: var(--radius-lg);
+  margin: 2rem 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: all 0.8s ease-in-out;
+  overflow: hidden;
+}
+
+.country-flag-background.active {
+  opacity: 1;
+}
+
+.country-flag-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(2px);
+  border-radius: var(--radius-lg);
+}
+
+/* Banderas específicas por país */
+.flag-background-argentina {
+  background-image: 
+    linear-gradient(to bottom, #74acdf 33%, #ffffff 33%, #ffffff 66%, #74acdf 66%),
+    radial-gradient(circle, #f6d44a 30%, transparent 30%);
+  background-position: center, center;
+}
+
+.flag-background-turquia {
+  background: linear-gradient(135deg, #e30a17 0%, #ff4757 100%);
+}
+
+.flag-background-turquia::after {
+  content: '☪️';
+  position: absolute;
+  top: 50%;
+  left: 30%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  opacity: 0.7;
+}
+
+.flag-background-italia {
+  background: linear-gradient(to right, #009246 33%, #ffffff 33%, #ffffff 66%, #ce2b37 66%);
+}
+
+.flag-background-outlet {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+.flag-background-outlet::after {
+  content: '🏷️ OFERTAS ESPECIALES';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+}
+
+/* Efectos adicionales */
+.country-flag-background.flag-background-argentina::after {
+  content: '🇦🇷';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 4rem;
+  opacity: 0.8;
+}
+
+.country-flag-background.flag-background-italia::after {
+  content: '🇮🇹';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 4rem;
+  opacity: 0.8;
+}
+
+.country-flag-background.flag-background-turquia::before {
+  content: '🇹🇷';
+  position: absolute;
+  top: 50%;
+  right: 20%;
+  transform: translate(50%, -50%);
+  font-size: 4rem;
+  opacity: 0.8;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .country-flag-background {
+    min-height: 120px;
+    margin: 1rem 0;
+  }
+  
+  .country-flag-background::after,
+  .country-flag-background::before {
+    font-size: 2rem !important;
+  }
+  
+  .flag-background-outlet::after {
+    font-size: 0.9rem !important;
   }
 }
 

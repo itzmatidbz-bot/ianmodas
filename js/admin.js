@@ -143,11 +143,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadFallbackTiposTela();
       }
 
+      // Cargar estilos
+      try {
+        const { data: estilos, error } = await supabase.rpc("get_estilos_disponibles");
+        if (!error && estilos && estilos.length > 0) {
+          populateSelect("estilo", estilos, "Sin estilo específico");
+        } else {
+          loadFallbackEstilos();
+        }
+      } catch (e) {
+        loadFallbackEstilos();
+      }
+
       // Cargar países
       try {
         const { data: paises, error } = await supabase.rpc("get_paises_activos");
         if (!error && paises && paises.length > 0) {
-          populateSelect("pais-origen", paises, "Selecciona país de origen");
+          populateSelect("pais-origen", paises, "Sin país específico");
         } else {
           loadFallbackPaises();
         }
@@ -185,113 +197,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 🔄 DEPENDENCIAS DE CATEGORIZACIÓN
   // =====================================================
   function setupCategoryDependencies() {
-    const categoriaSelect = document.getElementById("categoria");
-
-    if (!categoriaSelect) return;
-
-    categoriaSelect.addEventListener("change", async (e) => {
-      const categoriaId = e.target.value;
-      const categoriaNombre = e.target.options[e.target.selectedIndex].text;
-
-      console.log("📦 Categoría seleccionada:", categoriaNombre);
-
-      const subcategoriaSelect = document.getElementById("subcategoria");
-      const tipoPrendaSelect = document.getElementById("tipo-prenda");
-      const estiloSelect = document.getElementById("estilo");
-
-      if (!categoriaId) {
-        // Reset subcategorías
-        resetSelect(subcategoriaSelect, "Primero selecciona categoría");
-        resetSelect(tipoPrendaSelect, "Selecciona tipo de prenda");
-        resetSelect(estiloSelect, "Selecciona estilo");
-        return;
-      }
-
-      // Cargar subcategorías para esta categoría
-      if (subcategoriaSelect) {
-        try {
-          const { data: subcategorias, error } = await supabase.rpc("get_subcategorias_por_categoria", {
-            categoria_id_param: parseInt(categoriaId)
-          });
-          
-          if (!error && subcategorias && subcategorias.length > 0) {
-            populateSelect("subcategoria", subcategorias, "Selecciona subcategoría");
-          } else {
-            // Fallback
-            loadSubcategoriasPorCategoria(parseInt(categoriaId));
-          }
-        } catch (error) {
-          console.error("Error cargando subcategorías:", error);
-          loadSubcategoriasPorCategoria(parseInt(categoriaId));
-        }
-      }
-
-      // Cargar tipos de prenda para esta categoría
-      if (tipoPrendaSelect) {
-        tipoPrendaSelect.innerHTML =
-          '<option value="">Cargando tipos...</option>';
-
-        try {
-          const { data: tipos, error } = await supabase.rpc(
-            "get_tipos_prenda",
-            { cat_nombre: categoriaNombre },
-          );
-
-          if (!error && tipos && tipos.length > 0) {
-            populateSelect("tipo-prenda", tipos, "Selecciona tipo de prenda");
-            setupTipoPrendaChange();
-          } else {
-            tipoPrendaSelect.innerHTML =
-              '<option value="">Sin tipos disponibles</option>';
-          }
-        } catch (error) {
-          console.error("Error cargando tipos:", error);
-          loadFallbackTiposPrenda(categoriaId);
-        }
-      }
-
-      // Reset estilos
-      resetSelect(estiloSelect, "Primero selecciona tipo de prenda");
-    });
+    // Ya no hay dependencias entre categorías y otros campos
+    // Todos los campos son independientes
+    console.log("✅ Setup de categorías: sin dependencias (sistema simplificado)");
   }
 
-  function setupTipoPrendaChange() {
-    const tipoPrendaSelect = document.getElementById("tipo-prenda");
-    const estiloSelect = document.getElementById("estilo");
-
-    if (!tipoPrendaSelect || !estiloSelect) return;
-
-    // Remover listener anterior
-    tipoPrendaSelect.removeEventListener("change", handleTipoPrendaChange);
-    tipoPrendaSelect.addEventListener("change", handleTipoPrendaChange);
-
-    async function handleTipoPrendaChange(e) {
-      const tipoNombre = e.target.options[e.target.selectedIndex].text;
-      console.log("👔 Tipo de prenda seleccionado:", tipoNombre);
-
-      if (!tipoNombre) return;
-
-      try {
-        estiloSelect.innerHTML =
-          '<option value="">Cargando estilos...</option>';
-
-        const { data: estilos, error } = await supabase.rpc("get_estilos", {
-          tipo_nombre: tipoNombre,
-        });
-
-        if (!error && estilos && estilos.length > 0) {
-          populateSelect("estilo", estilos, "Selecciona estilo (opcional)");
-        } else {
-          estiloSelect.innerHTML =
-            '<option value="" selected>Sin estilos para este tipo</option>';
-        }
-      } catch (error) {
-        console.error("Error cargando estilos:", error);
-        estiloSelect.innerHTML =
-          '<option value="" selected>Sin estilos disponibles</option>';
-      }
-    }
-  }
+  // Función eliminada: ya no hay dependencias entre campos
 
   function resetSelect(select, placeholder) {
     if (select) {
@@ -1370,23 +1281,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("📦 Cargando categorías de respaldo...");
 
     const fallbackCategorias = [
-      { id: 1, nombre: "Camisas", descripcion: "Camisas formales y casuales" },
-      { id: 2, nombre: "Camisetas", descripcion: "Camisetas básicas y estampadas" },
+      { id: 1, nombre: "Camisas", descripcion: "Todo tipo de camisas" },
+      { id: 2, nombre: "Camisetas", descripcion: "Camisetas y tops básicos" },
       { id: 3, nombre: "Remeras", descripcion: "Remeras casuales y deportivas" },
-      { id: 4, nombre: "Pantalones", descripcion: "Todo tipo de pantalones" },
-      { id: 5, nombre: "Vestidos", descripcion: "Vestidos casuales y elegantes" },
-      { id: 6, nombre: "Faldas", descripcion: "Faldas de diferentes estilos" },
-      { id: 7, nombre: "Conjuntos", descripcion: "Sets coordinados" },
-      { id: 8, nombre: "Abrigos", descripcion: "Chaquetas y abrigos" },
-      { id: 9, nombre: "Blazers", descripcion: "Blazers y sacos elegantes" },
-      { id: 10, nombre: "Buzos", descripcion: "Buzos y sudaderas" },
-      { id: 11, nombre: "Camperas", descripcion: "Camperas y chaquetas" },
-      { id: 12, nombre: "Calzado", descripcion: "Zapatos y calzado" },
-      { id: 13, nombre: "Accesorios", descripcion: "Complementos y accesorios" },
-      { id: 14, nombre: "Ropa Interior", descripcion: "Lencería y ropa interior" },
-      { id: 15, nombre: "Pijamas", descripcion: "Ropa de dormir" },
-      { id: 16, nombre: "Trajes de Baño", descripcion: "Bikinis y mallas" },
-      { id: 17, nombre: "Deportivo", descripcion: "Ropa deportiva" },
+      { id: 4, nombre: "Pantalones", descripcion: "Pantalones largos y jeans" },
+      { id: 5, nombre: "Bermudas", descripcion: "Pantalones cortos y shorts" },
+      { id: 6, nombre: "Faldas", descripcion: "Todo tipo de faldas" },
+      { id: 7, nombre: "Vestidos", descripcion: "Vestidos casuales y elegantes" },
     ];
 
     populateSelect("categoria", fallbackCategorias, "Selecciona categoría");
@@ -1483,52 +1384,65 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =====================================================
-  // 🏷️ FUNCIONES PARA SUBCATEGORÍAS
+  // � FUNCIONES PARA ESTILOS (REEMPLAZA SUBCATEGORÍAS)
   // =====================================================
-  function loadFallbackSubcategorias() {
-    const fallbackSubcategorias = {
-      1: [ // Camisas
-        { id: 1, nombre: "Camisas Formales", descripcion: "Camisas elegantes para ocasiones formales" },
-        { id: 2, nombre: "Camisas Casuales", descripcion: "Camisas relajadas para uso diario" },
-        { id: 3, nombre: "Maxicamisas", descripcion: "Camisas largas estilo túnica" }
-      ],
-      2: [ // Camisetas
-        { id: 4, nombre: "Camisetas Básicas", descripcion: "Camisetas lisas y simples" },
-        { id: 5, nombre: "Camisetas Estampadas", descripcion: "Camisetas con diseños y prints" },
-        { id: 6, nombre: "Blusas", descripcion: "Blusas elegantes y femeninas" }
-      ],
-      3: [ // Remeras
-        { id: 7, nombre: "Remeras Deportivas", descripcion: "Remeras para actividad física" },
-        { id: 8, nombre: "Remeras Casuales", descripcion: "Remeras para uso diario" },
-        { id: 9, nombre: "Remeras Premium", descripcion: "Remeras de alta calidad y diseño" }
-      ]
-    };
+  function loadFallbackEstilos() {
+    const fallbackEstilos = [
+      { id: 1, nombre: "Básico", descripcion: "Diseño simple y versátil" },
+      { id: 2, nombre: "Casual", descripcion: "Estilo relajado para el día a día" },
+      { id: 3, nombre: "Formal", descripcion: "Elegante para ocasiones especiales" },
+      { id: 4, nombre: "Deportivo", descripcion: "Para actividades físicas y comodidad" },
+      { id: 5, nombre: "Estampado", descripcion: "Con diseños, prints o patrones" },
+      { id: 6, nombre: "Elegante", descripcion: "Sofisticado y refinado" },
+      { id: 7, nombre: "Vintage", descripcion: "Estilo retro y clásico" },
+      { id: 8, nombre: "Oversize", descripcion: "Corte amplio y holgado" }
+    ];
 
-    return fallbackSubcategorias;
-  }
-
-  function loadSubcategoriasPorCategoria(categoriaId) {
-    const subcategoriaSelect = document.getElementById("subcategoria");
-    if (!subcategoriaSelect) return;
-
-    const subcategorias = loadFallbackSubcategorias();
-    const subcategoriasCategoria = subcategorias[categoriaId] || [];
-    
-    populateSelect("subcategoria", subcategoriasCategoria, "Selecciona subcategoría");
+    populateSelect("estilo", fallbackEstilos, "Sin estilo específico");
   }
 
   // =====================================================
   // 🌍 FUNCIONES PARA PAÍSES
   // =====================================================
   function loadFallbackPaises() {
+    console.log("🌍 Cargando países fallback con banderas...");
+    
     const fallbackPaises = [
-      { id: 1, nombre: "Argentina", descripcion: "Productos nacionales de excelente calidad y diseño" },
-      { id: 2, nombre: "Turquía", descripcion: "Productos turcos reconocidos por su calidad textil" },
-      { id: 3, nombre: "Italia", descripcion: "Productos italianos de alta costura y elegancia" },
-      { id: 4, nombre: "Outlet", descripcion: "Productos de temporadas anteriores con descuentos especiales" }
+      { 
+        id: 1, 
+        codigo: "AR", 
+        nombre: "Argentina", 
+        descripcion: "Productos nacionales de excelente calidad y diseño",
+        bandera: "🇦🇷"
+      },
+      { 
+        id: 2, 
+        codigo: "TR", 
+        nombre: "Turquía", 
+        descripcion: "Productos turcos reconocidos por su calidad textil",
+        bandera: "🇹🇷"
+      },
+      { 
+        id: 3, 
+        codigo: "IT", 
+        nombre: "Italia", 
+        descripcion: "Productos italianos de alta costura y elegancia",
+        bandera: "🇮🇹"
+      },
+      { 
+        id: 4, 
+        codigo: "OUT", 
+        nombre: "Outlet", 
+        descripcion: "Productos de temporadas anteriores con descuentos especiales",
+        bandera: "🏷️"
+      }
     ];
 
-    populateSelect("pais-origen", fallbackPaises, "Selecciona país de origen");
+    console.log(`✅ ${fallbackPaises.length} países cargados correctamente con banderas`);
+    populateSelect("pais-origen", fallbackPaises, "Sin país específico");
+    
+    // Hacer disponible globalmente para el frontend
+    window.paisesDisponibles = fallbackPaises;
   }
 
   // =====================================================
