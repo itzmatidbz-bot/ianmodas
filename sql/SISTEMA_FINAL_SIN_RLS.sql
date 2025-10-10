@@ -140,40 +140,112 @@ CREATE TABLE mayoristas (
 -- 📊 INSERTAR DATOS DE EJEMPLO
 -- =====================================================
 
--- Insertar Categorías
+-- Insertar Categorías (EXPANDIDAS - 50 categorías)
 INSERT INTO categorias (nombre, descripcion) VALUES
-('Tops', 'Prendas superiores como blusas, camisetas, tops'),
-('Pantalones', 'Todo tipo de pantalones y leggings'),
-('Vestidos', 'Vestidos casuales y elegantes'),
-('Faldas', 'Faldas de diferentes estilos y largos'),
-('Conjuntos', 'Sets coordinados de dos o más piezas'),
+-- ===== PARTE SUPERIOR =====
+('Camisas', 'Camisas formales y casuales'),
+('Camisetas', 'Camisetas básicas y estampadas'),
+('Remeras', 'Remeras de manga corta y larga'),
+('Tops', 'Tops, blusas y camisolas'),
+('Blusas', 'Blusas elegantes y casuales'),
+('Sweaters', 'Sweaters y pulóvers'),
+('Buzos', 'Buzos con y sin capucha'),
+('Chaquetas', 'Chaquetas y blazers'),
+('Camperas', 'Camperas y abrigos'),
+('Cardigans', 'Cardigans y chalecos abiertos'),
+('Chalecos', 'Chalecos y prendas sin mangas'),
+('Crop Tops', 'Tops cortos y ombligueras'),
+
+-- ===== PARTE INFERIOR =====
+('Pantalones', 'Pantalones largos y de vestir'),
+('Jeans', 'Pantalones de mezclilla'),
+('Bermudas', 'Pantalones cortos y shorts'),
+('Shorts', 'Shorts deportivos y casuales'),
+('Faldas', 'Faldas largas y cortas'),
+('Polleras', 'Polleras y faldas plisadas'),
+('Leggings', 'Leggings y calzas'),
+('Joggers', 'Pantalones deportivos'),
+('Capris', 'Pantalones a la pantorrilla'),
+
+-- ===== VESTIDOS Y CONJUNTOS =====
+('Vestidos', 'Vestidos largos y cortos'),
+('Vestidos Largos', 'Vestidos maxi y de gala'),
+('Vestidos Cortos', 'Vestidos mini y midi'),
+('Monos', 'Monos y jumpsuits'),
+('Conjuntos', 'Conjuntos de dos piezas'),
+('Enteritos', 'Enteritos y mamelucos'),
+
+-- ===== ROPA INTERIOR Y DEPORTIVA =====
+('Ropa Interior', 'Lencería y ropa íntima'),
+('Corpiños', 'Sostenes y corpiños'),
+('Bombachas', 'Bombachas y tangas'),
+('Medias', 'Medias y pantys'),
+('Pijamas', 'Pijamas y ropa de dormir'),
+('Ropa Deportiva', 'Indumentaria deportiva'),
+('Mallas', 'Mallas y ropa de ejercicio'),
+('Bikinis', 'Trajes de baño de dos piezas'),
+('Mallas de Baño', 'Trajes de baño enteros'),
+
+-- ===== ACCESORIOS =====
+('Cinturones', 'Cintos y fajas'),
+('Carteras', 'Bolsos y carteras'),
+('Mochilas', 'Mochilas y bolsos de espalda'),
+('Gorros', 'Sombreros y gorras'),
+('Bufandas', 'Bufandas y pañuelos'),
+('Guantes', 'Guantes y mitones'),
+
+-- ===== CALZADO =====
+('Zapatos', 'Calzado formal y casual'),
+('Zapatillas', 'Calzado deportivo'),
+('Botas', 'Botas y botinetas'),
+('Sandalias', 'Sandalias y ojotas'),
+('Mocasines', 'Mocasines y zapatos sin cordones'),
+
+-- ===== OCASIONES ESPECIALES =====
+('Ropa de Fiesta', 'Indumentaria para eventos'),
+('Ropa Formal', 'Trajes y vestimenta elegante'),
+('Ropa Casual', 'Indumentaria de uso diario'),
+
+-- ===== CATEGORÍAS GENERALES (COMPATIBILIDAD) =====
 ('Abrigos', 'Chaquetas, abrigos y prendas de abrigo'),
 ('Blazers', 'Blazers y sacos elegantes'),
-('Buzos', 'Buzos y sudaderas'),
-('Camperas', 'Camperas casuales y deportivas'),
 ('Calzado', 'Zapatos, sandalias y calzado'),
 ('Accesorios', 'Complementos y accesorios'),
-('Ropa Interior', 'Lencería y ropa interior'),
-('Pijamas', 'Ropa de dormir y descanso'),
 ('Trajes de Baño', 'Bikinis, mallas y ropa de playa'),
 ('Deportivo', 'Ropa deportiva y activewear');
 
--- Insertar Tipos de Prenda para cada categoría
+-- Insertar Tipos de Prenda para cada categoría (EXPANDIDO)
 INSERT INTO tipos_prenda (categoria_id, nombre, descripcion) VALUES
--- Tops (1)
-(1, 'Blusa', 'Blusas elegantes y casuales'),
-(1, 'Camiseta', 'Camisetas básicas y estampadas'),
-(1, 'Top', 'Tops cortos y largos'),
-(1, 'Remera', 'Remeras de manga corta y larga'),
--- Pantalones (2)
-(2, 'Jean', 'Pantalones de mezclilla'),
-(2, 'Pantalón de Vestir', 'Pantalones elegantes'),
-(2, 'Legging', 'Calzas ajustadas'),
-(2, 'Palazzo', 'Pantalones anchos'),
--- Vestidos (3)
-(3, 'Vestido Casual', 'Vestidos para uso diario'),
-(3, 'Vestido de Fiesta', 'Vestidos elegantes'),
-(3, 'Maxi Dress', 'Vestidos largos'),
+-- Camisas (1)
+(1, 'Camisa Formal', 'Camisas para ocasiones elegantes'),
+(1, 'Camisa Casual', 'Camisas para uso diario'),
+(1, 'Camisa de Jean', 'Camisas de mezclilla'),
+
+-- Camisetas (2)
+(2, 'Camiseta Básica', 'Camisetas lisas de colores sólidos'),
+(2, 'Camiseta Estampada', 'Camisetas con diseños'),
+(2, 'Camiseta Oversized', 'Camisetas de corte holgado'),
+
+-- Remeras (3)
+(3, 'Remera Manga Corta', 'Remeras clásicas'),
+(3, 'Remera Manga Larga', 'Remeras de manga larga'),
+(3, 'Remera Deportiva', 'Remeras para actividades'),
+
+-- Tops (4)
+(4, 'Top Básico', 'Tops simples y versátiles'),
+(4, 'Top Elegante', 'Tops para ocasiones especiales'),
+(4, 'Camisola', 'Tops con tirantes finos'),
+
+-- Jeans (14)
+(14, 'Jean Skinny', 'Jeans ajustados'),
+(14, 'Jean Recto', 'Jeans de corte clásico'),
+(14, 'Jean Wide Leg', 'Jeans de pierna ancha'),
+(14, 'Jean Mom', 'Jeans de corte vintage'),
+
+-- Vestidos (22)
+(22, 'Vestido Casual', 'Vestidos para uso diario'),
+(22, 'Vestido de Fiesta', 'Vestidos elegantes'),
+(22, 'Vestido Cóctel', 'Vestidos semi-formales'),
 -- Faldas (4)
 (4, 'Falda Mini', 'Faldas cortas'),
 (4, 'Falda Midi', 'Faldas de largo medio'),

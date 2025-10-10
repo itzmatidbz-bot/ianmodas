@@ -3,7 +3,42 @@
 ## ✅ **PROBLEMAS SOLUCIONADOS**
 
 ### 🔧 **Errores Críticos Reparados:**
-- ❌ **Error RLS**: `new row violates row-level security policy for table "productos"` → ✅ **SOLUCIONADO**
+- ❌ **Error RLS### 🏗️ **Estructura Normalizada:**
+```
+📋 CATEGORIAS (50+) 🆕
+└── 👗 TIPOS_PRENDA (40+)
+    └── ✨ ESTILOS (25+)
+
+🧵 TELAS (20+)
+🎨 COLORES (35+)
+🛍️ PRODUCTOS (tabla principal)
+📸 PRODUCTO_IMAGENES (múltiples por producto)
+🎨 PRODUCTO_COLORES (relación muchos a muchos)
+👥 MAYORISTAS (usuarios del sistema)
+```
+
+### 🆕 **CATEGORÍAS COMPLETAS (50+):**
+
+#### **👕 PARTE SUPERIOR (12):**
+`Camisas` • `Camisetas` • `Remeras` • `Tops` • `Blusas` • `Sweaters` • `Buzos` • `Chaquetas` • `Camperas` • `Cardigans` • `Chalecos` • `Crop Tops`
+
+#### **👖 PARTE INFERIOR (9):**
+`Pantalones` • `Jeans` • `Bermudas` • `Shorts` • `Faldas` • `Polleras` • `Leggings` • `Joggers` • `Capris`
+
+#### **👗 VESTIDOS Y CONJUNTOS (6):**
+`Vestidos` • `Vestidos Largos` • `Vestidos Cortos` • `Monos` • `Conjuntos` • `Enteritos`
+
+#### **🩱 ROPA INTERIOR Y DEPORTIVA (9):**
+`Ropa Interior` • `Corpiños` • `Bombachas` • `Medias` • `Pijamas` • `Ropa Deportiva` • `Mallas` • `Bikinis` • `Mallas de Baño`
+
+#### **👜 ACCESORIOS (6):**
+`Cinturones` • `Carteras` • `Mochilas` • `Gorros` • `Bufandas` • `Guantes`
+
+#### **👟 CALZADO (5):**
+`Zapatos` • `Zapatillas` • `Botas` • `Sandalias` • `Mocasines`
+
+#### **🎉 OCASIONES ESPECIALES (3):**
+`Ropa de Fiesta` • `Ropa Formal` • `Ropa Casual`violates row-level security policy for table "productos"` → ✅ **SOLUCIONADO**
 - ❌ **JavaScript Initialization Errors** → ✅ **REPARADO**
 - ❌ **Navegación Rota** → ✅ **FUNCIONAL**
 - ❌ **HTML Corrupto** → ✅ **LIMPIO**
@@ -16,13 +51,14 @@
 ## 🚀 **CARACTERÍSTICAS PRINCIPALES**
 
 ### 📊 **Base de Datos 3FN Completa:**
-- **15 Categorías** (Tops, Pantalones, Vestidos, etc.)
+- **🆕 50+ Categorías** (Camisas, Jeans, Vestidos Largos, Bikinis, Zapatillas, etc.)
 - **40+ Tipos de Prenda** con dependencias automáticas
 - **25+ Estilos** específicos por tipo
 - **20+ Tipos de Tela** (Algodón, Seda, Lycra, etc.)
 - **35+ Colores** con códigos hexadecimales
 - **8 Productos de Ejemplo** con imágenes reales
 - **Sin Sistema de Stock** (siempre disponible)
+- **🆕 Organizado por secciones**: Parte Superior, Inferior, Vestidos, Deportiva, Calzado, Accesorios
 
 ### 🎨 **Frontend Moderno:**
 - **Panel Admin** con gradientes y animaciones
@@ -60,18 +96,31 @@
 │   ├── login.js           # Sistema de autenticación
 │   └── producto.js        # Vista detalle de productos
 └── 📁 sql/
-    ├── SISTEMA_COMPLETO_3FN.sql    # Sistema con RLS
-    └── SISTEMA_FINAL_SIN_RLS.sql   # Sistema sin RLS (recomendado)
+    ├── sistema_completo_3fn.sql        # Sistema con RLS
+    ├── sistema_final_sin_rls.sql       # Sistema sin RLS (✅ RECOMENDADO)
+    ├── categorias_ampliadas.sql        # 🆕 50+ categorías nuevas
+    └── migracion_categorias.sql        # 🆕 Script de migración simple
 ```
 
 ## 🛠️ **INSTALACIÓN Y USO**
 
 ### 1️⃣ **Ejecutar SQL en Supabase:**
+
+#### **🆕 NUEVA INSTALACIÓN (RECOMENDADO):**
 ```sql
 -- Copiar y ejecutar todo el contenido de:
-sql/SISTEMA_FINAL_SIN_RLS.sql
+sql/sistema_final_sin_rls.sql
 ```
-> ⚠️ **Importante**: Usar `SISTEMA_FINAL_SIN_RLS.sql` para evitar errores de permisos
+> ✅ Este archivo YA incluye las 50+ nuevas categorías
+
+#### **🔄 MIGRACIÓN DE BASE EXISTENTE:**
+Si ya tienes la base de datos funcionando, ejecuta solo:
+```sql
+-- Para agregar las categorías faltantes:
+sql/migracion_categorias.sql
+```
+
+> ⚠️ **Importante**: Usar `sistema_final_sin_rls.sql` para evitar errores de permisos
 
 ### 2️⃣ **Verificar Configuración:**
 ```javascript

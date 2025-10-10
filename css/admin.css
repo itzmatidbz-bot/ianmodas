@@ -607,6 +607,81 @@ body {
   table-layout: fixed;
 }
 
+/* 📋 Tabla de Mayoristas - Manejo especial de columnas anchas */
+#mayoristasTable {
+  min-width: 1200px; /* Ancho mínimo mayor para 10 columnas */
+  white-space: nowrap; /* Evitar que el texto se corte */
+}
+
+#mayoristasTable th,
+#mayoristasTable td {
+  white-space: nowrap; /* Evitar que el texto se divida en líneas */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Añadir "..." si el texto es muy largo */
+  min-width: 120px; /* Ancho mínimo por columna */
+}
+
+/* Anchos específicos por columna para mayoristas */
+#mayoristasTable th:nth-child(1), /* NOMBRE */
+#mayoristasTable td:nth-child(1) {
+  min-width: 150px;
+  max-width: 150px;
+}
+
+#mayoristasTable th:nth-child(2), /* EMAIL */
+#mayoristasTable td:nth-child(2) {
+  min-width: 180px;
+  max-width: 180px;
+}
+
+#mayoristasTable th:nth-child(3), /* RUT */
+#mayoristasTable td:nth-child(3) {
+  min-width: 120px;
+  max-width: 120px;
+}
+
+#mayoristasTable th:nth-child(4), /* CELULAR */
+#mayoristasTable td:nth-child(4) {
+  min-width: 130px;
+  max-width: 130px;
+}
+
+#mayoristasTable th:nth-child(5), /* EMPRESA */
+#mayoristasTable td:nth-child(5) {
+  min-width: 140px;
+  max-width: 140px;
+}
+
+#mayoristasTable th:nth-child(6), /* DIRECCIÓN */
+#mayoristasTable td:nth-child(6) {
+  min-width: 160px;
+  max-width: 160px;
+}
+
+#mayoristasTable th:nth-child(7), /* DEPARTAMENTO */
+#mayoristasTable td:nth-child(7) {
+  min-width: 130px;
+  max-width: 130px;
+}
+
+#mayoristasTable th:nth-child(8), /* AGENCIA ENVÍO */
+#mayoristasTable td:nth-child(8) {
+  min-width: 140px;
+  max-width: 140px;
+}
+
+#mayoristasTable th:nth-child(9), /* FECHA REGISTRO */
+#mayoristasTable td:nth-child(9) {
+  min-width: 130px;
+  max-width: 130px;
+}
+
+#mayoristasTable th:nth-child(10), /* ESTADO */
+#mayoristasTable td:nth-child(10) {
+  min-width: 100px;
+  max-width: 100px;
+}
+
 .admin-table th,
 .admin-table td,
 .products-table th,
