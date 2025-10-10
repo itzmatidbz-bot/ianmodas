@@ -607,79 +607,93 @@ body {
   table-layout: fixed;
 }
 
-/* 📋 Tabla de Mayoristas - Manejo especial de columnas anchas */
+/* 📋 Tabla de Mayoristas - Datos completos con scroll horizontal */
 #mayoristasTable {
-  min-width: 1200px; /* Ancho mínimo mayor para 10 columnas */
+  min-width: 1800px; /* Ancho mínimo para mostrar datos completos */
   white-space: nowrap; /* Evitar que el texto se corte */
+  table-layout: auto; /* Permitir que las columnas se ajusten al contenido */
 }
 
 #mayoristasTable th,
 #mayoristasTable td {
-  white-space: nowrap; /* Evitar que el texto se divida en líneas */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Añadir "..." si el texto es muy largo */
-  min-width: 120px; /* Ancho mínimo por columna */
+  white-space: nowrap; /* Mantener datos en una línea */
+  padding: 1rem 1.5rem; /* Más espacio para datos largos */
+  min-width: 150px; /* Ancho mínimo generoso */
+  max-width: none; /* Sin límite máximo */
+  word-break: keep-all; /* No cortar palabras */
 }
 
-/* Anchos específicos por columna para mayoristas */
+/* Anchos específicos optimizados para datos completos */
 #mayoristasTable th:nth-child(1), /* NOMBRE */
 #mayoristasTable td:nth-child(1) {
-  min-width: 150px;
-  max-width: 150px;
+  min-width: 200px; /* Más espacio para nombres largos */
 }
 
 #mayoristasTable th:nth-child(2), /* EMAIL */
 #mayoristasTable td:nth-child(2) {
-  min-width: 180px;
-  max-width: 180px;
+  min-width: 280px; /* Espacio generoso para emails largos */
 }
 
 #mayoristasTable th:nth-child(3), /* RUT */
 #mayoristasTable td:nth-child(3) {
-  min-width: 120px;
-  max-width: 120px;
+  min-width: 150px; /* RUT con formato completo */
 }
 
 #mayoristasTable th:nth-child(4), /* CELULAR */
 #mayoristasTable td:nth-child(4) {
-  min-width: 130px;
-  max-width: 130px;
+  min-width: 160px; /* Números con códigos de área */
 }
 
 #mayoristasTable th:nth-child(5), /* EMPRESA */
 #mayoristasTable td:nth-child(5) {
-  min-width: 140px;
-  max-width: 140px;
+  min-width: 220px; /* Nombres de empresas completos */
 }
 
 #mayoristasTable th:nth-child(6), /* DIRECCIÓN */
 #mayoristasTable td:nth-child(6) {
-  min-width: 160px;
-  max-width: 160px;
+  min-width: 300px; /* Direcciones completas */
 }
 
 #mayoristasTable th:nth-child(7), /* DEPARTAMENTO */
 #mayoristasTable td:nth-child(7) {
-  min-width: 130px;
-  max-width: 130px;
+  min-width: 180px; /* Nombres de departamentos completos */
 }
 
 #mayoristasTable th:nth-child(8), /* AGENCIA ENVÍO */
 #mayoristasTable td:nth-child(8) {
-  min-width: 140px;
-  max-width: 140px;
+  min-width: 200px; /* Nombres de agencias completos */
 }
 
 #mayoristasTable th:nth-child(9), /* FECHA REGISTRO */
 #mayoristasTable td:nth-child(9) {
-  min-width: 130px;
-  max-width: 130px;
+  min-width: 160px; /* Fecha y hora completas */
 }
 
 #mayoristasTable th:nth-child(10), /* ESTADO */
 #mayoristasTable td:nth-child(10) {
-  min-width: 100px;
-  max-width: 100px;
+  min-width: 120px; /* Estados descriptivos */
+}
+
+/* Contenedor con scroll horizontal mejorado */
+#mayoristasTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
+  backdrop-filter: blur(10px);
+}
+
+/* Indicador visual de scroll horizontal */
+.table-container::after {
+  content: "← Desliza horizontalmente para ver más datos →";
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: var(--admin-primary);
+  opacity: 0.7;
+  font-style: italic;
 }
 
 .admin-table th,

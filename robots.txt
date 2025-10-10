@@ -1,0 +1,60 @@
+# 🤖 Robots.txt Profesional - Ian Modas
+# Optimizado para SEO y seguridad
+
+User-agent: *
+Allow: /
+Allow: /css/
+Allow: /js/
+Allow: /images/
+Allow: /*.webp$
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.gif$
+Allow: /*.svg$
+
+# 🔒 Áreas restringidas
+Disallow: /admin.html
+Disallow: /admin/
+Disallow: /login.html
+Disallow: /private/
+Disallow: /config/
+Disallow: /sql/
+Disallow: /*.sql$
+
+# 🚫 Archivos de sistema
+Disallow: /*.log$
+Disallow: /*.txt$
+Disallow: /*.md$
+Disallow: /readme.md
+Disallow: /RESUMEN_SISTEMA_SIMPLIFICADO.md
+
+# 🎯 Bots específicos
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+User-agent: facebookexternalhit
+Allow: /
+Allow: /fachada.webp
+
+User-agent: Twitterbot
+Allow: /
+Allow: /fachada.webp
+
+# 🗺️ Sitemap
+Sitemap: https://ianmodas.com/sitemap.xml
+
+# 📊 Analytics y métricas permitidas
+User-agent: GoogleBot-Image
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+# 🚀 Performance - Cache hints
+# Cache-Control: max-age=31536000
+# Expires: Thu, 31 Dec 2025 23:55:55 GMT
