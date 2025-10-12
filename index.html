@@ -470,10 +470,10 @@
             if (existing) existing.remove();
             
             const config = {
-              'Argentina': { message: '🇦🇷 Temática Argentina Activada', color: '#74ACDF' },
-              'Turquía': { message: '🇹🇷 Temática Turquía Activada', color: '#E30A17' },
-              'Italia': { message: '🇮🇹 Temática Italia Activada', color: '#009246' },
-              'Outlet': { message: '🏷️ Temática Outlet Activada', color: '#667EEA' }
+              'Argentina': { message: '🇦🇷 Temática Argentina Activada', color: '#74ACDF', bg: '#E8F4FC' },
+              'Turquía': { message: '🇹🇷 Temática Turquía Activada', color: '#E30A17', bg: '#FFE8EA' },
+              'Italia': { message: '🇮🇹 Temática Italia Activada', color: '#009246', bg: '#E8F5E8' },
+              'Outlet': { message: '🏷️ Temática Outlet Activada', color: '#667EEA', bg: '#F0F2FF' }
             }[country];
             
             if (!config) return;
@@ -482,10 +482,15 @@
             notification.className = 'theme-notification';
             notification.textContent = config.message;
             notification.style.cssText = `
-              position: fixed; top: 100px; right: 20px; background: white;
-              color: ${config.color}; padding: 15px 25px; border-radius: 30px;
-              box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 2px solid ${config.color};
-              font-weight: bold; z-index: 9999; animation: slideInRight 0.5s ease-out;
+              position: fixed; top: 100px; right: 20px; 
+              background: linear-gradient(135deg, white 0%, ${config.bg} 100%);
+              color: ${config.color}; padding: 18px 30px; border-radius: 35px;
+              box-shadow: 0 15px 45px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2);
+              border: 3px solid ${config.color};
+              font-weight: 800; font-size: 1.1rem; z-index: 9999; 
+              animation: slideInRight 0.5s ease-out;
+              backdrop-filter: blur(10px);
+              text-shadow: 0 2px 4px rgba(255,255,255,0.8);
             `;
             
             document.body.appendChild(notification);

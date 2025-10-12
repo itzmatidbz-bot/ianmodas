@@ -1092,6 +1092,8 @@ img {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 768px) {
@@ -2062,14 +2064,39 @@ body.theme-argentina .info-bar {
 /* Sección de Productos Argentina - Con bandera de fondo */
 body.theme-argentina .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)),
-    url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Flag_of_Argentina.svg/2000px-Flag_of_Argentina.svg.png') 
-    center/cover no-repeat !important;
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+    repeating-linear-gradient(
+      180deg,
+      #74ACDF 0px,
+      #74ACDF 33.33%,
+      #FFFFFF 33.33%,
+      #FFFFFF 66.66%,
+      #74ACDF 66.66%,
+      #74ACDF 100%
+    ) !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   backdrop-filter: blur(5px);
   border-radius: var(--radius-lg);
   margin: 2rem 0;
   padding: 2rem !important;
   box-shadow: 0 15px 40px rgba(116, 172, 223, 0.3);
+  border: 3px solid var(--argentina-primary);
+  position: relative;
+}
+
+/* Agregar efecto sutil de Argentina */
+body.theme-argentina .products::before {
+  content: '🇦🇷';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20rem;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Filtros Argentina */
@@ -2158,14 +2185,31 @@ body.theme-turquia .info-bar {
 /* Sección de Productos Turquía - Con bandera de fondo */
 body.theme-turquia .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)),
-    url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Turkey.svg/2000px-Flag_of_Turkey.svg.png') 
-    center/cover no-repeat !important;
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+    linear-gradient(180deg, #E30A17 0%, #E30A17 100%) !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   backdrop-filter: blur(5px);
   border-radius: var(--radius-lg);
   margin: 2rem 0;
   padding: 2rem !important;
   box-shadow: 0 15px 40px rgba(227, 10, 23, 0.3);
+  border: 3px solid var(--turquia-primary);
+  position: relative;
+}
+
+/* Agregar efecto de estrella y luna turca con pseudo-elementos */
+body.theme-turquia .products::before {
+  content: '☪️';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 15rem;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Filtros Turquía */
@@ -2254,14 +2298,39 @@ body.theme-italia .info-bar {
 /* Sección de Productos Italia - Con bandera de fondo */
 body.theme-italia .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)),
-    url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Flag_of_Italy.svg/2000px-Flag_of_Italy.svg.png') 
-    center/cover no-repeat !important;
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+    repeating-linear-gradient(
+      90deg,
+      #009246 0px,
+      #009246 33.33%,
+      #FFFFFF 33.33%,
+      #FFFFFF 66.66%,
+      #CE2B37 66.66%,
+      #CE2B37 100%
+    ) !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   backdrop-filter: blur(5px);
   border-radius: var(--radius-lg);
   margin: 2rem 0;
   padding: 2rem !important;
   box-shadow: 0 15px 40px rgba(0, 146, 70, 0.3);
+  border: 3px solid var(--italia-primary);
+  position: relative;
+}
+
+/* Agregar efecto sutil de Italia */
+body.theme-italia .products::before {
+  content: '🇮🇹';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20rem;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Filtros Italia */
@@ -2500,9 +2569,14 @@ body.theme-outlet .footer {
 
 .theme-notification {
   font-family: var(--font-primary);
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   user-select: none;
   cursor: default;
+  font-weight: 800 !important;
+  letter-spacing: 0.3px;
+  text-shadow: 
+    0 2px 4px rgba(255, 255, 255, 0.8),
+    0 1px 2px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Notificación de país seleccionado */
