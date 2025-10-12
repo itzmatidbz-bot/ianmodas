@@ -2062,33 +2062,14 @@ body.theme-argentina .info-bar {
 /* Sección de Productos Argentina - Con bandera de fondo */
 body.theme-argentina .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)),
-    linear-gradient(to bottom, #74ACDF 0%, #74ACDF 35%, #FFFFFF 35%, #FFFFFF 65%, #74ACDF 65%, #74ACDF 100%) !important;
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+    url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Flag_of_Argentina.svg/2000px-Flag_of_Argentina.svg.png') 
+    center/cover no-repeat !important;
   backdrop-filter: blur(5px);
   border-radius: var(--radius-lg);
   margin: 2rem 0;
   padding: 2rem !important;
   box-shadow: 0 15px 40px rgba(116, 172, 223, 0.3);
-  position: relative;
-}
-
-/* Sol argentino en el centro */
-body.theme-argentina .products::before {
-  content: '☀️';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 4rem;
-  opacity: 0.15;
-  z-index: 0;
-  animation: rotateSun 20s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes rotateSun {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* Filtros Argentina */
@@ -2177,27 +2158,14 @@ body.theme-turquia .info-bar {
 /* Sección de Productos Turquía - Con bandera de fondo */
 body.theme-turquia .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)),
-    linear-gradient(to bottom, #E30A17 0%, #E30A17 100%) !important;
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+    url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Turkey.svg/2000px-Flag_of_Turkey.svg.png') 
+    center/cover no-repeat !important;
   backdrop-filter: blur(5px);
   border-radius: var(--radius-lg);
   margin: 2rem 0;
   padding: 2rem !important;
   box-shadow: 0 15px 40px rgba(227, 10, 23, 0.3);
-  position: relative;
-}
-
-/* Media luna y estrella turca */
-body.theme-turquia .products::before {
-  content: '☪️';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 6rem;
-  opacity: 0.15;
-  z-index: 0;
-  pointer-events: none;
 }
 
 /* Filtros Turquía */
@@ -2286,8 +2254,9 @@ body.theme-italia .info-bar {
 /* Sección de Productos Italia - Con bandera de fondo */
 body.theme-italia .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)),
-    linear-gradient(to right, #009246 0%, #009246 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #CE2B37 66.66%, #CE2B37 100%) !important;
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+    url('https://upload.wikimedia.org/wikipedia/en/thumb/0/03/Flag_of_Italy.svg/1200px-Flag_of_Italy.svg.png') 
+    center/cover no-repeat !important;
   backdrop-filter: blur(5px);
   border-radius: var(--radius-lg);
   margin: 2rem 0;
@@ -2464,6 +2433,44 @@ body.theme-italia .products > *,
 body.theme-outlet .products > * {
   position: relative;
   z-index: 1;
+}
+
+/* Mejorar legibilidad de elementos específicos con banderas */
+body.theme-argentina .advanced-filters,
+body.theme-turquia .advanced-filters,
+body.theme-italia .advanced-filters {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.theme-argentina .section-title,
+body.theme-turquia .section-title,
+body.theme-italia .section-title {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1rem 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.theme-argentina .product-card,
+body.theme-turquia .product-card,
+body.theme-italia .product-card {
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(10px);
+}
+
+body.theme-argentina .no-results-message,
+body.theme-turquia .no-results-message,
+body.theme-italia .no-results-message {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 3rem;
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
 }
 
 /* ===== ESTILOS PARA EL SELECT DE PAÍSES ===== */
