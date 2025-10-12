@@ -479,15 +479,29 @@ body.nav-open {
 .hero__subtitle {
   font-size: clamp(1rem, 2.5vw, 1.5rem);
   margin-bottom: var(--space-10);
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 400;
-  line-height: 1.6;
+  color: #ffffff;
+  font-weight: 500;
+  line-height: 1.8;
+  text-shadow: 
+    2px 2px 6px rgba(0, 0, 0, 0.9),
+    0 0 15px rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem 1.5rem;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
 }
 
 .hero__subtitle strong {
-  color: var(--accent-color);
-  font-weight: 700;
-  text-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.3);
+  color: #FFD700;
+  font-weight: 800;
+  text-shadow: 
+    2px 2px 6px rgba(0, 0, 0, 1),
+    0 0 20px rgba(255, 215, 0, 0.6);
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.5));
 }
 
 .hero__actions {
@@ -536,25 +550,28 @@ body.nav-open {
 }
 
 .btn--outline {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--primary-color);
+  border: 3px solid white;
   padding: 1rem 2rem;
   border-radius: var(--radius-lg);
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   transition: all 0.3s var(--ease-out);
   backdrop-filter: blur(10px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  text-shadow: none;
 }
 
 .btn--outline:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.6);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  background: white;
+  border-color: var(--primary-color);
+  color: var(--primary-dark);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes fadeInUp {
@@ -2061,19 +2078,12 @@ body.theme-argentina .info-bar {
   color: #333 !important;
 }
 
-/* Sección de Productos Argentina - Con bandera de fondo */
+/* Sección de Productos Argentina - Con bandera REAL de fondo */
 body.theme-argentina .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
-    repeating-linear-gradient(
-      180deg,
-      #74ACDF 0px,
-      #74ACDF 33.33%,
-      #FFFFFF 33.33%,
-      #FFFFFF 66.66%,
-      #74ACDF 66.66%,
-      #74ACDF 100%
-    ) !important;
+    linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)),
+    url('https://upload.wikimedia.org/wikipedia/commons/1/1a/Flag_of_Argentina.svg') 
+    center/cover no-repeat !important;
   background-size: 100% 100% !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
@@ -2086,15 +2096,14 @@ body.theme-argentina .products {
   position: relative;
 }
 
-/* Agregar efecto sutil de Argentina */
+/* Agregar sol de mayo con emoji */
 body.theme-argentina .products::before {
-  content: '🇦🇷';
+  content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 20rem;
-  opacity: 0.03;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   pointer-events: none;
   z-index: 0;
 }
@@ -2182,11 +2191,12 @@ body.theme-turquia .info-bar {
   color: white !important;
 }
 
-/* Sección de Productos Turquía - Con bandera de fondo */
+/* Sección de Productos Turquía - Con bandera REAL de fondo */
 body.theme-turquia .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
-    linear-gradient(180deg, #E30A17 0%, #E30A17 100%) !important;
+    linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)),
+    url('https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg') 
+    center/cover no-repeat !important;
   background-size: 100% 100% !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
@@ -2199,15 +2209,14 @@ body.theme-turquia .products {
   position: relative;
 }
 
-/* Agregar efecto de estrella y luna turca con pseudo-elementos */
+/* Agregar efecto de estrella y luna turca */
 body.theme-turquia .products::before {
-  content: '☪️';
+  content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 15rem;
-  opacity: 0.05;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   pointer-events: none;
   z-index: 0;
 }
@@ -2295,19 +2304,12 @@ body.theme-italia .info-bar {
   color: white !important;
 }
 
-/* Sección de Productos Italia - Con bandera de fondo */
+/* Sección de Productos Italia - Con bandera REAL de fondo */
 body.theme-italia .products {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
-    repeating-linear-gradient(
-      90deg,
-      #009246 0px,
-      #009246 33.33%,
-      #FFFFFF 33.33%,
-      #FFFFFF 66.66%,
-      #CE2B37 66.66%,
-      #CE2B37 100%
-    ) !important;
+    linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)),
+    url('https://upload.wikimedia.org/wikipedia/commons/0/03/Flag_of_Italy.svg') 
+    center/cover no-repeat !important;
   background-size: 100% 100% !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
@@ -2322,13 +2324,12 @@ body.theme-italia .products {
 
 /* Agregar efecto sutil de Italia */
 body.theme-italia .products::before {
-  content: '🇮🇹';
+  content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 20rem;
-  opacity: 0.03;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   pointer-events: none;
   z-index: 0;
 }
